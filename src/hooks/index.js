@@ -1,3 +1,6 @@
+export { useLocalStorage, useGameStats, useHighScores, useGameSettings, useUserProfile } from './useLocalStorage';
 export { useGameState } from './useGameState';
-export { useOpenRouter } from './useOpenRouter';
-export { useLocalStorage, useGameStats, useHighScores } from './useLocalStorage'; 
+export { useOpenAI } from './useOpenAI';
+export { useVisualEffects } from './useVisualEffects';
+export { useAIPersonality } from './useAIPersonality';
+export { useCampaign } from './useCampaign'; 

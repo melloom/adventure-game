@@ -1,0 +1,492 @@
+/* Horror Effects Canvas */
+.horror-effects-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1000;
+  mix-blend-mode: overlay;
+}
+
+/* Environmental Items Overlay */
+.environmental-items-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+.environmental-item {
+  position: absolute;
+  pointer-events: auto;
+  cursor: pointer;
+  background: rgba(0, 0, 0, 0.8);
+  border: 2px solid #8b0000;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 120px;
+  text-align: center;
+  transition: all 0.3s ease;
+  animation: itemPulse 2s ease-in-out infinite;
+  backdrop-filter: blur(4px);
+}
+
+.environmental-item:hover {
+  background: rgba(139, 0, 0, 0.9);
+  border-color: #ff0000;
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+}
+
+.item-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 4px rgba(255, 0, 0, 0.5));
+}
+
+.item-title {
+  font-size: 12px;
+  color: #ffffff;
+  font-weight: bold;
+  text-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+}
+
+@keyframes itemPulse {
+  0%, 100% {
+    opacity: 0.7;
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.6);
+  }
+}
+
+/* Item Modal */
+.item-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  backdrop-filter: blur(8px);
+}
+
+.item-modal {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%);
+  border: 2px solid #8b0000;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+  animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.8) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.item-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #8b0000;
+  background: linear-gradient(90deg, #8b0000 0%, #660000 100%);
+}
+
+.item-modal-header h3 {
+  color: #ffffff;
+  margin: 0;
+  font-size: 18px;
+  text-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
+
+.item-modal-content {
+  padding: 20px;
+  color: #ffffff;
+}
+
+.item-content {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+  text-align: justify;
+  font-style: italic;
+}
+
+.item-description {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: #cccccc;
+}
+
+.audio-player {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(139, 0, 0, 0.2);
+  border-radius: 8px;
+  border: 1px solid #8b0000;
+}
+
+.play-btn {
+  background: linear-gradient(135deg, #8b0000 0%, #660000 100%);
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.2s ease;
+}
+
+.play-btn:hover {
+  background: linear-gradient(135deg, #a00000 0%, #800000 100%);
+  transform: scale(1.05);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.duration {
+  font-size: 12px;
+  color: #cccccc;
+}
+
+.item-fear-level {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff0000;
+  text-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+}
+
+/* Psychological Effects */
+.psychological-effects {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1002;
+  pointer-events: none;
+}
+
+.paranoia-indicator,
+.hallucination-indicator,
+.time-distortion-indicator {
+  background: rgba(139, 0, 0, 0.9);
+  color: #ffffff;
+  padding: 8px 12px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  text-shadow: 0 0 4px rgba(255, 0, 0, 0.5);
+  animation: effectPulse 2s ease-in-out infinite;
+  border: 1px solid #ff0000;
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.3);
+}
+
+.hallucination-indicator {
+  background: rgba(128, 0, 128, 0.9);
+  border-color: #800080;
+  box-shadow: 0 0 10px rgba(128, 0, 128, 0.3);
+}
+
+.time-distortion-indicator {
+  background: rgba(0, 128, 128, 0.9);
+  border-color: #008080;
+  box-shadow: 0 0 10px rgba(0, 128, 128, 0.3);
+}
+
+@keyframes effectPulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+/* Horror Atmosphere Overlays */
+.horror-atmosphere {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 999;
+}
+
+.atmosphere-hospital {
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 0, 0, 0.3) 100%);
+  filter: hue-rotate(180deg) saturate(0.8);
+}
+
+.atmosphere-haunted-house {
+  background: radial-gradient(circle at center, transparent 0%, rgba(139, 0, 0, 0.2) 100%);
+  filter: sepia(0.3) contrast(1.2);
+}
+
+.atmosphere-dark-forest {
+  background: radial-gradient(circle at center, transparent 0%, rgba(0, 100, 0, 0.3) 100%);
+  filter: hue-rotate(90deg) brightness(0.8);
+}
+
+/* Jump Scare Effects */
+.jump-scare-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #ffffff;
+  z-index: 3000;
+  animation: jumpScare 0.3s ease-out;
+  pointer-events: none;
+}
+
+@keyframes jumpScare {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+/* Mini-Game Overlays */
+.mini-game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1500;
+}
+
+.quick-time-event {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%);
+  border: 3px solid #ff0000;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  max-width: 400px;
+  animation: quickTimeAppear 0.2s ease-out;
+}
+
+@keyframes quickTimeAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.quick-time-button {
+  background: linear-gradient(135deg, #ff0000 0%, #8b0000 100%);
+  color: #ffffff;
+  border: none;
+  padding: 15px 30px;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 10px;
+  transition: all 0.1s ease;
+  animation: buttonPulse 1s ease-in-out infinite;
+}
+
+.quick-time-button:hover {
+  background: linear-gradient(135deg, #ff3333 0%, #a00000 100%);
+  transform: scale(1.05);
+}
+
+.quick-time-button:active {
+  transform: scale(0.95);
+}
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  }
+}
+
+.hiding-mechanic {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%);
+  border: 3px solid #ff0000;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  max-width: 500px;
+}
+
+.hiding-spots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.hiding-spot {
+  background: rgba(139, 0, 0, 0.3);
+  border: 2px solid #8b0000;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hiding-spot:hover {
+  background: rgba(139, 0, 0, 0.5);
+  border-color: #ff0000;
+  transform: scale(1.05);
+}
+
+.hiding-spot.safe {
+  background: rgba(0, 139, 0, 0.3);
+  border-color: #00ff00;
+}
+
+.hiding-spot.dangerous {
+  background: rgba(139, 0, 0, 0.7);
+  border-color: #ff0000;
+  animation: dangerPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes dangerPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+  }
+}
+
+.stealth-sequence {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%);
+  border: 3px solid #ff0000;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  max-width: 400px;
+}
+
+.noise-meter {
+  width: 100%;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #8b0000;
+  border-radius: 15px;
+  overflow: hidden;
+  margin: 20px 0;
+  position: relative;
+}
+
+.noise-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #00ff00 0%, #ffff00 50%, #ff0000 100%);
+  transition: width 0.3s ease;
+  border-radius: 13px;
+}
+
+.noise-level {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .environmental-item {
+    min-width: 100px;
+    padding: 8px;
+  }
+  
+  .item-title {
+    font-size: 10px;
+  }
+  
+  .item-modal {
+    width: 95%;
+    margin: 10px;
+  }
+  
+  .psychological-effects {
+    top: 10px;
+    right: 10px;
+  }
+  
+  .paranoia-indicator,
+  .hallucination-indicator,
+  .time-distortion-indicator {
+    font-size: 10px;
+    padding: 6px 8px;
+  }
+} 

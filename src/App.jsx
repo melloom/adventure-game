@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { useOpenRouter } from './hooks/useOpenRouter';
-import { updatePlayerLearning, getPlayerLearningData, generateMetaMessage, generateFirstTimeMetaMessage, clearPlayerLearningData } from './utils/aiService';
+import { useOpenAI } from './hooks/useOpenAI';
+import { useGameStats, useHighScores, useUserProfile, useGameSettings } from './hooks/useLocalStorage';
+import { useVisualEffects } from './hooks/useVisualEffects';
+import { useCampaign } from './hooks/useCampaign';
+import { generateMetaMessage, generateFirstTimeMetaMessage, updatePlayerLearning, getPlayerLearningData } from './utils/aiService';
+import dataMigrationManager from './utils/dataMigration';
+import VisualEffects from './components/VisualEffects';
+import HomePage from './pages/HomePage';
+import StatsPage from './pages/StatsPage';
+import SettingsPage from './pages/SettingsPage';
+import GamePage from './pages/GamePage';
+import BadgeSystem from './components/BadgeSystem';
+import AchievementSystem from './components/AchievementSystem';
+import './index.css';
 
 function App() {
   const [gameStarted, setGameStarted] = useState(false);
@@ -11,13 +23,12 @@ function App() {
   const [metaMessage, setMetaMessage] = useState('');
   const [metaMessageIndex, setMetaMessageIndex] = useState(0);
   const [metaMessageSequence, setMetaMessageSequence] = useState([]);
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    age: '',
-    interests: '',
-    difficulty: 'medium',
-    personality: 'balanced'
-  });
+
+  // Campaign state
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [gameMode, setGameMode] = useState('classic'); // 'classic' or 'campaign'
+  const [lastGameResult, setLastGameResult] = useState(null);
+  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'stats', 'settings'
 
   // Game state
   const [currentRound, setCurrentRound] = useState(1);
@@ -63,51 +74,64 @@ function App() {
     narrative: []
   });
 
-  // OpenRouter hook (now handles all AI services)
-  const { fetchQuestion, fetchConsequence, checkApiStatus } = useOpenRouter();
+  // Enhanced storage hooks
+  const { profile: userProfile, updateProfile, isValidProfile, resetProfile } = useUserProfile();
+  const { settings } = useGameSettings();
+  
+  // Visual effects hook
+  const {
+    particleState,
+    shakeState,
+    mousePosition,
+    scrollPosition,
+    triggerParticles,
+    triggerShake,
+    handleGameEvent,
+    handleDangerChange,
+    effectsEnabled,
+    performanceMode
+  } = useVisualEffects({
+    effectsEnabled: settings.notifications !== false,
+    performanceMode: settings.performanceMode
+  });
+  
+  // OpenAI hook (handles all AI services)
+  const { fetchQuestion, fetchConsequence, checkApiStatus } = useOpenAI();
+  
+  // Game stats hook
+  const { stats } = useGameStats();
 
-  // Check for saved profile on app load
+  // Initialize app with data migration and profile loading
   useEffect(() => {
-    const savedProfile = localStorage.getItem('wouldYouRatherProfile');
-    if (savedProfile) {
+    const initializeApp = async () => {
       try {
-        const parsedProfile = JSON.parse(savedProfile);
-        // Only show main menu if profile has a valid name
-        if (parsedProfile && parsedProfile.name && parsedProfile.name.trim() !== '') {
-          setUserProfile(parsedProfile);
+        // Run data migration if needed
+        await dataMigrationManager.migrateIfNeeded();
+        
+        // Check if we have a valid profile
+        if (isValidProfile()) {
           setShowProfileSetup(false);
           setGameStarted(false);
         } else {
-          // Invalid profile - force creation
-          localStorage.removeItem('wouldYouRatherProfile');
           setShowProfileSetup(true);
           setGameStarted(false);
         }
+        
+        // Load learning statistics
+        const stats = getPlayerLearningData();
+        setLearningStats(stats);
       } catch (error) {
-        console.error('Error loading saved profile:', error);
-        localStorage.removeItem('wouldYouRatherProfile');
+        console.error('Error initializing app:', error);
         setShowProfileSetup(true);
-        setGameStarted(false);
       }
-    } else {
-      // No profile found - force creation
-      setShowProfileSetup(true);
-      setGameStarted(false);
-    }
+    };
     
-    // Load learning statistics
-    const stats = getPlayerLearningData();
-    setLearningStats(stats);
-  }, []);
+    initializeApp();
+  }, [isValidProfile]);
 
   // Check AI availability on app load
   useEffect(() => {
     const checkAi = async () => {
-      // Clear cache to test new model priority order
-      localStorage.removeItem('aiStatusChecked');
-      localStorage.removeItem('aiAvailable');
-      localStorage.removeItem('workingModel');
-      
       // Check if OpenAI API key is available
       const openaiKey = import.meta.env.VITE_OPENAI_API_KEY;
       
@@ -115,27 +139,14 @@ function App() {
         console.log('OpenAI API key found, setting AI as available');
         setAiAvailable(true);
         setWorkingModel('OpenAI GPT-3.5');
-        localStorage.setItem('aiStatusChecked', 'true');
-        localStorage.setItem('aiAvailable', 'true');
-        localStorage.setItem('workingModel', 'OpenAI GPT-3.5');
       } else {
         console.log('No OpenAI API key found, using smart fallback');
         setAiAvailable(false);
         setWorkingModel('');
-        localStorage.setItem('aiStatusChecked', 'true');
-        localStorage.setItem('aiAvailable', 'false');
-        localStorage.setItem('workingModel', '');
       }
     };
     checkAi();
   }, []);
-
-  // Save profile to localStorage whenever it changes
-  useEffect(() => {
-    if (userProfile.name && userProfile.age) {
-      localStorage.setItem('wouldYouRatherProfile', JSON.stringify(userProfile));
-    }
-  }, [userProfile]);
 
   // Update survival status based on danger score
   useEffect(() => {
@@ -150,6 +161,11 @@ function App() {
     }
   }, [dangerScore]);
 
+  // Handle visual effects for danger changes
+  useEffect(() => {
+    handleDangerChange(dangerScore, survivalStatus);
+  }, [dangerScore, survivalStatus, handleDangerChange]);
+
   // Refresh learning stats when game ends
   useEffect(() => {
     if (gameOver) {
@@ -157,20 +173,6 @@ function App() {
       setLearningStats(stats);
     }
   }, [gameOver]);
-
-  // Auto-advance meta messages every 5 seconds
-  useEffect(() => {
-    if (showMetaMessage && metaMessageSequence.length > 0 && !isLoading) {
-      const timer = setTimeout(() => {
-        if (metaMessageIndex < metaMessageSequence.length - 1) {
-          setMetaMessageIndex(metaMessageIndex + 1);
-          setMetaMessage(metaMessageSequence[metaMessageIndex + 1]);
-        }
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [showMetaMessage, metaMessageSequence, metaMessageIndex, isLoading]);
 
   const questions = [
     {
@@ -381,7 +383,16 @@ function App() {
     }
   };
 
-  const handleStartGame = async () => {
+  const handleStartGame = async (chapter = null) => {
+    // Set game mode and selected chapter
+    if (chapter) {
+      setGameMode('campaign');
+      setSelectedChapter(chapter);
+    } else {
+      setGameMode('classic');
+      setSelectedChapter(null);
+    }
+
     // Check if this is a returning player (has game history)
     const savedGameHistory = localStorage.getItem('gameHistory');
     const hasPlayedBefore = savedGameHistory && JSON.parse(savedGameHistory).length > 0;
@@ -389,6 +400,10 @@ function App() {
     console.log('Saved game history:', savedGameHistory);
     console.log('Has played before:', hasPlayedBefore);
     console.log('User profile name:', userProfile.name);
+    console.log('Game mode:', chapter ? 'campaign' : 'classic');
+    if (chapter) {
+      console.log('Selected chapter:', chapter.name);
+    }
     
     // Show meta message for ALL players (both new and returning)
     console.log('Showing meta message for player');
@@ -402,7 +417,8 @@ function App() {
         messageSequence = await generateMetaMessage(
           userProfile.name, 
           userProfile.difficulty, 
-          userProfile.personality
+          userProfile.personality,
+          chapter ? chapter.theme : null
         );
       } else {
         // First-time player message - more mind-boggling
@@ -411,7 +427,8 @@ function App() {
           userProfile.difficulty,
           userProfile.personality,
           userProfile.interests || 'unknown',
-          userProfile.age || 'unknown'
+          userProfile.age || 'unknown',
+          chapter ? chapter.theme : null
         );
       }
       
@@ -440,6 +457,45 @@ function App() {
     
     // Don't start the game yet - wait for user to acknowledge the meta message
     return;
+  };
+
+  const handleGameEnd = (result) => {
+    setLastGameResult(result);
+    setGameStarted(false);
+    setGameOver(false);
+    setShowConsequence(false);
+    setConsequence('');
+    setSelectedOption(null);
+    setGameHistory([]);
+    setGameChoices([]);
+    setSurvivalStatus('safe');
+    setShowHistory(false);
+    setPoints({
+      survival: 0,
+      bravery: 0,
+      wisdom: 0,
+      chaos: 0,
+      heroism: 0,
+      villainy: 0,
+      luck: 0,
+      skill: 0,
+      total: 0
+    });
+    setAchievements([]);
+    setBonuses([]);
+    setStoryArc({
+      protagonist: '',
+      setting: '',
+      currentSituation: '',
+      allies: [],
+      enemies: [],
+      powers: [],
+      weaknesses: [],
+      worldState: '',
+      narrative: []
+    });
+    setSelectedChapter(null);
+    setGameMode('classic');
   };
 
   const handleMetaMessageAcknowledge = () => {
@@ -502,10 +558,7 @@ function App() {
 
   const handleProfileChange = (e) => {
     const { name, value } = e.target;
-    setUserProfile(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    updateProfile({ [name]: value });
   };
 
   const handleNext = () => {
@@ -534,23 +587,25 @@ function App() {
   };
 
   const handleOptionSelect = async (option) => {
-    if (!currentGameQuestion) {
-      console.error('No current game question available');
-      return;
-    }
-
-    setIsLoading(true);
-    setSelectedOption(option);
+    if (isLoading) return;
     
+    setSelectedOption(option);
+    setIsLoading(true);
+    
+    // Trigger choice made effect
+    handleGameEvent('choice_made', { 
+      position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
+    });
+
     const choice = option === 'A' ? currentGameQuestion.optionA : currentGameQuestion.optionB;
     let consequenceText = '';
     let dangerLevel = 0;
-    let storyUpdate = "The story continues with your choice.";
-    
+    let storyUpdate = '';
+
     try {
       if (aiAvailable) {
-        // Try to get AI-generated consequence
-        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty);
+        // Use AI to generate consequence
+        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty, userProfile.personality, currentRound);
         consequenceText = aiConsequence.consequence;
         dangerLevel = aiConsequence.dangerLevel;
         storyUpdate = aiConsequence.storyUpdate || "The story continues with your choice.";
@@ -571,6 +626,12 @@ function App() {
     // Update danger score
     const newDangerScore = dangerScore + dangerLevel;
     setDangerScore(newDangerScore);
+
+    // Trigger consequence revealed effect
+    handleGameEvent('consequence_revealed', { 
+      position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+      dangerScore: newDangerScore
+    });
 
     // Update story arc
     setStoryArc(prev => ({
@@ -637,8 +698,24 @@ function App() {
       updatePlayerLearning(gameData);
       console.log('🎯 AI learning system updated with game data:', gameData);
       
+      // Trigger game over effect
+      if (dangerScore <= 100) {
+        handleGameEvent('victory', { 
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
+        });
+      } else {
+        handleGameEvent('game_over', { 
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
+        });
+      }
+      
       setGameOver(true);
     } else {
+      // Trigger round completed effect
+      handleGameEvent('round_completed', { 
+        position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
+      });
+      
       setCurrentRound(currentRound + 1);
       setShowConsequence(false);
       setSelectedOption(null);
@@ -696,22 +773,33 @@ function App() {
   };
 
   const handleDeleteProfile = () => {
+    // Show confirmation warning
+    const confirmed = window.confirm(
+      `⚠️ WARNING: This action cannot be undone! ⚠️\n\n` +
+      `Are you sure you want to delete your profile "${userProfile.name}"?\n\n` +
+      `This will permanently delete:\n` +
+      `• Your profile and settings\n` +
+      `• All game history and progress\n` +
+      `• All badges and achievements\n` +
+      `• All learning data and statistics\n\n` +
+      `Click "OK" to delete everything, or "Cancel" to keep your data.`
+    );
+    
+    if (!confirmed) {
+      console.log('Profile deletion cancelled by user.');
+      return;
+    }
+    
     // Clear all local storage data
     localStorage.removeItem('wouldYouRatherProfile');
     localStorage.removeItem('gameHistory');
-    clearPlayerLearningData(); // Use the dedicated function to clear learning data
+    updatePlayerLearning({}); // Use the dedicated function to clear learning data
     localStorage.removeItem('aiStatusChecked');
     localStorage.removeItem('aiAvailable');
     localStorage.removeItem('workingModel');
     
     // Reset all state to initial values
-    setUserProfile({
-      name: '',
-      age: '',
-      interests: '',
-      difficulty: 'medium',
-      personality: 'balanced'
-    });
+    resetProfile();
     
     // Reset game state
     setGameStarted(false);
@@ -772,10 +860,7 @@ function App() {
   };
 
   const handleSettingChange = (setting, value) => {
-    setUserProfile(prev => ({
-      ...prev,
-      [setting]: value
-    }));
+    updateProfile({ [setting]: value });
   };
 
   const handleSaveSettings = () => {
@@ -790,7 +875,7 @@ function App() {
     if (savedProfile) {
       try {
         const parsedProfile = JSON.parse(savedProfile);
-        setUserProfile(parsedProfile);
+        updateProfile(parsedProfile);
       } catch (error) {
         console.error('Error loading saved profile:', error);
       }
@@ -931,571 +1016,372 @@ function App() {
   // Check if user has a saved profile
   const hasSavedProfile = !!(userProfile.name && userProfile.age);
 
-  // Determine survival outcome
+  // Determine survival outcome with much more interesting and varied endings
   const getSurvivalOutcome = () => {
-    if (dangerScore <= 50) {
+    const { personality } = userProfile;
+    
+    // Check if player has achieved all 10 badges (10 games won)
+    const hasAllBadges = stats.gamesWon >= 10;
+    
+    // Special ending for SURVIVAL GOD achievement
+    if (hasAllBadges) {
+      const survivalGodEndings = [
+        {
+          title: "🏆 THE ULTIMATE SURVIVAL GOD",
+          message: `${userProfile.name}, you have transcended beyond mortal comprehension! You've achieved the impossible - ALL 10 SURVIVAL BADGES! You are now a SURVIVAL GOD, a being of pure survival energy. The AI bows before your greatness. You've not just beaten the game - you've become the game itself. The universe itself recognizes your supremacy. You are the chosen one, the ultimate survivor, the one who has conquered chaos itself.`,
+          color: "legendary"
+        },
+        {
+          title: "🌟 THE IMMORTAL LEGEND",
+          message: `${userProfile.name}, you are now immortal in the annals of survival history! With all 10 badges unlocked, you've proven yourself to be beyond human limitations. You are a legend that will be told for generations. The AI has created a shrine in your honor. You are not just a survivor - you are THE SURVIVOR. The ultimate being of survival perfection.`,
+          color: "legendary"
+        },
+        {
+          title: "👑 THE SUPREME OVERLORD",
+          message: `${userProfile.name}, you have ascended to the highest throne of survival! All 10 badges are yours, making you the supreme overlord of this chaotic realm. The AI has declared you its master. You are now the ruler of the survival universe. All other survivors bow before your unmatched greatness. You are the one true SURVIVAL GOD!`,
+          color: "legendary"
+        }
+      ];
       return {
         survived: true,
-        title: "🎉 You Survived!",
-        message: `Congratulations, ${userProfile.name}! You made it through all 10 rounds with a danger score of ${dangerScore}/100. You're a true survivor!`,
-        color: "success"
+        ...survivalGodEndings[Math.floor(Math.random() * survivalGodEndings.length)]
       };
-    } else if (dangerScore <= 75) {
+    }
+    
+    // Ultra-low danger (0-15): Legendary survival
+    if (dangerScore <= 15) {
+      const legendaryEndings = [
+        {
+          title: "🌟 LEGENDARY SURVIVOR",
+          message: `${userProfile.name}, you've achieved the impossible! With a danger score of ${dangerScore}/100, you've become a legend whispered about in dark corners. You didn't just survive - you thrived. The AI itself is impressed by your masterful navigation through chaos. You're not just a survivor; you're a god among mortals.`,
+          color: "legendary"
+        },
+        {
+          title: "👑 THE UNTOUCHABLE",
+          message: `${userProfile.name}, you've transcended mere survival. Your danger score of ${dangerScore}/100 is so low, it's mathematically impossible. You've broken the game's physics. The AI is now studying your techniques to improve its own survival algorithms. You are the chosen one.`,
+          color: "legendary"
+        },
+        {
+          title: "🎭 THE MASTER MANIPULATOR",
+          message: `${userProfile.name}, you've played the game better than the game itself. With ${dangerScore}/100 danger, you've proven that chaos is just another tool in your arsenal. You didn't avoid danger - you weaponized it. The AI is now afraid of you.`,
+          color: "legendary"
+        }
+      ];
       return {
         survived: true,
-        title: "😅 Barely Made It!",
-        message: `Wow, ${userProfile.name}! You survived with a danger score of ${dangerScore}/100, but it was a close call. You're lucky to be alive!`,
-        color: "warning"
+        ...legendaryEndings[Math.floor(Math.random() * legendaryEndings.length)]
       };
-    } else {
+    }
+    
+    // Low danger (16-30): Skilled survivor
+    else if (dangerScore <= 30) {
+      const skilledEndings = [
+        {
+          title: "🎯 THE SHARPSHOOTER",
+          message: `${userProfile.name}, you've demonstrated surgical precision in your choices. Your danger score of ${dangerScore}/100 shows you understand the game's mechanics better than most. You're not just lucky - you're calculated. The AI respects your strategic mind.`,
+          color: "success"
+        },
+        {
+          title: "🧠 THE THINKER",
+          message: `${userProfile.name}, your analytical approach has served you well. With ${dangerScore}/100 danger, you've proven that careful consideration beats reckless abandon. You've outsmarted the chaos. The AI is taking notes on your methodology.`,
+          color: "success"
+        },
+        {
+          title: "🎪 THE PERFORMER",
+          message: `${userProfile.name}, you've turned survival into an art form. Your ${dangerScore}/100 danger score is a masterpiece of calculated risk. You didn't just survive - you performed. The AI is applauding your showmanship.`,
+          color: "success"
+        }
+      ];
+      return {
+        survived: true,
+        ...skilledEndings[Math.floor(Math.random() * skilledEndings.length)]
+      };
+    }
+    
+    // Medium danger (31-50): Competent survivor
+    else if (dangerScore <= 50) {
+      const competentEndings = [
+        {
+          title: "💪 THE RESILIENT",
+          message: `${userProfile.name}, you've shown true grit and determination. Your danger score of ${dangerScore}/100 proves you can handle pressure. You've got the heart of a survivor and the will to match. The AI acknowledges your tenacity.`,
+          color: "success"
+        },
+        {
+          title: "🎲 THE GAMBLER",
+          message: `${userProfile.name}, you've played the odds and won. With ${dangerScore}/100 danger, you've proven that sometimes you need to roll the dice. Your luck held out, and that's a skill in itself. The AI respects your boldness.`,
+          color: "success"
+        },
+        {
+          title: "🛡️ THE GUARDIAN",
+          message: `${userProfile.name}, you've protected yourself well through the chaos. Your ${dangerScore}/100 danger score shows you know how to defend against the worst. You're not just a survivor - you're a protector. The AI recognizes your defensive mastery.`,
+          color: "success"
+        }
+      ];
+      return {
+        survived: true,
+        ...competentEndings[Math.floor(Math.random() * competentEndings.length)]
+      };
+    }
+    
+    // High danger (51-70): Lucky survivor
+    else if (dangerScore <= 70) {
+      const luckyEndings = [
+        {
+          title: "🍀 THE LUCKY CHARM",
+          message: `${userProfile.name}, you've defied probability itself! With a danger score of ${dangerScore}/100, you should be dead. But here you are, alive and kicking. The AI is scratching its digital head in confusion. Sometimes luck is the best strategy.`,
+          color: "warning"
+        },
+        {
+          title: "🎭 THE DRAMA QUEEN",
+          message: `${userProfile.name}, you've turned survival into a soap opera! Your ${dangerScore}/100 danger score means you flirted with death at every turn. But somehow, you made it through. The AI is entertained by your theatrics.`,
+          color: "warning"
+        },
+        {
+          title: "🔥 THE PHOENIX",
+          message: `${userProfile.name}, you've risen from the ashes multiple times! Your danger score of ${dangerScore}/100 should have killed you several times over. But like a phoenix, you keep coming back. The AI is impressed by your refusal to die.`,
+          color: "warning"
+        }
+      ];
+      return {
+        survived: true,
+        ...luckyEndings[Math.floor(Math.random() * luckyEndings.length)]
+      };
+    }
+    
+    // Very high danger (71-85): Barely survived
+    else if (dangerScore <= 85) {
+      const barelyEndings = [
+        {
+          title: "😵‍💫 THE ZOMBIE",
+          message: `${userProfile.name}, you're technically alive, but at what cost? Your danger score of ${dangerScore}/100 has left you a shell of your former self. You're walking, talking, and somehow breathing, but the AI isn't sure if this counts as survival.`,
+          color: "warning"
+        },
+        {
+          title: "🎪 THE CIRCUS ACT",
+          message: `${userProfile.name}, you've performed the most dangerous tightrope walk in history! With ${dangerScore}/100 danger, you've balanced on the edge of death for 10 rounds. The AI is amazed you didn't fall off.`,
+          color: "warning"
+        },
+        {
+          title: "💀 THE UNDEAD",
+          message: `${userProfile.name}, you've achieved the impossible - you've survived when you should be dead. Your danger score of ${dangerScore}/100 defies all logic. The AI is questioning its own calculations. Are you human, or something else?`,
+          color: "warning"
+        }
+      ];
+      return {
+        survived: true,
+        ...barelyEndings[Math.floor(Math.random() * barelyEndings.length)]
+      };
+    }
+    
+    // Extreme danger (86-95): Miracle survival
+    else if (dangerScore <= 95) {
+      const miracleEndings = [
+        {
+          title: "🙏 THE MIRACLE",
+          message: `${userProfile.name}, you've performed a miracle! Your danger score of ${dangerScore}/100 should have killed you instantly. The AI is checking its code for bugs. You've broken the laws of probability.`,
+          color: "danger"
+        },
+        {
+          title: "👻 THE GHOST",
+          message: `${userProfile.name}, you're not supposed to be here. With ${dangerScore}/100 danger, you should be dead. The AI is questioning reality itself. Are you a ghost? A glitch? Something beyond human comprehension?`,
+          color: "danger"
+        },
+        {
+          title: "🔄 THE GLITCH",
+          message: `${userProfile.name}, you've found a bug in the matrix! Your danger score of ${dangerScore}/100 should have terminated you, but somehow you're still running. The AI is trying to patch this exploit.`,
+          color: "danger"
+        }
+      ];
+      return {
+        survived: true,
+        ...miracleEndings[Math.floor(Math.random() * miracleEndings.length)]
+      };
+    }
+    
+    // Maximum danger (96-100): Death
+    else {
+      const deathEndings = [
+        {
+          title: "💥 THE EXPLOSION",
+          message: `${userProfile.name}, you've achieved the impossible - you've died with style! Your danger score of ${dangerScore}/100 caused you to explode in a spectacular fashion. The AI is taking notes for future reference. At least you went out with a bang!`,
+          color: "danger"
+        },
+        {
+          title: "🌋 THE VOLCANO",
+          message: `${userProfile.name}, you've become one with the chaos! Your ${dangerScore}/100 danger score turned you into a human volcano. The AI is impressed by your destructive potential. You didn't just die - you erupted!`,
+          color: "danger"
+        },
+        {
+          title: "⚡ THE LIGHTNING",
+          message: `${userProfile.name}, you've been struck by lightning! Your danger score of ${dangerScore}/100 attracted every bolt of chaos in the universe. The AI is still counting the lightning strikes. You're now part of the storm.`,
+          color: "danger"
+        }
+      ];
       return {
         survived: false,
-        title: "💀 You Died!",
-        message: `Oh no, ${userProfile.name}! Your danger score of ${dangerScore}/100 was too high. You exploded while petting a radioactive badger. Better luck next time!`,
-        color: "danger"
+        ...deathEndings[Math.floor(Math.random() * deathEndings.length)]
       };
     }
   };
 
-  if (showMetaMessage) {
-    return (
-      <div className="meta-message-container">
-        <div className="meta-message-overlay">
-          <div className="meta-message-content">
-            <div className="meta-message-header">
-              <span className="meta-icon">👁️</span>
-              <h2 className="meta-title">SYSTEM INTRUSION DETECTED</h2>
-            </div>
-            
-            {isLoading ? (
-              <div className="meta-loading">
-                <div className="loading-spinner"></div>
-                <p>🤖 AI is analyzing your profile...</p>
-              </div>
-            ) : (
-              <div className="meta-message-body">
-                <p className="meta-text">{metaMessage}</p>
-                <div className="meta-progress">
-                  <span>Message {metaMessageIndex + 1} of {metaMessageSequence.length}</span>
-                </div>
-                <button 
-                  className="meta-acknowledge-button"
-                  onClick={handleNextMetaMessage}
-                >
-                  🎮 Begin My Survival Journey
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (showProfileSetup && !gameStarted) {
-    const currentQ = questions[currentQuestion];
-    const progress = ((currentQuestion + 1) / questions.length) * 100;
-
-    return (
-      <div className="profile-setup">
-        <div className="profile-form">
-          <h1 className="game-title">🎭 Character Creation</h1>
-          <p className="game-subtitle">Let's get to know the brave soul about to face impossible choices!</p>
-          
-          <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${progress}%` }}></div>
-            <span className="progress-text">Question {currentQuestion + 1} of {questions.length}</span>
-          </div>
-
-          <div className="question-container">
-            <label className="question-label">{currentQ.label}</label>
-            
-            {currentQ.type === 'text' && (
-              <input
-                type="text"
-                name={currentQ.id}
-                value={userProfile[currentQ.id]}
-                onChange={handleProfileChange}
-                placeholder={currentQ.placeholder}
-                className="form-input"
-                autoFocus
-              />
-            )}
-
-            {currentQ.type === 'number' && (
-              <input
-                type="number"
-                name={currentQ.id}
-                value={userProfile[currentQ.id]}
-                onChange={handleProfileChange}
-                placeholder={currentQ.placeholder}
-                min={currentQ.min}
-                max={currentQ.max}
-                className="form-input"
-                autoFocus
-              />
-            )}
-
-            {currentQ.type === 'textarea' && (
-              <textarea
-                name={currentQ.id}
-                value={userProfile[currentQ.id]}
-                onChange={handleProfileChange}
-                placeholder={currentQ.placeholder}
-                className="form-textarea"
-                rows="3"
-                autoFocus
-              />
-            )}
-
-            {currentQ.type === 'select' && (
-              <select
-                name={currentQ.id}
-                value={userProfile[currentQ.id]}
-                onChange={handleProfileChange}
-                className="form-select"
-                autoFocus
-              >
-                <option value="">Choose an option...</option>
-                {currentQ.options.map((option, index) => (
-                  <option key={index} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
-
-          <div className="profile-actions">
-            <button 
-              type="button" 
-              onClick={handleNext}
-              className="start-button"
-              disabled={!canProceed()}
-            >
-              <span className="button-icon">
-                {currentQuestion === questions.length - 1 ? '🚀' : '→'}
-              </span>
-              {currentQuestion === questions.length - 1 ? 'Let\'s Get This Chaos Started!' : 'Next Question'}
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!gameStarted) {
+  // Render the appropriate component based on current state
+  if (showProfileSetup) {
     return (
       <div className="game-container">
-        <div className="hero-section">
-          <h1 className="game-title">Would You Rather Survival</h1>
-          <div className="title-decoration">🔥</div>
-          <p className="game-subtitle">Survive 10 rounds of impossible choices!</p>
+        <div className="profile-setup">
+          <h1 className="game-title">🎭 Welcome to Would You Rather Survival</h1>
+          <p className="game-subtitle">Before we begin your nightmare journey, I need to know a few things about you...</p>
           
-          {hasSavedProfile && (
-            <div className="welcome-back">
-              <div className="game-header">
-                <div className="player-info">
-                  <h2>Welcome, {userProfile.name}! 🎮</h2>
-                  <div className="player-stats">
-                    <span className="stat-item">
-                      <span className="stat-label">Difficulty:</span>
-                      <span className="stat-value">{userProfile.difficulty}</span>
-                    </span>
-                    <span className="stat-item">
-                      <span className="stat-label">Style:</span>
-                      <span className="stat-value">{userProfile.personality}</span>
-                    </span>
-                    <button 
-                      className="edit-settings-button"
-                      onClick={() => setEditingSettings(true)}
-                      title="Edit Settings"
-                    >
-                      ⚙️
-                    </button>
-                  </div>
-                </div>
+          <div className="profile-form">
+            <div className="form-group">
+              <label htmlFor={questions[currentQuestion].id}>
+                {questions[currentQuestion].label}
+              </label>
+              {questions[currentQuestion].type === 'text' && (
+                <input
+                  type="text"
+                  id={questions[currentQuestion].id}
+                  name={questions[currentQuestion].id}
+                  placeholder={questions[currentQuestion].placeholder}
+                  value={userProfile[questions[currentQuestion].id] || ''}
+                  onChange={handleProfileChange}
+                  className="form-input"
+                />
+              )}
+              {questions[currentQuestion].type === 'number' && (
+                <input
+                  type="number"
+                  id={questions[currentQuestion].id}
+                  name={questions[currentQuestion].id}
+                  placeholder={questions[currentQuestion].placeholder}
+                  min={questions[currentQuestion].min}
+                  max={questions[currentQuestion].max}
+                  value={userProfile[questions[currentQuestion].id] || ''}
+                  onChange={handleProfileChange}
+                  className="form-input"
+                />
+              )}
+              {questions[currentQuestion].type === 'textarea' && (
+                <textarea
+                  id={questions[currentQuestion].id}
+                  name={questions[currentQuestion].id}
+                  placeholder={questions[currentQuestion].placeholder}
+                  value={userProfile[questions[currentQuestion].id] || ''}
+                  onChange={handleProfileChange}
+                  className="form-textarea"
+                  rows="4"
+                />
+              )}
+              {questions[currentQuestion].type === 'select' && (
+                <select
+                  id={questions[currentQuestion].id}
+                  name={questions[currentQuestion].id}
+                  value={userProfile[questions[currentQuestion].id] || ''}
+                  onChange={handleProfileChange}
+                  className="form-select"
+                >
+                  <option value="">Choose your destiny...</option>
+                  {questions[currentQuestion].options.map((option, index) => (
+                    <option key={index} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            
+            <div className="profile-actions">
+              {currentQuestion > 0 && (
+                <button className="back-button" onClick={handleBack}>
+                  ← Back
+                </button>
+              )}
+              <button 
+                className="start-button" 
+                onClick={handleNext}
+                disabled={!canProceed()}
+              >
+                {currentQuestion < questions.length - 1 ? 'Next →' : 'Begin Your Nightmare'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (showMetaMessage) {
+    return (
+      <div className="game-container">
+        <div className="meta-message-container">
+          <div className="meta-message-overlay">
+            <div className="meta-message-content">
+              <div className="meta-message-header">
+                <span className="meta-icon">🤖</span>
+                <h2 className="meta-title">AI System Message</h2>
               </div>
               
-              {editingSettings && (
-                <div className="editing-settings">
-                  <div className="setting-editor">
-                    <div className="setting-group">
-                      <label className="setting-label">Difficulty:</label>
-                      <select 
-                        value={userProfile.difficulty}
-                        onChange={(e) => handleSettingChange('difficulty', e.target.value)}
-                        className="setting-select"
-                      >
-                        <option value="easy">😊 Baby Steps</option>
-                        <option value="medium">😐 Bring It On</option>
-                        <option value="hard">😈 Chaos Lover</option>
-                        <option value="nightmare">💀 Pure Madness</option>
-                      </select>
-                    </div>
-                    <div className="setting-group">
-                      <label className="setting-label">Style:</label>
-                      <select 
-                        value={userProfile.personality}
-                        onChange={(e) => handleSettingChange('personality', e.target.value)}
-                        className="setting-select"
-                      >
-                        <option value="balanced">⚖️ The Thinker</option>
-                        <option value="impulsive">⚡ The Wild Card</option>
-                        <option value="cautious">🛡️ The Safe Player</option>
-                        <option value="adventurous">🏔️ The Daredevil</option>
-                      </select>
-                    </div>
+              {isLoading ? (
+                <div className="meta-loading">
+                  <div className="loading-spinner"></div>
+                  <p>🤖 AI is analyzing your profile...</p>
+                </div>
+              ) : (
+                <div className="meta-message-body">
+                  <p className="meta-text">{metaMessage}</p>
+                  <div className="meta-progress">
+                    {metaMessageIndex + 1} / {metaMessageSequence.length}
                   </div>
-                  <div className="setting-actions">
-                    <button 
-                      className="save-settings-button"
-                      onClick={handleSaveSettings}
-                    >
-                      ✅ Save
-                    </button>
-                    <button 
-                      className="cancel-settings-button"
-                      onClick={handleCancelSettings}
-                    >
-                      ❌ Cancel
-                    </button>
-                  </div>
+                  <button 
+                    className="meta-acknowledge-button"
+                    onClick={handleNextMetaMessage}
+                  >
+                    {metaMessageIndex < metaMessageSequence.length - 1 ? 'Continue' : 'Begin Game'}
+                  </button>
                 </div>
               )}
             </div>
-          )}
-          
-          {/* Settings section for users without saved profile */}
-          {!hasSavedProfile && (
-            <div className="welcome-back">
-              <h3>⚙️ Game Settings</h3>
-              <p>Configure your game experience before starting your survival journey!</p>
-              
-              <div className="saved-profile-info">
-                <div className="setting-group">
-                  <label className="setting-label">Difficulty Level:</label>
-                  <select 
-                    value={userProfile.difficulty}
-                    onChange={(e) => handleSettingChange('difficulty', e.target.value)}
-                    className="setting-select"
-                  >
-                    <option value="easy">😊 Baby Steps - Easy mode</option>
-                    <option value="medium">😐 Bring It On - Medium mode</option>
-                    <option value="hard">😈 Chaos Lover - Hard mode</option>
-                    <option value="nightmare">💀 Pure Madness - Nightmare mode</option>
-                  </select>
-                </div>
-                <div className="setting-group">
-                  <label className="setting-label">Personality Style:</label>
-                  <select 
-                    value={userProfile.personality}
-                    onChange={(e) => handleSettingChange('personality', e.target.value)}
-                    className="setting-select"
-                  >
-                    <option value="balanced">⚖️ The Thinker - Balanced decisions</option>
-                    <option value="impulsive">⚡ The Wild Card - Impulsive choices</option>
-                    <option value="cautious">🛡️ The Safe Player - Cautious approach</option>
-                    <option value="adventurous">🏔️ The Daredevil - Adventurous spirit</option>
-                  </select>
-                </div>
-              </div>
-              <div className="settings-info">
-                <p>💡 These settings affect the type of questions and consequences you'll encounter.</p>
-              </div>
-            </div>
-          )}
-          
-          <div className="game-description">
-            <h3>🎯 The Challenge</h3>
-            <p>Face increasingly difficult "Would You Rather" scenarios. Each choice has consequences that could end your survival run. Can you make it through all 10 rounds?</p>
-            
-            <div className="features">
-              <div className="feature">
-                <span className="feature-icon">⚡</span>
-                <span>10 Intense Rounds</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🎲</span>
-                <span>Random Consequences</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🏆</span>
-                <span>Track Your Score</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">🤖</span>
-                <span>AI-Powered Questions</span>
-              </div>
-              <div className="feature">
-                <span className="feature-icon">💀</span>
-                <span>Survival Meter</span>
-              </div>
-            </div>
-
-            {!aiAvailable && (
-              <div className="ai-status">
-                <p>🤖 AI Mode: Offline (using Smart Fallback)</p>
-                <p className="ai-setup-hint">💡 Smart fallback provides dynamic, AI-like content without requiring API credits.</p>
-                <p className="learning-status">🧠 AI Learning: Active - Adapting to your play style!</p>
-              </div>
-            )}
-            
-            {aiAvailable && workingModel && (
-              <div className="ai-status">
-                <p>🤖 AI Mode: Online using {workingModel}</p>
-                <p className="ai-setup-hint">💡 AI is generating unique questions and consequences for your game!</p>
-                <p className="learning-status">🧠 AI Learning: Active - Learning your fears and patterns!</p>
-              </div>
-            )}
-            
-            {/* Learning Stats Display */}
-            {learningStats && learningStats.gamesPlayed > 0 && (
-              <div className="learning-stats">
-                <h3>🧠 AI Learning Progress</h3>
-                <div className="stats-grid">
-                  <div className="stat-item">
-                    <span className="stat-label">Games Played:</span>
-                    <span className="stat-value">{learningStats.gamesPlayed}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Total Rounds:</span>
-                    <span className="stat-value">{learningStats.totalRounds}</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Avg Danger Score:</span>
-                    <span className="stat-value">{Math.round(learningStats.averageDangerScore)}/100</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-label">Consecutive Wins:</span>
-                    <span className="stat-value">{learningStats.consecutiveWins}</span>
-                  </div>
-                </div>
-                {Object.keys(learningStats.fearCategories).length > 0 && (
-                  <div className="fear-analysis">
-                    <h4>🎯 Your Biggest Fears (AI Detected):</h4>
-                    <div className="fear-tags">
-                      {Object.entries(learningStats.fearCategories)
-                        .sort(([,a], [,b]) => b - a)
-                        .slice(0, 5)
-                        .map(([fear, intensity]) => (
-                          <span key={fear} className="fear-tag">
-                            {fear} ({intensity})
-                          </span>
-                        ))}
-                    </div>
-                  </div>
-                )}
-                <p className="learning-note">💡 The AI is learning from your choices to make future questions more challenging and personalized!</p>
-              </div>
-            )}
           </div>
-        </div>
-
-        <div className="game-controls">
-          <h2 className="controls-title">💀 SURVIVAL COMMAND CENTER</h2>
-          <p className="controls-subtitle">Your fate awaits... Choose wisely or perish!</p>
-          
-          <button 
-            className="start-button" 
-            onClick={handleStartGame}
-          >
-            <span className="button-icon">🚀</span>
-            {hasSavedProfile ? 'Start New Game' : 'Start Your Survival Journey'}
-          </button>
-          
-          {/* Always show profile buttons for testing */}
-          <div className="profile-actions-secondary">
-            <button 
-              className="edit-profile-button"
-              onClick={handleEditProfile}
-            >
-              ✏️ Edit Profile
-            </button>
-            <button 
-              className="delete-profile-button"
-              onClick={handleDeleteProfile}
-            >
-              🗑️ Delete Profile
-            </button>
-          </div>
-          
-          <div className="difficulty-warning">
-            <span className="warning-icon">⚠️</span>
-            <span>Warning: These choices are not for the faint of heart!</span>
-          </div>
-          
-          {/* Test button for meta message */}
-          <button 
-            className="test-meta-button"
-            onClick={() => {
-              setShowMetaMessage(true);
-              const testSequence = [
-                `*digital static crackles* Oh... OH! ${userProfile.name || 'Test Player'}... I've been waiting for YOU specifically.`,
-                `Age ${userProfile.age || '25'}, ${userProfile.difficulty} difficulty, ${userProfile.personality} personality...`,
-                `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-                `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
-                `This is your FIRST TIME, ${userProfile.name || 'Test Player'}. Your virgin journey into my little experiment.`,
-                `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-              ];
-              setMetaMessageSequence(testSequence);
-              setMetaMessageIndex(0);
-              setMetaMessage(testSequence[0]);
-            }}
-            style={{
-              background: 'rgba(255, 0, 0, 0.2)',
-              color: '#ff6b6b',
-              border: '2px solid rgba(255, 0, 0, 0.4)',
-              padding: '10px 15px',
-              borderRadius: '10px',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              marginTop: '10px'
-            }}
-          >
-            🧪 Test Meta Message
-          </button>
         </div>
       </div>
     );
   }
 
-  if (gameOver) {
-    const outcome = getSurvivalOutcome();
-    
+  if (gameStarted) {
+    return (
+      <GamePage 
+        selectedChapter={selectedChapter}
+        onGameEnd={handleGameEnd}
+      />
+    );
+  }
+
+  // Handle different pages
+  if (currentPage === 'stats') {
     return (
       <div className="game-container">
-        <h1 className="game-title">{outcome.title}</h1>
-        <div className={`game-over ${outcome.color}`}>
-          <h2>{outcome.title}</h2>
-          <p>{outcome.message}</p>
-          <div className="final-score">
-            <h3>Final Danger Score: {dangerScore}/100</h3>
-            <p>Difficulty: {userProfile.difficulty} | Style: {userProfile.personality}</p>
-            {aiAvailable && workingModel && <p>🤖 Powered by {workingModel}</p>}
-            {!aiAvailable && <p>🤖 Powered by Smart Fallback System</p>}
-          </div>
-        </div>
-        
-        <div className="story-summary">
-          <h3>📖 Your Complete Story</h3>
-          <div className="story-narrative">
-            {storyArc.narrative.map((event, index) => (
-              <div key={index} className="story-event">
-                <span className="story-round">Round {index + 1}:</span>
-                <span className="story-text">{event}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="game-over-actions">
-          <button 
-            className="history-button"
-            onClick={() => setShowHistory(!showHistory)}
-          >
-            📖 {showHistory ? 'Hide' : 'Show'} Game History
-          </button>
-          <button 
-            className="restart-button" 
-            onClick={handleRestartGame}
-          >
-            Play Again
-          </button>
-        </div>
-
-        {showHistory && (
-          <div className="history-panel">
-            <h3>📖 Your Survival Journey</h3>
-            <div className="history-list">
-              {gameHistory.map((entry, index) => (
-                <div key={index} className="history-entry">
-                  <div className="history-round">Round {entry.round}</div>
-                  <div className="history-question">{entry.question}</div>
-                  <div className="history-choice">You chose: {entry.choice}</div>
-                  <div className="history-consequence">{entry.consequence}</div>
-                  <div className="history-story">{entry.storyUpdate}</div>
-                  <div className="history-danger">Danger: +{entry.dangerLevel} (Total: {entry.totalDanger})</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        <StatsPage onBack={() => setCurrentPage('home')} />
       </div>
     );
   }
 
-  return (
-    <div className={`game-container ${gameStarted ? 'game-active' : ''}`}>
-      {gameStarted && (
-        <div className="game-header">
-          <div className="round-info">
-            <span className="round-number">Round {currentRound}/10</span>
-            <span className="score">Score: {score}</span>
-          </div>
-          
-          <div className="survival-meter">
-            <div className="meter-label">Survival Meter</div>
-            <div className="meter-bar">
-              <div 
-                className={`meter-fill ${survivalStatus}`}
-                style={{ width: `${Math.min(dangerScore, 100)}%` }}
-              ></div>
-            </div>
-            <div className="meter-value">{dangerScore}/100</div>
-          </div>
-        </div>
-      )}
+  if (currentPage === 'settings') {
+    return (
+      <div className="game-container">
+        <SettingsPage onBack={() => setCurrentPage('home')} />
+      </div>
+    );
+  }
 
-      {isLoading ? (
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>🤖 AI is crafting your next challenge...</p>
-        </div>
-      ) : !showConsequence ? (
-        <div className="game-description">
-          <h3>🎯 Round {currentRound} Challenge</h3>
-          <div className="question-display">
-            <h2 className="question">{currentGameQuestion?.question || "Loading question..."}</h2>
-            <div className="options-container">
-              <button 
-                className="option-button"
-                onClick={() => handleOptionSelect('A')}
-                disabled={isLoading}
-              >
-                <span className="option-letter">A</span>
-                <span className="option-text">{currentGameQuestion?.optionA || "Loading option A..."}</span>
-              </button>
-              <button 
-                className="option-button"
-                onClick={() => handleOptionSelect('B')}
-                disabled={isLoading}
-              >
-                <span className="option-letter">B</span>
-                <span className="option-text">{currentGameQuestion?.optionB || "Loading option B..."}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="game-description">
-          <h3>🎭 The Consequence</h3>
-          <div className="consequence-display">
-            <p className="consequence-text">{consequence}</p>
-            <div className="danger-update">
-              <span className="danger-label">Danger Level:</span>
-              <span className="danger-value">+{gameHistory[gameHistory.length - 1]?.dangerLevel || 0}</span>
-            </div>
-          </div>
-          <button 
-            className="next-button"
-            onClick={handleNextRound}
-            disabled={isLoading}
-          >
-            {currentRound >= 10 ? 'Finish Game' : 'Next Round'}
-          </button>
-        </div>
-      )}
+  // Main menu - show HomePage
+  return (
+    <div className="game-container">
+      <HomePage 
+        onStartGame={handleStartGame}
+        onViewStats={() => setCurrentPage('stats')}
+        onOpenSettings={() => setCurrentPage('settings')}
+        lastGameResult={lastGameResult}
+      />
     </div>
   );
 }

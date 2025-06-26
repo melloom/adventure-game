@@ -1,8 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameStats } from '../hooks/useLocalStorage';
+import { useCampaign } from '../hooks/useCampaign';
+import BadgeSystem from '../components/BadgeSystem';
+import CampaignSelection from '../components/CampaignSelection';
 
 const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) => {
   const { stats } = useGameStats();
+  const { getCampaignProgress } = useCampaign();
+  const [showCampaignSelection, setShowCampaignSelection] = useState(false);
+  const [gameMode, setGameMode] = useState('classic'); // 'classic' or 'campaign'
+
+  const campaignProgress = getCampaignProgress();
+
+  const handleStartClassicGame = () => {
+    setGameMode('classic');
+    onStartGame();
+  };
+
+  const handleStartCampaignGame = () => {
+    setGameMode('campaign');
+    setShowCampaignSelection(true);
+  };
+
+  const handleChapterSelect = (chapter) => {
+    setShowCampaignSelection(false);
+    onStartGame(chapter);
+  };
+
+  const handleBackToMenu = () => {
+    setShowCampaignSelection(false);
+    setGameMode('classic');
+  };
+
+  if (showCampaignSelection) {
+    return (
+      <CampaignSelection 
+        onChapterSelect={handleChapterSelect}
+        onBack={handleBackToMenu}
+      />
+    );
+  }
 
   return (
     <div className="game-container">
@@ -26,6 +63,28 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
           Face impossible choices in this thrilling survival game. Each decision you make 
           will have consequences, and your survival depends on the danger level of your choices. 
           Can you make it through all 10 rounds?
+        </p>
+      </div>
+
+      {/* Campaign Progress Preview */}
+      <div className="campaign-preview">
+        <h3>🎭 Campaign Progress</h3>
+        <div className="campaign-progress-bar">
+          <div className="progress-info">
+            <span className="progress-text">
+              The Nightmare Collection: {campaignProgress.completed}/{campaignProgress.total} Chapters
+            </span>
+            <div className="progress-bar">
+              <div 
+                className="progress-fill"
+                style={{ width: `${campaignProgress.percentage}%` }}
+              />
+            </div>
+            <span className="progress-percentage">{campaignProgress.percentage}%</span>
+          </div>
+        </div>
+        <p className="campaign-description">
+          Experience interconnected horror stories with unique AI personalities and progressive difficulty.
         </p>
       </div>
 
@@ -54,9 +113,34 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
       </div>
 
       <div className="game-controls">
-        <button className="start-button" onClick={onStartGame}>
-          Start New Game
-        </button>
+        <h2 className="controls-title">💀 SURVIVAL COMMAND CENTER</h2>
+        <p className="controls-subtitle">Your fate awaits... Choose wisely or perish!</p>
+        
+        <div className="game-modes">
+          <div className="mode-section">
+            <h3>🎮 Game Modes</h3>
+            <div className="mode-buttons">
+              <button className="mode-button classic" onClick={handleStartClassicGame}>
+                <span className="mode-icon">🎲</span>
+                <div className="mode-info">
+                  <span className="mode-name">Classic Mode</span>
+                  <span className="mode-description">10 rounds of random horror choices</span>
+                </div>
+              </button>
+              
+              <button className="mode-button campaign" onClick={handleStartCampaignGame}>
+                <span className="mode-icon">🎭</span>
+                <div className="mode-info">
+                  <span className="mode-name">Campaign Mode</span>
+                  <span className="mode-description">Connected horror stories with unique AI personalities</span>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <BadgeSystem />
+        
         <button className="stats-button" onClick={onViewStats}>
           View Full Stats
         </button>
@@ -74,6 +158,17 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
           <li>Survive based on the danger level</li>
           <li>Make it through 10 rounds to win!</li>
         </ol>
+        
+        <div className="campaign-rules">
+          <h4>🎭 Campaign Mode Features</h4>
+          <ul>
+            <li><strong>Multiple Chapters:</strong> Each with unique themes and stories</li>
+            <li><strong>Progressive Difficulty:</strong> Challenges increase as you advance</li>
+            <li><strong>AI Personalities:</strong> Each chapter has a unique AI character</li>
+            <li><strong>Story Progression:</strong> Your choices affect the narrative</li>
+            <li><strong>Chapter Unlocks:</strong> Complete chapters to unlock new ones</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

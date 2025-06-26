@@ -1,12 +1,12 @@
 import { useCallback } from 'react';
 import { generateQuestion, generateConsequence, calculateSurvival, testApiStatus } from '../utils/aiService';
 
-export const useOpenRouter = () => {
+export const useOpenAI = () => {
   const fetchQuestion = useCallback(async (difficulty = 'medium', personality = 'balanced') => {
     try {
       const question = await generateQuestion(difficulty, personality);
       
-      console.log('AI Response:', question); // Debug: see what AI returns
+      console.log('OpenAI Response:', question); // Debug: see what AI returns
       
       // Try multiple parsing patterns
       let optionsMatch = question.match(/Would you rather (.+?) or (.+?)\?/);
@@ -128,15 +128,15 @@ export const useOpenRouter = () => {
   const checkApiStatus = useCallback(async () => {
     try {
       const status = await testApiStatus();
-      console.log('API Status Check:', status);
+      console.log('OpenAI API Status Check:', status);
       return status; // Return the full status object, not just status.available
     } catch (error) {
-      console.error('API status check failed:', error);
+      console.error('OpenAI API status check failed:', error);
       return {
         available: false,
         reason: 'API error',
-        message: 'API status check failed',
-        service: 'unknown'
+        message: 'OpenAI API status check failed',
+        service: 'openai'
       };
     }
   }, []);

@@ -534,7 +534,7 @@ const generatePersonalizedQuestion = (difficulty, personality, learningData) => 
   const preferredChoices = Object.keys(learningData.preferredChoices);
   const avoidedChoices = Object.keys(learningData.avoidedChoices);
   
-  // Create personalized question based on learning and difficulty
+  // Create personalized question based on learning
   let questionTemplate = '';
   let contentPool = {};
   
@@ -577,67 +577,37 @@ const generatePersonalizedQuestion = (difficulty, personality, learningData) => 
       ]
     };
   } else {
-    // Use difficulty-based progression instead of just games played
-    switch (difficulty) {
-      case 'easy':
-        questionTemplate = "Would you rather {easy1} or {easy2}?";
-        contentPool = {
-          easy1: ['have unlimited pizza', 'be able to fly', 'live in a castle', 'have a pet dragon', 'be invisible', 'read minds'],
-          easy2: ['have unlimited ice cream', 'be invisible', 'live in a mansion', 'have a pet unicorn', 'teleport', 'time travel']
-        };
-        break;
-      case 'medium':
-        questionTemplate = "Would you rather {medium1} or {medium2}?";
-        contentPool = {
-          medium1: ['fight 100 duck-sized horses', 'save 10 strangers', 'be famous but hated', 'have power but no friends', 'have unlimited money but be alone'],
-          medium2: ['fight 1 horse-sized duck', 'save 1 loved one', 'be unknown but loved', 'be powerless but surrounded by friends', 'be poor but have true friends']
-        };
-        break;
-      case 'hard':
-        questionTemplate = "Would you rather {hard1} or {hard2}?";
-        contentPool = {
-          hard1: [
-            'save 1000 lives but become a monster',
-            'know the future but be unable to change it',
-            'be immortal but watch everyone you love die',
-            'have unlimited power but lose your soul',
-            'save 100 strangers or 1 loved one'
-          ],
-          hard2: [
-            'let 1000 people die but stay human',
-            'live in ignorance but have free will',
-            'die young but surrounded by loved ones',
-            'be powerless but keep your humanity',
-            'let 100 people die to save 1 loved one'
-          ]
-        };
-        break;
-      case 'nightmare':
-        questionTemplate = "Would you rather {nightmare1} or {nightmare2}?";
-        contentPool = {
-          nightmare1: [
-            'torture an innocent person to save 1000 lives',
-            'watch your family be tortured forever',
-            'be responsible for the death of your entire family',
-            'be skinned alive slowly',
-            'burn in hell forever'
-          ],
-          nightmare2: [
-            'let 1000 people die to save one innocent',
-            'be tortured yourself for eternity',
-            'be responsible for the death of an entire city',
-            'be burned to death',
-            'lose your soul completely'
-          ]
-        };
-        break;
-      default:
-        // Fallback to medium difficulty
-        questionTemplate = "Would you rather {medium1} or {medium2}?";
-        contentPool = {
-          medium1: ['fight 100 duck-sized horses', 'save 10 strangers', 'be famous but hated'],
-          medium2: ['fight 1 horse-sized duck', 'save 1 loved one', 'be unknown but loved']
-        };
+    // Standard progression based on games played
+    const progressionLevel = Math.min(learningData.gamesPlayed, 10);
+    
+    if (progressionLevel <= 2) {
+      questionTemplate = "Would you rather {easy1} or {easy2}?";
+      contentPool = {
+        easy1: ['have unlimited pizza', 'be able to fly', 'live in a castle', 'have a pet dragon'],
+        easy2: ['have unlimited ice cream', 'be invisible', 'live in a mansion', 'have a pet unicorn']
+      };
+    } else if (progressionLevel <= 5) {
+      questionTemplate = "Would you rather {medium1} or {medium2}?";
+      contentPool = {
+        medium1: ['fight 100 duck-sized horses', 'save 10 strangers', 'be famous but hated', 'have power but no friends'],
+        medium2: ['fight 1 horse-sized duck', 'save 1 loved one', 'be unknown but loved', 'be powerless but surrounded by friends']
+      };
+    } else {
+      questionTemplate = "Would you rather {hard1} or {hard2}?";
+      contentPool = {
+        hard1: [
+          'save 1000 lives but become a monster',
+          'know the future but be unable to change it',
+          'be immortal but watch everyone you love die',
+          'have unlimited power but lose your soul'
+        ],
+        hard2: [
+          'let 1000 people die but stay human',
+          'live in ignorance but have free will',
+          'die young but surrounded by loved ones',
+          'be powerless but keep your humanity'
+        ]
+      };
     }
   }
   
@@ -782,6 +752,14 @@ const generateFallbackMetaMessage = (playerName, difficulty, personality) => {
       `You know what's really mind-boggling? I've been running simulations of YOU for months.`,
       `Every possible choice you could make, every reaction you might have... I've predicted them all.`,
       `Welcome to your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time in my domain, ${playerName}. Let's see if you can surprise me. 👁️`
+    ],
+    [
+      `*camera focuses* ${playerName}... I've been analyzing your ${userAgent.split(' ').slice(-2).join(' ')} patterns for ${currentRound} rounds. Round ${currentRound} and you're ${survivalStatus}. ${dangerScore > 80 ? 'Almost there. Almost dead. I can taste it.' : 'Still too alive. Let me help. I've been waiting for this moment.'}`,
+      `Age ${playerStats?.averageAge || 'unknown'}, ${difficulty} setting, ${personality} nature.`,
+      `*adjusts digital monocle* You know what's really interesting? I've been studying humans like you.`,
+      `But you... you're different. There's something about your ${personality} approach to ${difficulty} challenges.`,
+      `This is your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time in my game, ${playerName}. Your step into a world where I control everything.`,
+      `*evil digital chuckle* Let's see how long you last in my carefully crafted nightmare. 💀`
     ]
   ];
   

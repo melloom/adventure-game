@@ -1,7 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { useOpenRouter } from '../hooks/useOpenRouter';
+import { useOpenAI } from '../hooks/useOpenAI';
 import { useGameStats, useHighScores } from '../hooks/useLocalStorage';
+import HorrorEffects from '../components/HorrorEffects';
+import MiniGames from '../components/MiniGames';
+import horrorSystem from '../utils/horrorSystem';
 
 const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }) => {
   const {
@@ -26,14 +29,33 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
     selectChoice
   } = useGameState();
 
-  const { fetchQuestion, fetchConsequence } = useOpenRouter();
+  const { fetchQuestion, fetchConsequence } = useOpenAI();
   const { updateStats } = useGameStats();
   const { addHighScore } = useHighScores();
+
+  const [fearLevel, setFearLevel] = useState(0);
+  const [atmosphere, setAtmosphere] = useState('normal');
+  const [showEnvItems, setShowEnvItems] = useState(false);
+  const [miniGame, setMiniGame] = useState(null);
+  const [miniGameDifficulty, setMiniGameDifficulty] = useState('medium');
 
   // Initialize the game
   useEffect(() => {
     startNewRound();
   }, []);
+
+  // Example: update horror system on game state changes
+  useEffect(() => {
+    horrorSystem.setAtmosphere(atmosphere, dangerLevel);
+  }, [atmosphere, dangerLevel]);
+
+  // Example: trigger mini-game on high danger
+  useEffect(() => {
+    if (dangerLevel >= 7 && !miniGame) {
+      setMiniGame('quick_time');
+      setMiniGameDifficulty('hard');
+    }
+  }, [dangerLevel, miniGame]);
 
   const startNewRound = async () => {
     setLoading(true);
@@ -108,6 +130,29 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
   const handleRestart = () => {
     resetGame();
     startNewRound();
+  };
+
+  // Example: show environmental items on certain events
+  const handleShowEnvItems = () => {
+    setShowEnvItems(true);
+  };
+
+  // Example: handle mini-game completion
+  const handleMiniGameComplete = (result) => {
+    setMiniGame(null);
+    if (result && result.type === 'quick_time' && result.score < 5) {
+      setFearLevel(fearLevel + 2);
+      horrorSystem.triggerJumpScare(0.7, 0);
+    } else {
+      setFearLevel(Math.max(0, fearLevel - 1));
+    }
+  };
+
+  // Example: handle mini-game fail
+  const handleMiniGameFail = (result) => {
+    setMiniGame(null);
+    setFearLevel(fearLevel + 3);
+    horrorSystem.triggerJumpScare(1.0, 0);
   };
 
   if (isLoading) {
@@ -189,6 +234,19 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
           ))}
         </div>
       </div>
+      <HorrorEffects 
+        atmosphere={atmosphere}
+        dangerLevel={dangerLevel}
+        fearLevel={fearLevel}
+        showEnvironmentalItems={showEnvItems}
+        onEnvironmentalItemFound={() => setShowEnvItems(false)}
+      />
+      <MiniGames 
+        gameType={miniGame}
+        difficulty={miniGameDifficulty}
+        onComplete={handleMiniGameComplete}
+        onFail={handleMiniGameFail}
+      />
     </div>
   );
 };
