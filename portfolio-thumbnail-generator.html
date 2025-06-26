@@ -1,1 +1,522 @@
- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio Projects - Thumbnail Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #0a0a0a;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            width: 1200px;
+            height: 630px;
+            position: relative;
+        }
+
+        .thumbnail-container {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.5s ease;
+        }
+
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, var(--primary-color) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, var(--secondary-color) 0%, transparent 60%),
+                radial-gradient(circle at 40% 40%, var(--accent-color) 0%, transparent 60%);
+            animation: pulse 8s ease-in-out infinite;
+            transition: all 0.5s ease;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(var(--primary-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--primary-color) 1px, transparent 1px);
+            background-size: 60px 60px;
+            opacity: 0.2;
+            animation: gridMove 30s linear infinite;
+            transition: all 0.5s ease;
+        }
+
+        .main-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 90%;
+        }
+
+        .title-text {
+            font-size: 5rem;
+            font-weight: 900;
+            color: var(--primary-color);
+            text-shadow: 
+                0 0 20px var(--primary-color),
+                0 0 40px var(--primary-color),
+                0 0 60px var(--primary-color);
+            margin: 0;
+            letter-spacing: 2px;
+            animation: glow 3s ease-in-out infinite alternate;
+            text-transform: uppercase;
+            line-height: 1.1;
+            transition: all 0.5s ease;
+        }
+
+        .subtitle {
+            font-size: 2rem;
+            font-weight: 300;
+            color: #ffffff;
+            margin-top: 1.5rem;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            letter-spacing: 1px;
+            transition: all 0.5s ease;
+        }
+
+        .project-features {
+            position: absolute;
+            bottom: 3rem;
+            left: 2rem;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            font-weight: 400;
+            text-shadow: 0 0 10px var(--primary-color);
+            line-height: 1.8;
+            transition: all 0.5s ease;
+        }
+
+        .project-features span {
+            display: block;
+            margin-bottom: 0.8rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .project-features span:nth-child(2) { animation-delay: 1s; }
+        .project-features span:nth-child(3) { animation-delay: 2s; }
+
+        .project-badge {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(var(--primary-rgb), 0.15);
+            border: 2px solid var(--primary-color);
+            border-radius: 15px;
+            padding: 1.2rem 1.5rem;
+            color: var(--primary-color);
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px var(--primary-color);
+            animation: pulse 2s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(var(--primary-rgb), 0.3);
+            transition: all 0.5s ease;
+        }
+
+        .developer-badge {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(var(--secondary-rgb), 0.15);
+            border: 2px solid var(--secondary-color);
+            color: var(--secondary-color);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px var(--secondary-color);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(var(--secondary-rgb), 0.3);
+            transition: all 0.5s ease;
+        }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--primary-color);
+            animation: float 10s infinite linear;
+            transition: all 0.5s ease;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 0s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 2s; }
+
+        .corner-accent {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border: 3px solid var(--primary-color);
+            opacity: 0.4;
+            transition: all 0.5s ease;
+        }
+
+        .corner-accent.top-left {
+            top: 2rem;
+            left: 2rem;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-accent.bottom-right {
+            bottom: 2rem;
+            right: 2rem;
+            border-left: none;
+            border-top: none;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, var(--primary-color), transparent);
+            animation: scan 4s linear infinite;
+            opacity: 0.6;
+            transition: all 0.5s ease;
+        }
+
+        .tech-stack {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(var(--accent-rgb), 0.15);
+            border: 2px solid var(--accent-color);
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px var(--accent-color);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(var(--accent-rgb), 0.3);
+            transition: all 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color), 0 0 60px var(--primary-color); }
+            100% { text-shadow: 0 0 30px var(--primary-color), 0 0 50px var(--primary-color), 0 0 70px var(--primary-color); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .capture-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .capture-button:hover {
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(var(--primary-rgb), 0.4);
+        }
+
+        .project-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            color: var(--primary-color);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+            transition: all 0.5s ease;
+        }
+
+        .project-selector select {
+            background: transparent;
+            border: none;
+            color: var(--primary-color);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .project-selector option {
+            background: #1a1a2e;
+            color: var(--primary-color);
+        }
+
+        /* Portfolio Colors - Professional Blue */
+        .portfolio-theme {
+            --primary-color: #40e0d0;
+            --primary-rgb: 64, 224, 208;
+            --secondary-color: #8a2be2;
+            --secondary-rgb: 138, 43, 226;
+            --accent-color: #ffd700;
+            --accent-rgb: 255, 215, 0;
+        }
+
+        /* CloseLoop Colors - Automation Green */
+        .closeloop-theme {
+            --primary-color: #00ff88;
+            --primary-rgb: 0, 255, 136;
+            --secondary-color: #00d4ff;
+            --secondary-rgb: 0, 212, 255;
+            --accent-color: #ff6b35;
+            --accent-rgb: 255, 107, 53;
+        }
+
+        /* Lockora Colors - Security Red */
+        .lockora-theme {
+            --primary-color: #ff4444;
+            --primary-rgb: 255, 68, 68;
+            --secondary-color: #ff8800;
+            --secondary-rgb: 255, 136, 0;
+            --accent-color: #00ff88;
+            --accent-rgb: 0, 255, 136;
+        }
+
+        /* MelHub Colors - Innovation Purple */
+        .melhub-theme {
+            --primary-color: #9d4edd;
+            --primary-rgb: 157, 78, 221;
+            --secondary-color: #ff6b6b;
+            --secondary-rgb: 255, 107, 107;
+            --accent-color: #4ecdc4;
+            --accent-rgb: 78, 205, 196;
+        }
+    </style>
+</head>
+<body>
+    <button class="capture-button" onclick="captureThumbnail()">📸 Capture Thumbnail</button>
+    
+    <div class="project-selector">
+        <label for="projectSelect">Project: </label>
+        <select id="projectSelect" onchange="updateProject()">
+            <option value="portfolio">Personal Portfolio</option>
+            <option value="closeloop">CloseLoop</option>
+            <option value="lockora">Lockora</option>
+            <option value="melhub">MelHub</option>
+        </select>
+    </div>
+    
+    <div class="thumbnail-container portfolio-theme" id="thumbnail">
+        <div class="background-pattern"></div>
+        <div class="grid-overlay"></div>
+        <div class="scan-line"></div>
+        
+        <div class="corner-accent top-left"></div>
+        <div class="corner-accent bottom-right"></div>
+        
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+        
+        <div class="developer-badge">
+            👨‍💻 DEVELOPER
+        </div>
+        
+        <div class="project-badge" id="projectBadge">
+            💼 PORTFOLIO
+        </div>
+        
+        <div class="main-title">
+            <h1 class="title-text" id="projectTitle">PERSONAL PORTFOLIO</h1>
+            <p class="subtitle" id="projectSubtitle">Showcasing Innovation & Excellence</p>
+        </div>
+        
+        <div class="project-features" id="projectFeatures">
+            <span>💼 Professional Portfolio</span>
+            <span>🚀 Modern Web Development</span>
+            <span>🎯 Clean & Responsive Design</span>
+        </div>
+        
+        <div class="tech-stack" id="techStack">
+            💻 Full-Stack Development
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        const projects = {
+            portfolio: {
+                title: "PERSONAL PORTFOLIO",
+                subtitle: "Showcasing Innovation & Excellence",
+                badge: "💼 PORTFOLIO",
+                theme: "portfolio-theme",
+                features: [
+                    "💼 Professional Portfolio",
+                    "🚀 Modern Web Development", 
+                    "🎯 Clean & Responsive Design"
+                ],
+                tech: "💻 Full-Stack Development"
+            },
+            closeloop: {
+                title: "CLOSELOOP",
+                subtitle: "Smart Automation Platform",
+                badge: "🔄 AUTOMATION",
+                theme: "closeloop-theme",
+                features: [
+                    "🔄 Intelligent Workflow Automation",
+                    "⚡ Real-time Process Optimization",
+                    "📊 Advanced Analytics Dashboard"
+                ],
+                tech: "🤖 AI-Powered Platform"
+            },
+            lockora: {
+                title: "LOCKORA",
+                subtitle: "Advanced Security Solution",
+                badge: "🔒 SECURITY",
+                theme: "lockora-theme",
+                features: [
+                    "🔒 Advanced Encryption System",
+                    "🛡️ Multi-Layer Security Protocol",
+                    "🔐 Secure Access Management"
+                ],
+                tech: "🔐 Enterprise Security"
+            },
+            melhub: {
+                title: "MELHUB",
+                subtitle: "Innovation & Development Hub",
+                badge: "🚀 INNOVATION",
+                theme: "melhub-theme",
+                features: [
+                    "🚀 Innovation Development Hub",
+                    "💡 Creative Project Management",
+                    "🌐 Global Collaboration Platform"
+                ],
+                tech: "🌐 Cloud-Native Platform"
+            }
+        };
+
+        function updateProject() {
+            const select = document.getElementById('projectSelect');
+            const project = projects[select.value];
+            const container = document.getElementById('thumbnail');
+            
+            // Update theme class
+            container.className = `thumbnail-container ${project.theme}`;
+            
+            // Update title
+            document.getElementById('projectTitle').textContent = project.title;
+            
+            // Update subtitle
+            document.getElementById('projectSubtitle').textContent = project.subtitle;
+            
+            // Update badge
+            document.getElementById('projectBadge').textContent = project.badge;
+            
+            // Update features
+            const featuresElement = document.getElementById('projectFeatures');
+            featuresElement.innerHTML = project.features.map(feature => 
+                `<span>${feature}</span>`
+            ).join('');
+            
+            // Update tech stack
+            document.getElementById('techStack').textContent = project.tech;
+        }
+
+        function captureThumbnail() {
+            const element = document.getElementById('thumbnail');
+            
+            html2canvas(element, {
+                width: 1200,
+                height: 630,
+                backgroundColor: '#0a0a0a',
+                scale: 1,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // Create download link
+                const link = document.createElement('a');
+                const projectName = document.getElementById('projectSelect').value;
+                link.download = `${projectName}-portfolio-thumbnail.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // Also show preview
+                const preview = window.open();
+                preview.document.write('<html><body style="margin:0;background:#0a0a0a;"><img src="' + canvas.toDataURL() + '" style="max-width:100%;height:auto;"></body></html>');
+            });
+        }
+
+        // Auto-capture after 3 seconds
+        setTimeout(() => {
+            console.log('Portfolio thumbnail ready! Select a project and click the button to capture.');
+        }, 3000);
+    </script>
+</body>
+</html>
