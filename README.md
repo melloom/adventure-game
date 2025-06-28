@@ -200,7 +200,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **⚠️ Warning**: This game contains psychological horror elements and may not be suitable for all players. The AI system is designed to create an immersive and potentially unsettling experience.
 
-**🎮 Ready to test your survival instincts?** [Play Now](http://localhost:5173)
+**🎮 Ready to test your survival instincts?** [Play Now](wouldyouratherio.netlify.app)
 
 ---
 
