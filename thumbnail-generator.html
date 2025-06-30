@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Would You Rather Survival - Thumbnail Generator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000;
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
+            width: 1200px;
+            height: 630px;
+            position: relative;
+        }
+
+        .thumbnail-container {
+            width: 1200px;
+            height: 630px;
+            background: linear-gradient(135deg, #000000 0%, #1a0000 25%, #000000 50%, #1a0000 75%, #000000 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .background-pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(255, 0, 0, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 80% 20%, rgba(255, 0, 0, 0.15) 0%, transparent 60%),
+                radial-gradient(circle at 40% 40%, rgba(255, 0, 0, 0.08) 0%, transparent 60%),
+                linear-gradient(45deg, transparent 48%, rgba(255, 0, 0, 0.03) 50%, transparent 52%);
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
+        }
+
+        .glitch-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter></defs><rect width="100" height="100" filter="url(%23noise)" opacity="0.1"/></svg>');
+            opacity: 0.2;
+            animation: glitch 0.3s infinite;
+        }
+
+        .main-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 10;
+            width: 90%;
+        }
+
+        .title-text {
+            font-size: 5rem;
+            font-weight: 900;
+            color: #ff0000;
+            text-shadow: 
+                0 0 10px #ff0000,
+                0 0 20px #ff0000,
+                0 0 30px #ff0000,
+                0 0 40px #ff0000,
+                0 0 50px #ff0000;
+            margin: 0;
+            letter-spacing: 4px;
+            animation: flicker 0.4s infinite;
+            text-transform: uppercase;
+            line-height: 1.1;
+        }
+
+        .title-text.survival {
+            font-size: 4.5rem;
+            color: #ff3333;
+            text-shadow: 
+                0 0 15px #ff3333,
+                0 0 25px #ff3333,
+                0 0 35px #ff3333,
+                0 0 45px #ff3333;
+            animation: flicker 0.3s infinite 0.1s;
+        }
+
+        .subtitle {
+            font-family: 'Exo 2', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 300;
+            color: #ff8888;
+            margin-top: 1.5rem;
+            text-shadow: 0 0 15px #ff8888;
+            animation: glow 3s ease-in-out infinite alternate;
+            letter-spacing: 2px;
+        }
+
+        .ai-indicator {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            background: rgba(255, 0, 0, 0.15);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 1.2rem 1.5rem;
+            color: #ff0000;
+            font-size: 1.3rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px #ff0000;
+            animation: pulse 2s ease-in-out infinite;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .horror-elements {
+            position: absolute;
+            bottom: 2rem;
+            left: 2rem;
+            color: #ff0000;
+            font-size: 1.1rem;
+            font-weight: 400;
+            text-shadow: 0 0 10px #ff0000;
+            line-height: 1.6;
+        }
+
+        .horror-elements span {
+            display: block;
+            margin-bottom: 0.5rem;
+            animation: pulse 3s ease-in-out infinite;
+        }
+
+        .horror-elements span:nth-child(2) { animation-delay: 1s; }
+        .horror-elements span:nth-child(3) { animation-delay: 2s; }
+
+        .particles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ff0000;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ff0000;
+            animation: float 8s infinite linear;
+        }
+
+        .particle:nth-child(1) { left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; animation-delay: 1s; }
+        .particle:nth-child(3) { left: 30%; animation-delay: 2s; }
+        .particle:nth-child(4) { left: 40%; animation-delay: 3s; }
+        .particle:nth-child(5) { left: 50%; animation-delay: 4s; }
+        .particle:nth-child(6) { left: 60%; animation-delay: 5s; }
+        .particle:nth-child(7) { left: 70%; animation-delay: 0s; }
+        .particle:nth-child(8) { left: 80%; animation-delay: 1s; }
+        .particle:nth-child(9) { left: 90%; animation-delay: 2s; }
+
+        .blood-drip {
+            position: absolute;
+            top: 0;
+            right: 15%;
+            width: 4px;
+            height: 250px;
+            background: linear-gradient(to bottom, #ff0000, rgba(255, 0, 0, 0.5), transparent);
+            animation: drip 4s infinite;
+            border-radius: 2px;
+        }
+
+        .blood-drip:nth-child(2) {
+            right: 25%;
+            animation-delay: 1.5s;
+        }
+
+        .blood-drip:nth-child(3) {
+            right: 35%;
+            animation-delay: 3s;
+        }
+
+        .corner-accent {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 3px solid #ff0000;
+            opacity: 0.6;
+        }
+
+        .corner-accent.top-left {
+            top: 2rem;
+            left: 2rem;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .corner-accent.bottom-right {
+            bottom: 2rem;
+            right: 2rem;
+            border-left: none;
+            border-top: none;
+        }
+
+        .scan-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #ff0000, transparent);
+            animation: scan 3s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes glitch {
+            0%, 100% { transform: translate(0); }
+            20% { transform: translate(-3px, 3px); }
+            40% { transform: translate(-3px, -3px); }
+            60% { transform: translate(3px, 3px); }
+            80% { transform: translate(3px, -3px); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.9; }
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0 0 10px #ff8888; }
+            100% { text-shadow: 0 0 25px #ff8888, 0 0 35px #ff8888; }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
+        }
+
+        @keyframes drip {
+            0% { height: 0; opacity: 0; }
+            50% { opacity: 1; }
+            100% { height: 250px; opacity: 0; }
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100vh); }
+        }
+
+        .capture-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: linear-gradient(45deg, #ff0000, #cc0000);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(255, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .capture-button:hover {
+            background: linear-gradient(45deg, #cc0000, #ff0000);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 0, 0, 0.4);
+        }
+
+        .stats-badge {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: rgba(255, 0, 0, 0.15);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 1rem;
+            color: #ff0000;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px #ff0000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+
+        .difficulty-indicator {
+            position: absolute;
+            bottom: 2rem;
+            right: 2rem;
+            background: rgba(255, 0, 0, 0.15);
+            border: 2px solid #ff0000;
+            border-radius: 15px;
+            padding: 1rem 1.5rem;
+            color: #ff0000;
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-shadow: 0 0 10px #ff0000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <button class="capture-button" onclick="captureThumbnail()">📸 Capture Thumbnail</button>
+    
+    <div class="thumbnail-container" id="thumbnail">
+        <div class="background-pattern"></div>
+        <div class="grid-overlay"></div>
+        <div class="glitch-overlay"></div>
+        <div class="scan-line"></div>
+        
+        <div class="corner-accent top-left"></div>
+        <div class="corner-accent bottom-right"></div>
+        
+        <div class="particles">
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+            <div class="particle"></div>
+        </div>
+        
+        <div class="blood-drip"></div>
+        <div class="blood-drip"></div>
+        <div class="blood-drip"></div>
+        
+        <div class="ai-indicator">
+            🤖 AI ONLINE
+        </div>
+        
+        <div class="stats-badge">
+            🎮 10 ROUNDS<br>
+            ⚡ SURVIVAL MODE
+        </div>
+        
+        <div class="main-title">
+            <h1 class="title-text">WOULD YOU RATHER</h1>
+            <h1 class="title-text survival">SURVIVAL</h1>
+            <p class="subtitle">The AI Knows Everything</p>
+        </div>
+        
+        <div class="horror-elements">
+            <span>⚠️ PSYCHOLOGICAL HORROR</span>
+            <span>🎯 10 ROUNDS OF TERROR</span>
+            <span>🤖 ALL-KNOWING AI</span>
+        </div>
+        
+        <div class="difficulty-indicator">
+            💀 EXTREME DIFFICULTY
+        </div>
+    </div>
+
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <script>
+        function captureThumbnail() {
+            const element = document.getElementById('thumbnail');
+            
+            html2canvas(element, {
+                width: 1200,
+                height: 630,
+                backgroundColor: '#000000',
+                scale: 1,
+                useCORS: true,
+                allowTaint: true
+            }).then(canvas => {
+                // Create download link
+                const link = document.createElement('a');
+                link.download = 'would-you-rather-survival-thumbnail.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                // Also show preview
+                const preview = window.open();
+                preview.document.write('<html><body style="margin:0;background:#000;"><img src="' + canvas.toDataURL() + '" style="max-width:100%;height:auto;"></body></html>');
+            });
+        }
+
+        // Auto-capture after 3 seconds
+        setTimeout(() => {
+            console.log('Thumbnail ready! Click the button to capture.');
+        }, 3000);
+    </script>
+</body>
+</html> 
