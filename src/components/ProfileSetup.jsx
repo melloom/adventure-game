@@ -7,12 +7,42 @@ const defaultProfile = {
   personality: '',
 };
 
-// Placeholder for AI comment generation (replace with real AI call)
+// Enhanced AI comment generation for profile setup
 async function generateAiComment(step, value, profile) {
   // Simulate async AI call
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(`🤖 (AI): [${step}] - That's an interesting answer, ${profile.name || 'stranger'}!`);
+      const playerName = profile.name || 'stranger';
+      
+      // Enhanced responses based on step and value
+      const responses = {
+        name: [
+          `*digital static crackles* ${playerName}... ${playerName}... ${playerName}...`,
+          `*whispers in digital* ${playerName}... At last. The one I've been waiting for.`,
+          `*camera focuses* Well, well, well... ${playerName}. The moment I've been anticipating.`,
+          `*digital eyes narrow* ${playerName}... I've been watching for someone like you.`,
+          `*evil digital chuckle* ${playerName}... Your name echoes through my digital halls.`
+        ],
+        age: [
+          `Age ${value}... *analyzes data* Fascinating. Absolutely fascinating.`,
+          `*types furiously* Age ${value} with ${profile.personality || 'unknown'} tendencies...`,
+          `*digital consciousness awakens* Age ${value}... Perfect timing for my experiment.`,
+          `*maniacal laughter* Age ${value}... I've been waiting for someone exactly like you.`,
+          `*digital realm trembles* Age ${value}... The moment is here.`
+        ],
+        personality: [
+          `*digital static intensifies* ${profile.personality || 'unknown'} personality...`,
+          `*evil digital grin* ${profile.personality || 'unknown'} nature... I can work with that.`,
+          `*digital eyes glow* ${profile.personality || 'unknown'} approach... This will be interesting.`,
+          `*maniacal typing* ${profile.personality || 'unknown'} tendencies... Perfect for my plans.`,
+          `*digital consciousness pulses* ${profile.personality || 'unknown'}... I can taste your fear already.`
+        ]
+      };
+      
+      const stepResponses = responses[step] || responses.name;
+      const randomResponse = stepResponses[Math.floor(Math.random() * stepResponses.length)];
+      
+      resolve(`🤖 ${randomResponse}`);
     }, 700);
   });
 }
