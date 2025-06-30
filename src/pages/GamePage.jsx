@@ -1,33 +1,27 @@
 import React, { useEffect, useState } from 'react';
-import { useGameState } from '../hooks/useGameState';
 import { useOpenAI } from '../hooks/useOpenAI';
 import { useGameStats, useHighScores } from '../hooks/useLocalStorage';
 import HorrorEffects from '../components/HorrorEffects';
 import MiniGames from '../components/MiniGames';
 import horrorSystem from '../utils/horrorSystem';
 
-const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }) => {
-  const {
-    gameState,
-    currentRound,
-    currentQuestion,
-    options,
-    selectedChoice,
-    consequence,
-    dangerLevel,
-    survived,
-    gameWon,
-    isLoading,
-    score,
-    totalRoundsSurvived,
-    resetGame,
-    updateGameState,
-    setLoading,
-    updateQuestion,
-    updateConsequence,
-    nextRound,
-    selectChoice
-  } = useGameState();
+const GamePage = ({ 
+  onGameEnd, 
+  difficulty = 'medium', 
+  personality = 'balanced',
+  currentRound,
+  currentGameQuestion,
+  selectedOption,
+  consequence,
+  showConsequence,
+  score,
+  dangerScore,
+  gameOver,
+  onOptionSelect,
+  onNextRound,
+  onRestartGame,
+  isLoading
+}) => {
 
   const { fetchQuestion, fetchConsequence } = useOpenAI();
   const { updateStats } = useGameStats();
@@ -39,97 +33,35 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
   const [miniGame, setMiniGame] = useState(null);
   const [miniGameDifficulty, setMiniGameDifficulty] = useState('medium');
 
-  // Initialize the game
-  useEffect(() => {
-    startNewRound();
-  }, []);
-
   // Example: update horror system on game state changes
   useEffect(() => {
-    horrorSystem.setAtmosphere(atmosphere, dangerLevel);
-  }, [atmosphere, dangerLevel]);
+    horrorSystem.setAtmosphere(atmosphere, dangerScore);
+  }, [atmosphere, dangerScore]);
 
   // Example: trigger mini-game on high danger
   useEffect(() => {
-    if (dangerLevel >= 7 && !miniGame) {
+    if (dangerScore >= 70 && !miniGame) {
       setMiniGame('quick_time');
       setMiniGameDifficulty('hard');
     }
-  }, [dangerLevel, miniGame]);
+  }, [dangerScore, miniGame]);
 
-  const startNewRound = async () => {
-    setLoading(true);
-    updateGameState('loading');
-    
-    try {
-      const questionData = await fetchQuestion(difficulty, personality);
-      updateQuestion(questionData.question, questionData.options);
-      updateGameState('playing');
-    } catch (error) {
-      console.error('Error starting new round:', error);
-      updateQuestion(
-        "Would you rather fight a bear with a spoon or a shark with a toothpick?",
-        ['Fight a bear with a spoon', 'Fight a shark with a toothpick']
-      );
-      updateGameState('playing');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChoice = async (choice) => {
-    selectChoice(choice);
-    setLoading(true);
-    updateGameState('loading');
-    
-    try {
-      const consequenceData = await fetchConsequence(choice, difficulty, personality, currentRound);
-      updateConsequence(consequenceData);
-      updateGameState('consequence');
-    } catch (error) {
-      console.error('Error generating consequence:', error);
-      updateConsequence({
-        consequence: "Something unexpected happens! The universe seems to be testing you.",
-        dangerLevel: Math.floor(Math.random() * 10) + 1,
-        survived: Math.random() > 0.5
-      });
-      updateGameState('consequence');
-    } finally {
-      setLoading(false);
+  const handleChoice = async (option) => {
+    if (onOptionSelect) {
+      onOptionSelect(option);
     }
   };
 
   const handleNext = () => {
-    if (!survived) {
-      // Game over - player died
-      const gameResult = {
-        won: false,
-        score,
-        roundsSurvived: totalRoundsSurvived
-      };
-      updateStats(gameResult);
-      addHighScore(score, totalRoundsSurvived);
-      onGameEnd(gameResult);
-    } else if (currentRound >= 10) {
-      // Game won - survived all 10 rounds
-      const gameResult = {
-        won: true,
-        score: score + 50, // Bonus for winning
-        roundsSurvived: 10
-      };
-      updateStats(gameResult);
-      addHighScore(gameResult.score, 10);
-      onGameEnd(gameResult);
-    } else {
-      // Continue to next round
-      nextRound();
-      startNewRound();
+    if (onNextRound) {
+      onNextRound();
     }
   };
 
   const handleRestart = () => {
-    resetGame();
-    startNewRound();
+    if (onRestartGame) {
+      onRestartGame();
+    }
   };
 
   // Example: show environmental items on certain events
@@ -166,18 +98,18 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
     );
   }
 
-  if (gameState === 'gameOver') {
+  if (gameOver) {
     return (
       <div className="game-container">
         <h1 className="game-title">Would You Rather Survival</h1>
-        <div className={`game-over ${gameWon ? 'win' : 'lose'}`}>
-          {gameWon 
+        <div className={`game-over ${dangerScore <= 100 ? 'win' : 'lose'}`}>
+          {dangerScore <= 100 
             ? "🎉 CONGRATULATIONS! You survived all 10 rounds and won the game! 🎉"
             : "💀 GAME OVER! You didn't survive the challenge. Better luck next time! 💀"
           }
           <div className="final-score">
             <p>Final Score: {score}</p>
-            <p>Rounds Survived: {totalRoundsSurvived}</p>
+            <p>Danger Score: {dangerScore}/100</p>
           </div>
         </div>
         <button className="restart-button" onClick={handleRestart}>
@@ -187,7 +119,7 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
     );
   }
 
-  if (gameState === 'consequence') {
+  if (showConsequence) {
     return (
       <div className="game-container">
         <h1 className="game-title">Would You Rather Survival</h1>
@@ -197,14 +129,14 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
         
         <div className="consequence">
           <div className="danger-level">
-            Danger Level: {dangerLevel}/10
+            Danger Score: {dangerScore}/100
           </div>
           <p>{consequence}</p>
-          {!survived && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
+          {dangerScore > 100 && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
         </div>
         
         <button className="next-button" onClick={handleNext}>
-          {!survived ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
+          {dangerScore > 100 ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
         </button>
       </div>
     );
@@ -220,23 +152,26 @@ const GamePage = ({ onGameEnd, difficulty = 'medium', personality = 'balanced' }
       </div>
       
       <div className="question-container">
-        <h2 className="question">{currentQuestion}</h2>
+        <h2 className="question">{currentGameQuestion?.question || "Loading question..."}</h2>
         
         <div className="options-container">
-          {options.map((option, index) => (
-            <button
-              key={index}
-              className="option-button"
-              onClick={() => handleChoice(option)}
-            >
-              {option}
-            </button>
-          ))}
+          <button
+            className="option-button"
+            onClick={() => handleChoice('A')}
+          >
+            {currentGameQuestion?.optionA || "Option A"}
+          </button>
+          <button
+            className="option-button"
+            onClick={() => handleChoice('B')}
+          >
+            {currentGameQuestion?.optionB || "Option B"}
+          </button>
         </div>
       </div>
       <HorrorEffects 
         atmosphere={atmosphere}
-        dangerLevel={dangerLevel}
+        dangerLevel={dangerScore}
         fearLevel={fearLevel}
         showEnvironmentalItems={showEnvItems}
         onEnvironmentalItemFound={() => setShowEnvItems(false)}

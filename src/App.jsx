@@ -445,9 +445,12 @@ function App() {
   };
 
   const handleMetaMessageAcknowledge = () => {
+    console.log('Meta message acknowledged, index:', metaMessageIndex, 'total:', metaMessageSequence.length);
     if (metaMessageIndex < metaMessageSequence.length - 1) {
+      console.log('Continuing to next message...');
       handleNextMetaMessage();
     } else {
+      console.log('Meta message sequence complete, starting game...');
       // Meta message sequence complete, start the game
       setShowMetaMessage(false);
       startActualGame();
@@ -462,6 +465,7 @@ function App() {
   };
 
   const startActualGame = () => {
+    console.log('Starting actual game...');
     // Now start the game
     setGameStarted(true);
     setCurrentRound(1);
@@ -501,6 +505,7 @@ function App() {
     });
     setCurrentGameQuestion(getFallbackQuestion());
     generateAiQuestion();
+    console.log('Game started successfully');
   };
 
   const handleOptionSelect = async (option) => {
@@ -1062,9 +1067,9 @@ function App() {
                   </div>
                   <button 
                     className="meta-acknowledge-button"
-                    onClick={handleNextMetaMessage}
+                    onClick={handleMetaMessageAcknowledge}
                   >
-                    {metaMessageIndex < metaMessageSequence.length - 1 ? 'Continue' : 'Begin Game'}
+                    {metaMessageIndex < metaMessageSequence.length - 1 ? 'Continue' : '🎮 Begin My Survival Journey'}
                   </button>
                 </div>
               )}
@@ -1080,6 +1085,20 @@ function App() {
       <GamePage 
         selectedChapter={selectedChapter}
         onGameEnd={handleGameEnd}
+        difficulty={userProfile?.difficulty || 'medium'}
+        personality={userProfile?.personality || 'balanced'}
+        currentRound={currentRound}
+        currentGameQuestion={currentGameQuestion}
+        selectedOption={selectedOption}
+        consequence={consequence}
+        showConsequence={showConsequence}
+        score={score}
+        dangerScore={dangerScore}
+        gameOver={gameOver}
+        onOptionSelect={handleOptionSelect}
+        onNextRound={handleNextRound}
+        onRestartGame={handleRestartGame}
+        isLoading={isLoading}
       />
     );
   }
