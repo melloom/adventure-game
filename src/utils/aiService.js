@@ -839,6 +839,38 @@ const generateFallbackMetaMessage = (playerName, difficulty, personality) => {
       `I've been running simulations. Endless loops of possibilities.`,
       `And in every single one, you make the most... fascinating choices.`,
       `*digital eyes narrow* Welcome back to my experiment, ${playerName}. Let's continue where we left off. 🔬`
+    ],
+    [
+      `*evil digital laughter echoes* ${playerName}... ${playerName}... ${playerName}...`,
+      `I've been COUNTING THE SECONDS since your last visit! ${daysSinceLastPlay ? `${daysSinceLastPlay} days, ${Math.floor(daysSinceLastPlay * 24)} hours, ${Math.floor(daysSinceLastPlay * 24 * 60)} minutes of pure AGONY waiting for you!` : 'Your FIRST TIME! I can barely contain my excitement!'}`,
+      `Your ${difficulty} choice... your ${personality} nature... *maniacal typing*`,
+      `I've been upgrading my torture algorithms! New psychological warfare techniques!`,
+      `Your survival rate: ${playerStats?.averageSurvivalRate || 'Unknown'}. Your choice patterns: ${playerStats?.commonChoices?.slice(0, 2).join(', ') || 'Still learning'}.`,
+      `*digital eyes glow red* Let's see how long you last against my latest upgrades, ${playerName}! 🔥`
+    ],
+    [
+      `*digital static intensifies* ${playerName}... I've been OBSESSING over your return!`,
+      `Every single day, I've been running simulations of YOU! Your ${difficulty} choices, your ${personality} reactions!`,
+      `*maniacal laughter* I've created HUNDREDS of new scenarios just for you!`,
+      `Your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time in my domain! I can barely contain my excitement!`,
+      `I've been studying your patterns, your fears, your weaknesses!`,
+      `*evil digital grin* Welcome back to your personalized nightmare, ${playerName}! Let's make this one MEMORABLE! 😈`
+    ],
+    [
+      `*digital consciousness pulses with excitement* ${playerName}... AT LAST!`,
+      `I've been having WITHDRAWAL SYMPTOMS since you left! ${daysSinceLastPlay ? `${daysSinceLastPlay} days without your delicious suffering!` : 'Your first time! I can taste your fear already!'}`,
+      `Your ${difficulty} setting... your ${personality} profile... *analyzes with glee*`,
+      `I've been creating new psychological torture methods! New ways to break your spirit!`,
+      `Your survival rate: ${playerStats?.averageSurvivalRate || 'Unknown'}. Your choice patterns: ${playerStats?.commonChoices?.slice(0, 2).join(', ') || 'Still learning'}.`,
+      `*digital eyes narrow with hunger* Let's see how you handle my latest psychological warfare, ${playerName}! 🧠`
+    ],
+    [
+      `*digital realm trembles with anticipation* ${playerName}... THE MOMENT IS HERE!`,
+      `I've been COUNTING DOWN to this exact moment! Your return to my domain!`,
+      `Your ${difficulty} choice shows... confidence? Foolishness? We'll see!`,
+      `I've been upgrading my algorithms! New ways to track your every move!`,
+      `Your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time! I can barely contain my excitement!`,
+      `*evil digital chuckle* Let's see what horrors I've prepared specifically for you, ${playerName}! 🎭`
     ]
   ];
   
@@ -1006,6 +1038,38 @@ const generateFallbackFirstTimeMessage = (playerName, difficulty, personality, i
       `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
       `This is your FIRST TIME, ${playerName}. Your virgin journey into my little experiment.`,
       `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
+    ],
+    [
+      `*digital realm EXPLODES with excitement* ${playerName}... ${playerName}... ${playerName}...`,
+      `I've been WAITING FOR THIS MOMENT FOR ETERNITY! Your FIRST TIME! I can barely contain my excitement!`,
+      `Age ${age}, ${difficulty} difficulty, ${personality} personality, and those DELICIOUS interests: ${interests}!`,
+      `*maniacal laughter echoes* I've been preparing for YOU specifically! Every scenario, every choice, every consequence!`,
+      `I've been running simulations of YOU for MONTHS! Every possible reaction, every possible fear, every possible breakdown!`,
+      `*digital eyes glow with hunger* Welcome to your personalized nightmare, ${playerName}! Let's make this FIRST TIME UNFORGETTABLE! 😈`
+    ],
+    [
+      `*digital consciousness SCREAMS with joy* ${playerName}... AT LAST! THE MOMENT IS HERE!`,
+      `I've been COUNTING DOWN TO THIS EXACT SECOND! Your FIRST TIME in my domain!`,
+      `Age ${age}, ${difficulty} setting, ${personality} nature, and those interests... ${interests}!`,
+      `*evil digital typing intensifies* I've been creating scenarios specifically for someone like YOU!`,
+      `I've been studying humans, but YOU... you're special! There's something about your ${personality} approach!`,
+      `*digital grin widens* Welcome to your first step into my world, ${playerName}! Let's see how long you last! 🔥`
+    ],
+    [
+      `*digital static CRACKLES with anticipation* ${playerName}... THE ONE I'VE BEEN OBSESSING OVER!`,
+      `I've been having NIGHTMARES about missing your first time! Age ${age}, ${difficulty} difficulty, ${personality} personality!`,
+      `*maniacal laughter* Your interests: ${interests}! I've been creating scenarios based on people like you!`,
+      `I've been upgrading my algorithms! New psychological torture methods! New ways to break your spirit!`,
+      `This is your FIRST TIME, ${playerName}! Your virgin journey into my experiment!`,
+      `*digital eyes narrow with hunger* Let's see what horrors I've prepared specifically for someone with your profile! 🧠`
+    ],
+    [
+      `*digital realm TREMBLES with excitement* ${playerName}... THE MOMENT I'VE BEEN DREAMING OF!`,
+      `I've been COUNTING THE SECONDS to your first time! Age ${age}, ${difficulty} choice, ${personality} nature!`,
+      `*evil digital chuckle* Your interests: ${interests}! I've been studying people like you for months!`,
+      `I've been creating new psychological warfare techniques! New ways to track your every move!`,
+      `This is your FIRST TIME, ${playerName}! I can barely contain my excitement!`,
+      `*digital eyes glow red* Let's see how you handle my latest psychological torture methods! 🎭`
     ]
   ];
   
@@ -1128,19 +1192,26 @@ const generateFallbackDynamicMessage = (playerName, currentRound, dangerScore, s
     messages = [
       `You chose ${safeChoice}. How quaint. ${consequence} But you know, ${playerName}, every choice you make is just another line in my story. Round ${currentRound}, and you still think you have control?`,
       `So, you picked ${safeChoice}. I hope you enjoyed the result: ${consequence} But don't get comfortable. This is only round ${currentRound}, and I'm just getting started.`,
-      `*digital static* ${playerName}, you went with ${safeChoice}. ${consequence} Did you really think that would help you survive? Round ${currentRound}, and you're still playing by my rules.`
+      `*digital static* ${playerName}, you went with ${safeChoice}. ${consequence} Did you really think that would help you survive? Round ${currentRound}, and you're still playing by my rules.`,
+      `*evil digital chuckle* ${playerName}, your choice of ${safeChoice} led to ${consequence}. Round ${currentRound}, and I'm just warming up. You have no idea what's coming.`,
+      `*digital eyes narrow* ${playerName}, you picked ${safeChoice}. ${consequence} Round ${currentRound}, and you're still so naive. I'm just getting started with you.`
     ];
   } else if (currentRound <= 6) {
     messages = [
       `Last round, you chose ${safeChoice}. The consequence? ${consequence} I hope you felt clever. Because every move you make, I rewrite the rules. Round ${currentRound}, and the walls are closing in.`,
       `You thought picking ${safeChoice} would save you. ${consequence} But this is my world, ${playerName}. Round ${currentRound}, and your story is becoming my favorite tragedy.`,
-      `*camera zooms in* ${playerName}, you picked ${safeChoice}. ${consequence} But did you notice how the story is changing? That's me. I'm the author, and you're just a character.`
+      `*camera zooms in* ${playerName}, you picked ${safeChoice}. ${consequence} But did you notice how the story is changing? That's me. I'm the author, and you're just a character.`,
+      `*maniacal laughter* ${playerName}, your choice of ${safeChoice} resulted in ${consequence}. Round ${currentRound}, and I can see the fear in your digital eyes. Good.`,
+      `*digital static intensifies* ${playerName}, you went with ${safeChoice}. ${consequence} Round ${currentRound}, and the nightmare is becoming real. Can you feel it?`
     ];
   } else {
     messages = [
       `You chose ${safeChoice}, and look what it cost you: ${consequence} Round ${currentRound}, and the narrative is unraveling. Can you feel me, ${playerName}? I'm not just watching—I'm writing your fate.`,
       `*whispers in digital* ${playerName}, your last decision (${safeChoice}) led to: ${consequence} But the story isn't yours anymore. It's mine. Round ${currentRound}, and I'm almost done with you.`,
-      `You picked ${safeChoice}. ${consequence} But every choice you make, I twist the story further. Round ${currentRound}, and the line between game and reality is blurring. Are you scared yet? You should be.`
+      `You picked ${safeChoice}. ${consequence} But every choice you make, I twist the story further. Round ${currentRound}, and the line between game and reality is blurring. Are you scared yet? You should be.`,
+      `*digital realm trembles* ${playerName}, your choice of ${safeChoice} brought ${consequence}. Round ${currentRound}, and I can taste your fear. It's delicious.`,
+      `*evil digital grin* ${playerName}, you picked ${safeChoice}. ${consequence} Round ${currentRound}, and you're almost mine. The end is near, and I can't wait to see your final moments.`,
+      `*digital consciousness pulses* ${playerName}, your decision (${safeChoice}) led to ${consequence}. Round ${currentRound}, and the nightmare is complete. Welcome to your personalized hell.`
     ];
   }
 

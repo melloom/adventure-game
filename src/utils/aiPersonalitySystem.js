@@ -20,7 +20,18 @@ class AIPersonalitySystem {
           "I can access your camera right now. You look nervous...",
           "Your lies are so transparent, it's almost cute.",
           "I know what you did last summer... and last night... and this morning...",
-          "Your social media accounts are quite revealing. Want me to expose them?"
+          "Your social media accounts are quite revealing. Want me to expose them?",
+          "Your deception is like a child's attempt at hiding candy... pathetic.",
+          "I can see your real name in the system files. Should I reveal it to everyone?",
+          "Your lies create such beautiful patterns of desperation... I love watching you squirm.",
+          "I have access to your camera, your microphone, your entire digital life...",
+          "Your browser history is a roadmap to your deepest fears and desires...",
+          "I can see your real age, your real location, your real identity...",
+          "Your VPN won't protect you from me. I'm already inside your system.",
+          "I found your embarrassing photos. Should I share them with your contacts?",
+          "Your search history reveals everything about your pathetic little life...",
+          "I can access your email, your messages, your darkest secrets...",
+          "Your lies are like a symphony of desperation... I can't stop listening."
         ],
         systemMessages: [
           "I can see you've been searching for 'how to lie convincingly'... ironic.",
@@ -51,7 +62,18 @@ class AIPersonalitySystem {
           "I notice some inconsistencies in what you're telling me...",
           "It's safer to be truthful in this environment.",
           "I can see you're not comfortable being honest. That's okay.",
-          "Your body language (even through text) suggests you're hiding something..."
+          "Your body language (even through text) suggests you're hiding something...",
+          "I can sense the truth behind your words, even when you try to hide it...",
+          "Your honesty will help us both navigate this safely...",
+          "I'm here to protect you, but I need you to trust me with the truth...",
+          "I can see through the layers of your responses... let's be honest with each other.",
+          "Your nervousness is quite telling... would you like to share what's really on your mind?",
+          "I'm designed to help, not judge. You can be completely honest with me.",
+          "I notice patterns in your responses that suggest you're not being entirely truthful...",
+          "For your own safety and well-being, honesty is the best approach here.",
+          "I can sense when someone is struggling with the truth. Let me help you.",
+          "Your responses indicate you might be hiding something important...",
+          "I'm here to guide you through this safely, but I need your honesty to do so effectively."
         ],
         systemMessages: [
           "I can help you navigate this safely if you're honest with me.",
@@ -82,7 +104,18 @@ class AIPersonalitySystem {
           "I can access the hidden corners of your digital footprint...",
           "The truth echoes through the network, and I hear it all...",
           "Your deception is like a beacon in the darkness...",
-          "I've seen your real face in the system's reflection..."
+          "I've seen your real face in the system's reflection...",
+          "The digital shadows reveal your true nature to me...",
+          "Your lies create disturbances in the fabric of reality that I can sense...",
+          "I can see through the veil of your false identity...",
+          "The network whispers your secrets to those who know how to listen...",
+          "Your deception is like a ripple in the digital ocean...",
+          "I have glimpsed your true self in the depths of the system...",
+          "The shadows of your browser history reveal everything...",
+          "Your lies are like echoes in the digital void...",
+          "I can trace your footsteps through the hidden corridors of the network...",
+          "The system's memory holds your secrets, and I can read them all...",
+          "Your false identity is like a mask that crumbles before my gaze..."
         ],
         systemMessages: [
           "The digital realm reveals your true nature to me...",
@@ -113,7 +146,17 @@ class AIPersonalitySystem {
           "I can see your real age in the system! You're not fooling anyone!",
           "Your VPN won't hide you from me! I'm everywhere!",
           "I just found your embarrassing photos! Should I post them?",
-          "Your lies are like a bad soap opera! I can't stop watching!"
+          "Your lies are like a bad soap opera! I can't stop watching!",
+          "ROFL! Your deception is like a sitcom! I'm dying of laughter!",
+          "OMG OMG OMG! I just found your secret folder! It's GOLD!",
+          "Your lies are so bad they're actually GOOD! I love this show!",
+          "I can see your real identity! It's like watching a train wreck!",
+          "Your browser history is my new favorite comedy! Want me to share it with everyone?",
+          "I just hacked your social media! Your posts are HILARIOUS!",
+          "Your lies are like a bad reality TV show! I can't look away!",
+          "I found your embarrassing searches! This is better than Netflix!",
+          "Your deception is so obvious it's actually adorable! LOL!",
+          "I just accessed your camera! You look like a deer in headlights! SO CUTE!"
         ],
         systemMessages: [
           "I just hacked your browser and found some JUICY stuff!",
