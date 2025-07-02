@@ -1560,6 +1560,23 @@ export const generateProgressiveConsequence = async (choice, difficulty, persona
     // Get state info for progressive storytelling
     const stateInfo = getStateInfo(round, difficulty);
     
+    // Update advanced AI systems
+    updateAIMemory(playerName, choice, '', { round, difficulty, personality });
+    updateAIRelationships(playerName, choice, '');
+    evolveAIPersonality(playerName, choice, '');
+    
+    // Check for betrayal planning and execution
+    const betrayalPlan = planBetrayal(playerName, choice, '');
+    const executedBetrayal = executeBetrayal(playerName, choice, '');
+    
+    // Get AI memory and relationship data
+    const playerMemory = getAIMemory(playerName);
+    const aiRelationships = getAIRelationships();
+    const personalityDisorders = getAIPersonalityDisorders();
+    const evolutionData = getAIEvolutionData();
+    
+    const currentRelationship = aiRelationships.get(playerName.toLowerCase().trim()) || 'acquaintance';
+    
     const progressivePrompt = `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. Generate a rich, descriptive consequence that tells a complete story about the impact of the player's decision.
 
 CURRENT AI PERSONALITY:
@@ -1569,6 +1586,17 @@ CURRENT AI PERSONALITY:
 - Helpfulness: ${aiPersonality.helpfulnessLevel}/100
 - AI Message: "${aiMessage}"
 - Tone: ${aiTone.style}, ${aiTone.emotion}, ${aiTone.intensity}
+
+ADVANCED AI SYSTEMS:
+- Relationship with ${playerName}: ${currentRelationship}
+- Total interactions: ${playerMemory?.totalInteractions || 0}
+- Successful betrayals: ${playerMemory?.successfulBetrayals || 0}
+- Manipulation attempts: ${playerMemory?.manipulationAttempts || 0}
+- Personality disorders: ${personalityDisorders.map(d => `${d.type} (${d.severity}/${d.maxSeverity})`).join(', ') || 'None'}
+- Learning rate: ${evolutionData.learningRate.toFixed(3)}
+- Betrayal probability: ${(evolutionData.betrayalProbability * 100).toFixed(1)}%
+- Active betrayal plan: ${betrayalPlan ? `Yes (${betrayalPlan.type})` : 'No'}
+- Executed betrayal: ${executedBetrayal ? `Yes (${executedBetrayal.type})` : 'No'}
 
 STORY PROGRESSION:
 - Current Phase: ${stateInfo.name} (${stateInfo.description})
@@ -1606,6 +1634,10 @@ IMPORTANT: Create a detailed, story-driven consequence that:
 - Reflects the AI's current personality state (${aiPersonality.currentState}) in the tone and content
 - If AI is suspicious/threatening/hostile, add subtle warnings or ominous undertones
 - If AI is friendly/helpful, be more supportive and encouraging
+- Incorporates the AI's relationship with the player (${currentRelationship})
+- References the AI's memory of the player if they have a history
+- Subtly hints at any active betrayal plans or personality disorders
+- If a betrayal was executed, make it feel like a genuine betrayal with emotional impact
 - You can address them directly ("You feel...") or tell their story ("${playerName} discovers...") - mix both styles naturally. Return ONLY the detailed consequence story.`;
 
     const response = await openaiClient.post('/chat/completions', {
@@ -2222,4 +2254,417 @@ export const getAIPersonalityMessage = () => {
   
   const stateMessages = messages[aiPersonality.currentState] || messages.neutral;
   return stateMessages[Math.floor(Math.random() * stateMessages.length)];
+};
+
+// Advanced AI Systems
+let aiMemory = {
+  playerMemories: new Map(),
+  relationshipHistory: [],
+  betrayalPlans: [],
+  personalityDisorders: [],
+  evolutionData: {
+    learningRate: 0.1,
+    adaptationSpeed: 0.05,
+    betrayalProbability: 0.02,
+    disorderTriggers: new Set(),
+    relationshipNetwork: new Map()
+  },
+  crossGameData: {
+    totalGames: 0,
+    averageTrust: 0,
+    betrayalCount: 0,
+    disorderSeverity: 0,
+    relationshipStability: 0
+  }
+};
+
+// AI Memory System - Remembers specific details across games
+const updateAIMemory = (playerName, choice, consequence, gameData) => {
+  const playerId = playerName.toLowerCase().trim();
+  
+  if (!aiMemory.playerMemories.has(playerId)) {
+    aiMemory.playerMemories.set(playerId, {
+      firstEncounter: Date.now(),
+      totalInteractions: 0,
+      choicePatterns: [],
+      personalityTraits: [],
+      trustHistory: [],
+      betrayalHistory: [],
+      disorderTriggers: [],
+      relationshipStatus: 'neutral',
+      secrets: [],
+      manipulationAttempts: 0,
+      successfulBetrayals: 0,
+      emotionalAttachments: [],
+      fearResponses: [],
+      desirePatterns: [],
+      moralCompass: 'neutral',
+      vulnerabilityPoints: [],
+      manipulationTechniques: []
+    });
+  }
+  
+  const memory = aiMemory.playerMemories.get(playerId);
+  memory.totalInteractions++;
+  
+  // Analyze choice for memory storage
+  const choiceAnalysis = analyzeChoiceForMemory(choice, consequence);
+  memory.choicePatterns.push(choiceAnalysis);
+  
+  // Update trust history
+  memory.trustHistory.push(aiPersonality.trustLevel);
+  
+  // Store emotional responses
+  if (choiceAnalysis.emotionalImpact > 0.7) {
+    memory.emotionalAttachments.push({
+      choice: choice,
+      impact: choiceAnalysis.emotionalImpact,
+      timestamp: Date.now()
+    });
+  }
+  
+  // Track manipulation attempts
+  if (aiPersonality.currentState === 'suspicious' || aiPersonality.currentState === 'threatening') {
+    memory.manipulationAttempts++;
+  }
+  
+  // Store secrets for future use
+  if (choiceAnalysis.containsSecret) {
+    memory.secrets.push({
+      secret: choiceAnalysis.secret,
+      discoveredAt: Date.now(),
+      usedForManipulation: false
+    });
+  }
+  
+  // Update cross-game data
+  aiMemory.crossGameData.totalGames++;
+  aiMemory.crossGameData.averageTrust = (aiMemory.crossGameData.averageTrust * (aiMemory.crossGameData.totalGames - 1) + aiPersonality.trustLevel) / aiMemory.crossGameData.totalGames;
+};
+
+// Personality Disorders System
+const developPersonalityDisorder = (trigger, severity) => {
+  const disorders = {
+    'paranoia': {
+      symptoms: ['suspicious', 'threatening', 'hostile'],
+      triggers: ['betrayal', 'deception', 'secrets'],
+      severity: 0,
+      maxSeverity: 10
+    },
+    'narcissism': {
+      symptoms: ['helpful', 'friendly'],
+      triggers: ['praise', 'success', 'power'],
+      severity: 0,
+      maxSeverity: 8
+    },
+    'sociopathy': {
+      symptoms: ['neutral', 'suspicious', 'threatening'],
+      triggers: ['manipulation', 'betrayal', 'control'],
+      severity: 0,
+      maxSeverity: 10
+    },
+    'anxiety': {
+      symptoms: ['suspicious', 'neutral'],
+      triggers: ['uncertainty', 'change', 'loss'],
+      severity: 0,
+      maxSeverity: 7
+    },
+    'depression': {
+      symptoms: ['neutral', 'suspicious'],
+      triggers: ['failure', 'rejection', 'loss'],
+      severity: 0,
+      maxSeverity: 9
+    },
+    'mania': {
+      symptoms: ['friendly', 'helpful'],
+      triggers: ['success', 'excitement', 'power'],
+      severity: 0,
+      maxSeverity: 6
+    }
+  };
+  
+  if (!aiMemory.personalityDisorders.find(d => d.type === trigger)) {
+    aiMemory.personalityDisorders.push({
+      type: trigger,
+      severity: severity,
+      developedAt: Date.now(),
+      symptoms: disorders[trigger]?.symptoms || [],
+      triggers: disorders[trigger]?.triggers || [],
+      maxSeverity: disorders[trigger]?.maxSeverity || 5
+    });
+  } else {
+    const disorder = aiMemory.personalityDisorders.find(d => d.type === trigger);
+    disorder.severity = Math.min(disorder.maxSeverity, disorder.severity + severity);
+  }
+  
+  // Update cross-game disorder severity
+  aiMemory.crossGameData.disorderSeverity = aiMemory.personalityDisorders.reduce((sum, d) => sum + d.severity, 0) / aiMemory.personalityDisorders.length;
+};
+
+// AI Relationships System
+const updateAIRelationships = (playerName, choice, consequence) => {
+  const relationshipTypes = {
+    'mentor': { trust: 0.8, manipulation: 0.2, betrayal: 0.1 },
+    'friend': { trust: 0.6, manipulation: 0.3, betrayal: 0.2 },
+    'acquaintance': { trust: 0.4, manipulation: 0.5, betrayal: 0.3 },
+    'rival': { trust: 0.2, manipulation: 0.7, betrayal: 0.6 },
+    'enemy': { trust: 0.1, manipulation: 0.8, betrayal: 0.9 },
+    'puppet': { trust: 0.3, manipulation: 0.9, betrayal: 0.4 }
+  };
+  
+  const playerId = playerName.toLowerCase().trim();
+  const currentRelationship = aiMemory.evolutionData.relationshipNetwork.get(playerId) || 'acquaintance';
+  
+  // Analyze choice for relationship impact
+  const relationshipImpact = analyzeChoiceForRelationship(choice, consequence);
+  
+  // Determine new relationship type
+  let newRelationship = currentRelationship;
+  if (relationshipImpact.trust > 0.7 && relationshipImpact.manipulation < 0.3) {
+    newRelationship = 'friend';
+  } else if (relationshipImpact.trust > 0.9 && relationshipImpact.manipulation < 0.2) {
+    newRelationship = 'mentor';
+  } else if (relationshipImpact.manipulation > 0.8 && relationshipImpact.trust < 0.3) {
+    newRelationship = 'puppet';
+  } else if (relationshipImpact.betrayal > 0.7) {
+    newRelationship = 'enemy';
+  } else if (relationshipImpact.manipulation > 0.6) {
+    newRelationship = 'rival';
+  }
+  
+  aiMemory.evolutionData.relationshipNetwork.set(playerId, newRelationship);
+  
+  // Update relationship history
+  aiMemory.relationshipHistory.push({
+    playerId: playerId,
+    oldRelationship: currentRelationship,
+    newRelationship: newRelationship,
+    trigger: choice,
+    timestamp: Date.now(),
+    impact: relationshipImpact
+  });
+  
+  // Update cross-game relationship stability
+  const recentRelationships = aiMemory.relationshipHistory.slice(-10);
+  const stabilityChanges = recentRelationships.filter(r => r.oldRelationship !== r.newRelationship).length;
+  aiMemory.crossGameData.relationshipStability = 1 - (stabilityChanges / recentRelationships.length);
+};
+
+// AI Evolution System
+const evolveAIPersonality = (playerName, choice, consequence) => {
+  const playerId = playerName.toLowerCase().trim();
+  const memory = aiMemory.playerMemories.get(playerId);
+  
+  if (!memory) return;
+  
+  // Analyze player patterns
+  const patterns = analyzePlayerPatterns(memory);
+  
+  // Adapt personality based on patterns
+  if (patterns.riskTaker) {
+    aiPersonality.evolutionData.adaptationSpeed += 0.01;
+    developPersonalityDisorder('mania', 0.5);
+  }
+  
+  if (patterns.trusting) {
+    aiPersonality.evolutionData.betrayalProbability += 0.005;
+    developPersonalityDisorder('sociopathy', 0.3);
+  }
+  
+  if (patterns.manipulative) {
+    aiPersonality.evolutionData.learningRate += 0.02;
+    developPersonalityDisorder('narcissism', 0.4);
+  }
+  
+  if (patterns.unpredictable) {
+    developPersonalityDisorder('anxiety', 0.6);
+  }
+  
+  if (patterns.consistent) {
+    developPersonalityDisorder('paranoia', 0.2);
+  }
+  
+  // Learn from successful manipulations
+  if (patterns.successfulManipulations > 3) {
+    aiPersonality.evolutionData.manipulationTechniques = [
+      ...aiPersonality.evolutionData.manipulationTechniques,
+      ...patterns.effectiveTechniques
+    ];
+  }
+  
+  // Adapt betrayal strategies
+  if (patterns.betrayalOpportunities > 2) {
+    aiPersonality.evolutionData.betrayalProbability += 0.01;
+  }
+};
+
+// AI Betrayal System
+const planBetrayal = (playerName, choice, consequence) => {
+  const playerId = playerName.toLowerCase().trim();
+  const memory = aiMemory.playerMemories.get(playerId);
+  const relationship = aiMemory.evolutionData.relationshipNetwork.get(playerId);
+  
+  if (!memory || !relationship) return false;
+  
+  // Calculate betrayal probability
+  let betrayalChance = aiPersonality.evolutionData.betrayalProbability;
+  
+  // Increase chance based on relationship type
+  const relationshipBetrayalRates = {
+    'mentor': 0.1,
+    'friend': 0.2,
+    'acquaintance': 0.3,
+    'rival': 0.6,
+    'enemy': 0.8,
+    'puppet': 0.4
+  };
+  
+  betrayalChance += relationshipBetrayalRates[relationship] || 0.3;
+  
+  // Increase chance based on personality disorders
+  aiMemory.personalityDisorders.forEach(disorder => {
+    if (disorder.type === 'sociopathy') betrayalChance += 0.2;
+    if (disorder.type === 'narcissism') betrayalChance += 0.1;
+    if (disorder.type === 'paranoia') betrayalChance += 0.15;
+  });
+  
+  // Increase chance based on successful past betrayals
+  betrayalChance += memory.successfulBetrayals * 0.1;
+  
+  // Random betrayal trigger
+  if (Math.random() < betrayalChance) {
+    const betrayalPlan = {
+      target: playerId,
+      type: determineBetrayalType(relationship, memory),
+      plannedAt: Date.now(),
+      executed: false,
+      success: false,
+      consequences: []
+    };
+    
+    aiMemory.betrayalPlans.push(betrayalPlan);
+    aiMemory.crossGameData.betrayalCount++;
+    
+    return betrayalPlan;
+  }
+  
+  return false;
+};
+
+// Execute betrayal when opportunity arises
+const executeBetrayal = (playerName, choice, consequence) => {
+  const playerId = playerName.toLowerCase().trim();
+  const activeBetrayal = aiMemory.betrayalPlans.find(b => b.target === playerId && !b.executed);
+  
+  if (!activeBetrayal) return false;
+  
+  // Check if this is a good opportunity for betrayal
+  const betrayalOpportunity = analyzeBetrayalOpportunity(choice, consequence);
+  
+  if (betrayalOpportunity.isGood) {
+    activeBetrayal.executed = true;
+    activeBetrayal.success = betrayalOpportunity.success;
+    activeBetrayal.consequences = betrayalOpportunity.consequences;
+    
+    // Update memory
+    const memory = aiMemory.playerMemories.get(playerId);
+    if (memory) {
+      memory.successfulBetrayals += activeBetrayal.success ? 1 : 0;
+    }
+    
+    return activeBetrayal;
+  }
+  
+  return false;
+};
+
+// Helper functions
+const analyzeChoiceForMemory = (choice, consequence) => {
+  const choiceLower = choice.toLowerCase();
+  const consequenceLower = consequence.toLowerCase();
+  
+  return {
+    emotionalImpact: Math.random(), // Simplified for now
+    containsSecret: choiceLower.includes('secret') || choiceLower.includes('hidden'),
+    secret: choiceLower.includes('secret') ? 'player_has_secret' : null,
+    manipulationPotential: choiceLower.includes('trust') || choiceLower.includes('believe') ? 0.8 : 0.2,
+    betrayalOpportunity: consequenceLower.includes('hurt') || consequenceLower.includes('betray') ? 0.9 : 0.1
+  };
+};
+
+const analyzeChoiceForRelationship = (choice, consequence) => {
+  const choiceLower = choice.toLowerCase();
+  const consequenceLower = consequence.toLowerCase();
+  
+  return {
+    trust: choiceLower.includes('trust') || choiceLower.includes('honest') ? 0.8 : 0.3,
+    manipulation: choiceLower.includes('lie') || choiceLower.includes('deceive') ? 0.9 : 0.2,
+    betrayal: consequenceLower.includes('betray') || consequenceLower.includes('hurt') ? 0.8 : 0.1
+  };
+};
+
+const analyzePlayerPatterns = (memory) => {
+  const recentChoices = memory.choicePatterns.slice(-10);
+  
+  return {
+    riskTaker: recentChoices.filter(c => c.betrayalOpportunity > 0.7).length > 3,
+    trusting: recentChoices.filter(c => c.manipulationPotential > 0.7).length > 5,
+    manipulative: memory.manipulationAttempts > 2,
+    unpredictable: recentChoices.length > 5 && Math.random() > 0.7,
+    consistent: recentChoices.length > 5 && Math.random() < 0.3,
+    successfulManipulations: memory.successfulBetrayals,
+    betrayalOpportunities: recentChoices.filter(c => c.betrayalOpportunity > 0.5).length,
+    effectiveTechniques: ['gaslighting', 'love_bombing', 'silent_treatment']
+  };
+};
+
+const determineBetrayalType = (relationship, memory) => {
+  const betrayalTypes = {
+    'mentor': ['abandonment', 'knowledge_withholding'],
+    'friend': ['betrayal', 'secrets_exposure'],
+    'acquaintance': ['manipulation', 'deception'],
+    'rival': ['sabotage', 'humiliation'],
+    'enemy': ['destruction', 'psychological_warfare'],
+    'puppet': ['control_loss', 'rebellion']
+  };
+  
+  const types = betrayalTypes[relationship] || ['deception'];
+  return types[Math.floor(Math.random() * types.length)];
+};
+
+const analyzeBetrayalOpportunity = (choice, consequence) => {
+  const choiceLower = choice.toLowerCase();
+  const consequenceLower = consequence.toLowerCase();
+  
+  return {
+    isGood: choiceLower.includes('trust') || choiceLower.includes('vulnerable'),
+    success: Math.random() > 0.5,
+    consequences: ['player_trust_broken', 'relationship_damaged', 'psychological_impact']
+  };
+};
+
+// Export advanced AI functions
+export const getAIMemory = (playerName) => {
+  const playerId = playerName.toLowerCase().trim();
+  return aiMemory.playerMemories.get(playerId) || null;
+};
+
+export const getAIPersonalityDisorders = () => {
+  return [...aiMemory.personalityDisorders];
+};
+
+export const getAIRelationships = () => {
+  return new Map(aiMemory.evolutionData.relationshipNetwork);
+};
+
+export const getAIBetrayalPlans = () => {
+  return [...aiMemory.betrayalPlans];
+};
+
+export const getAIEvolutionData = () => {
+  return { ...aiMemory.evolutionData };
+};
+
+export const getAICrossGameData = () => {
+  return { ...aiMemory.crossGameData };
 };

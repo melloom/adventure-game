@@ -3,6 +3,7 @@ import { generateQuestion, generateConsequence, calculateSurvival, generateDynam
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import { useCampaign } from '../hooks/useCampaign';
 import AIPersonalityInterface from './AIPersonalityInterface';
+import AdvancedAISystems from './AdvancedAISystems';
 import aiPersonalitySystem from '../utils/aiPersonalitySystem';
 
 const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
@@ -82,6 +83,9 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
   const [miniGameDifficulty, setMiniGameDifficulty] = useState('medium');
   const [miniGameTriggered, setMiniGameTriggered] = useState(false);
   const [showMiniGameTransition, setShowMiniGameTransition] = useState(false);
+  
+  // Advanced AI Systems state
+  const [showAdvancedAI, setShowAdvancedAI] = useState(false);
 
   // Initialize the game
   useEffect(() => {
@@ -749,6 +753,21 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
           showInsights={true}
         />
         
+        {/* Advanced AI Systems */}
+        <AdvancedAISystems 
+          playerName={playerName}
+          isVisible={showAdvancedAI}
+        />
+        
+        <div className="advanced-ai-toggle">
+          <button 
+            className="toggle-ai-button"
+            onClick={() => setShowAdvancedAI(!showAdvancedAI)}
+          >
+            {showAdvancedAI ? '🔒 Hide AI Systems' : '🤖 Show AI Systems'}
+          </button>
+        </div>
+        
         <div className={`game-over ${gameWon ? 'win' : 'lose'}`}>
           {gameWon 
             ? "🎉 CONGRATULATIONS! You survived all 10 rounds and won the game! 🎉"
@@ -825,6 +844,35 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
         >
           🚪 Leave
         </button>
+        
+        {/* Advanced AI Systems Toggle */}
+        <button 
+          className="advanced-ai-toggle-button"
+          onClick={() => setShowAdvancedAI(!showAdvancedAI)}
+          title="Toggle Advanced AI Systems"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+            border: '1px solid #00d4ff',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'Courier New, monospace',
+            fontSize: '0.9rem',
+            zIndex: 1000
+          }}
+        >
+          {showAdvancedAI ? '🔒' : '🤖'}
+        </button>
+        
+        {/* Advanced AI Systems */}
+        <AdvancedAISystems 
+          playerName={playerName}
+          isVisible={showAdvancedAI}
+        />
         
         <h1 className="game-title">Would You Rather Survival</h1>
         <div className="round-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
