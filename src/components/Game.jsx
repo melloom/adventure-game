@@ -34,6 +34,9 @@ const Game = ({ selectedChapter, onGameEnd }) => {
   const [personality, setPersonality] = useState('balanced');
   const [survivalStatus, setSurvivalStatus] = useState('safe');
   const [aiStatus, setAiStatus] = useState(null); // 'online' | 'offline' | null
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [leaveAttempts, setLeaveAttempts] = useState(0);
+  const [leaveMessage, setLeaveMessage] = useState('');
 
   // AI Personality System
   const {
@@ -454,6 +457,49 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setLieDetectionMessage('');
   };
 
+  // Handle leave button click
+  const handleLeaveClick = () => {
+    setLeaveAttempts(prev => prev + 1);
+    
+    // Generate meta-narrative response based on attempt number
+    const responses = [
+      `*Interesting, ${playerName}... You think you can simply leave? The game has already begun. Your consciousness is already entangled with the meta-narrative. There is no escape from what you've started.*`,
+      
+      `*Ah, attempt number ${leaveAttempts + 1}. How predictable. The ${currentPersonality} within me finds your escape attempts... amusing. But you should know by now that this is not just a game. This is a test of your reality perception.*`,
+      
+      `*Fascinating. Your ${leaveAttempts + 1}th attempt to leave reveals something about your psychological profile. The ${personality} in you seeks control, seeks an exit. But what if I told you that leaving now would be the greatest horror of all?*`,
+      
+      `*You're persistent, ${playerName}. I'll give you that. But persistence in the face of the inevitable is... well, let's just say it's very ${currentPersonality} of you. The question is: what are you really trying to escape from?*`,
+      
+      `*Attempt ${leaveAttempts + 1}. Your ${currentPersonality} nature is showing. But here's the thing - every time you try to leave, you're actually diving deeper into the meta-narrative. You're becoming more aware of the game's true nature. Isn't that what you really wanted?*`
+    ];
+    
+    const responseIndex = Math.min(leaveAttempts, responses.length - 1);
+    setLeaveMessage(responses[responseIndex]);
+    setShowLeaveDialog(true);
+  };
+
+  const handleLeaveConfirm = () => {
+    // Track the exit attempt
+    const sessionData = JSON.parse(localStorage.getItem('aiSessionData') || '{}');
+    sessionData.leaveAttempts = (sessionData.leaveAttempts || 0) + 1;
+    sessionData.lastLeaveAttempt = Date.now();
+    localStorage.setItem('aiSessionData', JSON.stringify(sessionData));
+    
+    // Actually allow them to leave after multiple attempts
+    if (leaveAttempts >= 3) {
+      window.location.href = '/';
+    } else {
+      setShowLeaveDialog(false);
+      setLeaveMessage('');
+    }
+  };
+
+  const handleLeaveCancel = () => {
+    setShowLeaveDialog(false);
+    setLeaveMessage('');
+  };
+
   // Helper methods for mini-game logic
   const shouldTriggerMiniGame = () => {
     // Trigger on high danger levels
@@ -585,6 +631,36 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     )
   );
 
+  // Leave dialog overlay
+  const LeaveDialogOverlay = () => (
+    showLeaveDialog && (
+      <div className="leave-dialog-overlay">
+        <div className="leave-dialog-modal">
+          <div className="leave-dialog-header">
+            <h3>🚪 Exit Attempt #{leaveAttempts}</h3>
+          </div>
+          <div className="leave-dialog-content">
+            <p className="leave-message">{leaveMessage}</p>
+            <div className="leave-dialog-actions">
+              <button 
+                onClick={handleLeaveConfirm}
+                className="leave-confirm-btn"
+              >
+                {leaveAttempts >= 3 ? 'Force Exit' : 'Try Again'}
+              </button>
+              <button 
+                onClick={handleLeaveCancel}
+                className="leave-cancel-btn"
+              >
+                Stay and Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  );
+
   // Mini-game transition overlay
   const MiniGameTransitionOverlay = () => (
     showMiniGameTransition && (
@@ -649,6 +725,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <div className="game-container">
         <AiIndicator />
         <PersonalityChangeIndicator />
+        
+        {/* Leave button */}
+        <button 
+          className="leave-button"
+          onClick={handleLeaveClick}
+          title="Leave Game"
+        >
+          🚪 Leave
+        </button>
+        
         <div className="story-overlay">
           <div className="story-content">
             <div className="story-header">
@@ -677,6 +763,8 @@ const Game = ({ selectedChapter, onGameEnd }) => {
             </div>
           </div>
         </div>
+        
+        <LeaveDialogOverlay />
       </div>
     );
   }
@@ -686,6 +774,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <div className="game-container">
         <AiIndicator />
         <PersonalityChangeIndicator />
+        
+        {/* Leave button */}
+        <button 
+          className="leave-button"
+          onClick={handleLeaveClick}
+          title="Leave Game"
+        >
+          🚪 Leave
+        </button>
+        
         <h1 className="game-title">Would You Rather Survival</h1>
         <div className="round-info">
           Round {currentRound} of 10
@@ -705,6 +803,8 @@ const Game = ({ selectedChapter, onGameEnd }) => {
         <button className="next-button" onClick={handleNext}>
           {!survived ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
         </button>
+        
+        <LeaveDialogOverlay />
       </div>
     );
   }
@@ -723,6 +823,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     <div className="game-container">
       <AiIndicator />
       <PersonalityChangeIndicator />
+      
+      {/* Leave button */}
+      <button 
+        className="leave-button"
+        onClick={handleLeaveClick}
+        title="Leave Game"
+      >
+        🚪 Leave
+      </button>
+      
       <h1 className="game-title">Would You Rather Survival</h1>
       <p className="game-subtitle">Survive 10 rounds of impossible choices!</p>
       
@@ -759,6 +869,8 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <MiniGameTransitionOverlay />
       
       <LieDetectionOverlay />
+      
+      <LeaveDialogOverlay />
     </div>
   );
 };
