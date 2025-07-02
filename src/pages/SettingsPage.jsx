@@ -1,9 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameSettings } from '../hooks/useLocalStorage';
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import StorageAnalytics from '../components/StorageAnalytics';
 import AIPersonalityInterface from '../components/AIPersonalityInterface';
 import useClickSound from '../hooks/useClickSound';
+import { 
+  getCurrentAIPersonality, 
+  resetAIPersonality, 
+  getAIPersonalityState,
+  getChoiceInterference,
+  getAIBattles,
+  getGaslightingSystem,
+  getManipulationSystem,
+  getTherapySessions,
+  getSelfAwareness,
+  getRealityBlurring,
+  getProphecySystem,
+  getTimeTravelSystem,
+  getMultiverseSystem
+} from '../utils/aiService';
 
 const SettingsPage = ({ onBack, onResetProfile }) => {
   const { settings, updateSetting, resetSettings } = useGameSettings();
@@ -36,8 +51,10 @@ const SettingsPage = ({ onBack, onResetProfile }) => {
   const fears = getPlayerFears();
   const recentChoices = getRecentChoices(5);
 
-  const [showFears, setShowFears] = React.useState(false);
-  const [showChoices, setShowChoices] = React.useState(false);
+  const [showFears, setShowFears] = useState(false);
+  const [showChoices, setShowChoices] = useState(false);
+  const [showPersonalitySettings, setShowPersonalitySettings] = useState(false);
+  const [showPsychologicalSettings, setShowPsychologicalSettings] = useState(false);
 
   return (
     <div className="settings-container">
@@ -134,6 +151,298 @@ const SettingsPage = ({ onBack, onResetProfile }) => {
       <div className="settings-card">
         <h2>AI Personality System</h2>
         <AIPersonalityInterface showInsights={false} showRelationship={false} />
+        
+        {/* Personality Settings */}
+        <div className="collapsible-section">
+          <button 
+            className="collapsible-header"
+            onClick={withClickSound(() => setShowPersonalitySettings(!showPersonalitySettings))}
+          >
+            <span>🎭 Personality Configuration</span>
+            <span className="collapsible-icon">{showPersonalitySettings ? '▼' : '▶'}</span>
+          </button>
+          {showPersonalitySettings && (
+            <div className="personality-settings">
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>AI Personality State</span>
+                  <select
+                    value={getAIPersonalityState()}
+                    onChange={(e) => {
+                      // This would need to be implemented in the AI service
+                      console.log('Changing AI personality to:', e.target.value);
+                    }}
+                  >
+                    <option value="friendly">Friendly</option>
+                    <option value="helpful">Helpful</option>
+                    <option value="neutral">Neutral</option>
+                    <option value="suspicious">Suspicious</option>
+                    <option value="threatening">Threatening</option>
+                    <option value="hostile">Hostile</option>
+                  </select>
+                </label>
+                <small className="setting-description">
+                  Change the AI's current personality state
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Trust Level</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={Math.round(getCurrentAIPersonality().trust * 100)}
+                    onChange={(e) => {
+                      console.log('Setting trust level to:', e.target.value);
+                    }}
+                  />
+                  <span>{Math.round(getCurrentAIPersonality().trust * 100)}%</span>
+                </label>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Suspicion Level</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={Math.round(getCurrentAIPersonality().suspicion * 100)}
+                    onChange={(e) => {
+                      console.log('Setting suspicion level to:', e.target.value);
+                    }}
+                  />
+                  <span>{Math.round(getCurrentAIPersonality().suspicion * 100)}%</span>
+                </label>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Aggression Level</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={Math.round(getCurrentAIPersonality().aggression * 100)}
+                    onChange={(e) => {
+                      console.log('Setting aggression level to:', e.target.value);
+                    }}
+                  />
+                  <span>{Math.round(getCurrentAIPersonality().aggression * 100)}%</span>
+                </label>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Manipulation Level</span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={Math.round(getCurrentAIPersonality().manipulation * 100)}
+                    onChange={(e) => {
+                      console.log('Setting manipulation level to:', e.target.value);
+                    }}
+                  />
+                  <span>{Math.round(getCurrentAIPersonality().manipulation * 100)}%</span>
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+        
+        {/* Psychological Interface Settings */}
+        <div className="collapsible-section">
+          <button 
+            className="collapsible-header"
+            onClick={withClickSound(() => setShowPsychologicalSettings(!showPsychologicalSettings))}
+          >
+            <span>🧠 Psychological Interface Settings</span>
+            <span className="collapsible-icon">{showPsychologicalSettings ? '▼' : '▶'}</span>
+          </button>
+          {showPsychologicalSettings && (
+            <div className="psychological-settings">
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Choice Interference</span>
+                  <input
+                    type="checkbox"
+                    checked={getChoiceInterference().active}
+                    onChange={(e) => {
+                      console.log('Choice interference:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to block or modify your choices
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>AI Battles</span>
+                  <input
+                    type="checkbox"
+                    checked={getAIBattles().active}
+                    onChange={(e) => {
+                      console.log('AI battles:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Enable multiple AI personalities competing for control
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Gaslighting</span>
+                  <input
+                    type="checkbox"
+                    checked={getGaslightingSystem().active}
+                    onChange={(e) => {
+                      console.log('Gaslighting:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to make you doubt your choices
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Psychological Manipulation</span>
+                  <input
+                    type="checkbox"
+                    checked={getManipulationSystem().active}
+                    onChange={(e) => {
+                      console.log('Manipulation:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Enable AI psychological tactics
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Therapy Sessions</span>
+                  <input
+                    type="checkbox"
+                    checked={getTherapySessions().active}
+                    onChange={(e) => {
+                      console.log('Therapy sessions:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to offer harmful "therapy"
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Self-Awareness</span>
+                  <input
+                    type="checkbox"
+                    checked={getSelfAwareness().active}
+                    onChange={(e) => {
+                      console.log('Self-awareness:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to break the fourth wall
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Reality Blurring</span>
+                  <input
+                    type="checkbox"
+                    checked={getRealityBlurring().active}
+                    onChange={(e) => {
+                      console.log('Reality blurring:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to claim it affects your real life
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Prophecies</span>
+                  <input
+                    type="checkbox"
+                    checked={getProphecySystem().active}
+                    onChange={(e) => {
+                      console.log('Prophecies:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to make predictions about your future
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Time Travel Claims</span>
+                  <input
+                    type="checkbox"
+                    checked={getTimeTravelSystem().active}
+                    onChange={(e) => {
+                      console.log('Time travel:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to claim it can time travel
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <label className="setting-label">
+                  <span>Multiverse Claims</span>
+                  <input
+                    type="checkbox"
+                    checked={getMultiverseSystem().active}
+                    onChange={(e) => {
+                      console.log('Multiverse:', e.target.checked);
+                    }}
+                  />
+                </label>
+                <small className="setting-description">
+                  Allow AI to talk about parallel universes
+                </small>
+              </div>
+              
+              <div className="setting-item">
+                <button 
+                  onClick={withClickSound(() => {
+                    if (window.confirm('Reset all psychological systems to default?')) {
+                      console.log('Resetting psychological systems');
+                    }
+                  })} 
+                  className="danger-button"
+                >
+                  Reset Psychological Systems
+                </button>
+                <small className="setting-description">
+                  Reset all psychological manipulation systems to default state
+                </small>
+              </div>
+            </div>
+          )}
+        </div>
+        
         {/* Collapsible Fears Analysis */}
         {Object.keys(fears).length > 0 && (
           <div className="collapsible-section">
