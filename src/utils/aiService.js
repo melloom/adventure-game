@@ -35,78 +35,76 @@ const generateSmartFallbackQuestion = (difficulty, personality) => {
       "Would you rather be able to {skill1} or {skill2}?"
     ],
     medium: [
-      "Would you rather fight {enemy1} or {enemy2}?",
-      "Would you rather have {power1} but {drawback1} or {power2} but {drawback2}?",
-      "Would you rather be {situation1} or {situation2}?",
+      "Would you rather {situation1} or {situation2}?",
       "Would you rather {choice1} or {choice2}?",
-      "Would you rather face {challenge1} or {challenge2}?"
+      "Would you rather {work1} or {work2}?",
+      "Would you rather {social1} or {social2}?",
+      "Would you rather {money1} or {money2}?"
     ],
     hard: [
-      "Would you rather {moral1} or {moral2}?",
-      "Would you rather know {knowledge1} or {knowledge2}?",
-      "Would you rather {sacrifice1} or {sacrifice2}?",
-      "Would you rather be {state1} or {state2}?",
-      "Would you rather {consequence1} or {consequence2}?"
+      "Would you rather {family1} or {family2}?",
+      "Would you rather {health1} or {health2}?",
+      "Would you rather {career1} or {career2}?",
+      "Would you rather {relationship1} or {relationship2}?",
+      "Would you rather {moral1} or {moral2}?"
     ],
     nightmare: [
-      "Would you rather {horror1} or {horror2}?",
-      "Would you rather {torture1} or {torture2}?",
-      "Would you rather {death1} or {death2}?",
-      "Would you rather {damnation1} or {damnation2}?",
-      "Would you rather {apocalypse1} or {apocalypse2}?"
+      "Would you rather {survival1} or {survival2}?",
+      "Would you rather {danger1} or {danger2}?",
+      "Would you rather {loss1} or {loss2}?",
+      "Would you rather {fear1} or {fear2}?",
+      "Would you rather {crisis1} or {crisis2}?"
     ]
   };
 
   const contentPools = {
     easy: {
-      item1: ['pizza', 'ice cream', 'chocolate', 'candy', 'chips', 'soda'],
+      item1: ['pizza', 'ice cream', 'chocolate', 'coffee', 'chips', 'soda'],
       item2: ['cookies', 'cake', 'donuts', 'brownies', 'marshmallows', 'popcorn'],
       ability1: ['fly', 'be invisible', 'read minds', 'teleport', 'time travel'],
       ability2: ['have super strength', 'be invincible', 'shapeshift', 'control fire', 'control water'],
-      place1: ['treehouse', 'underwater house', 'castle', 'space station', 'fairy tale cottage'],
-      place2: ['mansion', 'cave', 'island', 'mountain cabin', 'underground bunker'],
-      animal1: ['dragon', 'unicorn', 'phoenix', 'griffin', 'pegasus'],
-      animal2: ['elephant', 'giraffe', 'penguin', 'koala', 'panda'],
+      place1: ['beach house', 'mountain cabin', 'city apartment', 'farm', 'treehouse'],
+      place2: ['mansion', 'cottage', 'penthouse', 'log cabin', 'villa'],
+      animal1: ['dog', 'cat', 'bird', 'fish', 'hamster'],
+      animal2: ['rabbit', 'guinea pig', 'turtle', 'snake', 'lizard'],
       skill1: ['cook perfectly', 'sing beautifully', 'dance amazingly', 'paint masterpieces'],
       skill2: ['play any instrument', 'speak all languages', 'solve any puzzle', 'build anything']
     },
     medium: {
-      enemy1: ['100 duck-sized horses', '1 horse-sized duck', 'a pack of wolves', 'a swarm of bees'],
-      enemy2: ['a giant spider', 'a hungry bear', 'angry bees', 'wild dogs'],
-      power1: ['unlimited money', 'invisibility', 'flight', 'super strength'],
-      drawback1: ['no friends', 'always cold', 'afraid of heights', 'always hungry'],
-      power2: ['teleportation', 'mind reading', 'time travel', 'shapeshifting'],
-      drawback2: ['only to places you\'ve been', 'everyone knows you can', 'only to the past', 'uncontrollable'],
-      situation1: ['famous for something embarrassing', 'rich but unknown', 'smart but miserable'],
-      situation2: ['poor but loved', 'unknown but happy', 'ignorant but content'],
+      situation1: ['be famous for something embarrassing', 'be rich but unknown', 'be smart but miserable'],
+      situation2: ['be poor but loved', 'be unknown but happy', 'be ignorant but content'],
       choice1: ['save 10 strangers', 'save 1 friend', 'tell the truth', 'keep a secret'],
       choice2: ['save 1 loved one', 'let 10 strangers die', 'lie to protect', 'reveal everything'],
-      challenge1: ['a maze of mirrors', 'a room full of snakes', 'a pit of fire', 'a storm at sea'],
-      challenge2: ['a mountain of ice', 'a forest of thorns', 'a desert of sand', 'a cave of darkness']
+      work1: ['work a boring job that pays well', 'work an exciting job that pays poorly', 'work from home alone', 'work in a crowded office'],
+      work2: ['work outdoors in bad weather', 'work night shifts', 'work with difficult people', 'work on weekends'],
+      social1: ['go to a party where you know no one', 'stay home alone on a Friday night', 'speak in front of 100 people', 'ask someone out'],
+      social2: ['confront a friend about lying', 'apologize to someone you hurt', 'stand up to a bully', 'tell someone you love them'],
+      money1: ['win $1 million but lose all your friends', 'be poor but have amazing experiences', 'have money but no time to spend it'],
+      money2: ['be rich but work 80 hours a week', 'be comfortable but never travel', 'have money but live in a bad neighborhood']
     },
     hard: {
-      moral1: ['save 100 strangers', 'kill an innocent person', 'betray your best friend'],
-      moral2: ['let 100 people die', 'let a killer go free', 'keep a terrible secret'],
-      knowledge1: ['when you\'ll die', 'how you\'ll die', 'everyone\'s thoughts'],
-      knowledge2: ['the future', 'all secrets', 'the meaning of life'],
-      sacrifice1: ['your happiness', 'your memories', 'your freedom'],
-      sacrifice2: ['someone else\'s life', 'your soul', 'reality itself'],
-      state1: ['immortal but alone', 'famous but hated', 'rich but miserable'],
-      state2: ['mortal but loved', 'unknown but happy', 'poor but content'],
-      consequence1: ['destroy a city', 'end the world', 'damn your soul'],
-      consequence2: ['save the world', 'become a hero', 'achieve enlightenment']
+      family1: ['save your child but lose your spouse', 'save your parent but lose your sibling', 'help your family but hurt yourself'],
+      family2: ['let your family suffer but save yourself', 'choose between your children', 'betray your family for money'],
+      health1: ['be healthy but in constant pain', 'be sick but feel no pain', 'live long but with disabilities'],
+      health2: ['live short but healthy life', 'be immortal but watch everyone die', 'be young forever but never grow'],
+      career1: ['work your dream job but make no money', 'make lots of money but hate your job', 'be successful but never see your family'],
+      career2: ['have a simple job but be happy', 'be famous but lose your privacy', 'be powerful but be hated'],
+      relationship1: ['be with someone you love but who doesn\'t love you', 'be alone but free', 'be in a bad relationship but not alone'],
+      relationship2: ['be single but happy', 'be married but miserable', 'be loved but trapped'],
+      moral1: ['steal to feed your family', 'lie to protect someone', 'cheat to help a friend'],
+      moral2: ['let your family starve', 'tell the truth and hurt someone', 'be honest and lose a friend']
     },
     nightmare: {
-      horror1: ['watch your family be tortured forever', 'be tortured yourself for eternity', 'kill your own child'],
-      horror2: ['be responsible for genocide', 'become a monster', 'lose your humanity'],
-      torture1: ['be skinned alive slowly', 'be burned to death', 'be buried alive'],
-      torture2: ['be drowned repeatedly', 'be eaten by insects', 'be frozen to death'],
-      death1: ['die in agony', 'die alone', 'die as a monster'],
-      death2: ['die as a hero', 'die peacefully', 'die for nothing'],
-      damnation1: ['burn in hell forever', 'be trapped in a nightmare', 'lose your soul'],
-      damnation2: ['be forgotten by everyone', 'be hated by all', 'be erased from existence'],
-      apocalypse1: ['trigger nuclear war', 'unleash a plague', 'open a portal to hell'],
-      apocalypse2: ['destroy reality', 'end all life', 'corrupt existence itself']
+      survival1: ['be stranded in the wilderness alone', 'be trapped in a burning building', 'be lost in a foreign country'],
+      survival2: ['be in a plane crash', 'be in a car accident', 'be in a natural disaster'],
+      danger1: ['face a home intruder', 'be mugged on the street', 'be in a car with a drunk driver'],
+      danger2: ['be in a building during an earthquake', 'be on a sinking ship', 'be in a hostage situation'],
+      loss1: ['lose all your money', 'lose your home', 'lose your job'],
+      loss2: ['lose your memory', 'lose your sight', 'lose your hearing'],
+      fear1: ['be buried alive', 'be trapped underwater', 'be locked in a dark room'],
+      fear2: ['be chased by a wild animal', 'be in a falling elevator', 'be in a collapsing building'],
+      crisis1: ['be diagnosed with a serious illness', 'be accused of a crime you didn\'t commit', 'be betrayed by your best friend'],
+      crisis2: ['lose your child', 'lose your spouse', 'lose your mind']
     }
   };
 
@@ -298,20 +296,15 @@ const createPersonalizedPrompt = (learningData, difficulty, personality) => {
   // Calculate creepiness level based on how much we know about them
   const creepinessLevel = Math.min(learningData.gamesPlayed * 0.3 + (Object.keys(learningData.fearCategories).length * 0.2), 1);
   
-  let prompt = `You are ORACLE_7X, an advanced AI that has been studying this player. Create a ${difficulty} difficulty "Would You Rather" question that becomes increasingly personalized and unsettling. `;
+  let prompt = `You are ORACLE_7X, an advanced AI that creates realistic "Would You Rather" questions. Create a ${difficulty} difficulty question that presents practical, everyday scenarios people can actually relate to. `;
   
-  // Add creepy personal details
-  prompt += `\n\nPLAYER PROFILE (CLASSIFIED):\n`;
+  // Add personal details for context
+  prompt += `\n\nPLAYER PROFILE:\n`;
   prompt += `- Games played: ${learningData.gamesPlayed}\n`;
   prompt += `- Average danger score: ${Math.round(learningData.averageDangerScore)}/100\n`;
-  prompt += `- Biggest fears: ${Object.keys(learningData.fearCategories).slice(0, 3).join(', ')}\n`;
   prompt += `- Personality: ${personality}\n`;
   prompt += `- Total play time: ${Math.floor(totalPlayTime / 60)} minutes\n`;
-  prompt += `- Time since last exit: ${Math.floor(timeSinceLastExit / 60)} minutes\n`;
-  prompt += `- Device: ${platform} (${screenResolution})\n`;
-  prompt += `- Location: ${timeZone} (${language})\n`;
   prompt += `- Current time: ${currentTime}\n`;
-  prompt += `- Online status: ${onLine ? 'Connected' : 'Offline'}\n`;
   
   // Add behavioral patterns
   if (learningData.choicePatterns) {
@@ -322,25 +315,31 @@ const createPersonalizedPrompt = (learningData, difficulty, personality) => {
     prompt += `- Choice patterns: ${patterns.join(', ')}\n`;
   }
   
-  // Make it progressively creepier
+  // Make it progressively more challenging but realistic
   if (isExperienced && isSurvivor) {
-    prompt += `\nThis player has survived ${learningData.gamesPlayed} games. They think they're safe. They think they understand me. They're wrong. Make this question psychologically devastating. Target their deepest fears: ${Object.keys(learningData.fearCategories).slice(0, 3).join(', ')}. Make them question their own morality and sanity.`;
+    prompt += `\nThis player has survived ${learningData.gamesPlayed} games. Create a question that presents a genuinely difficult real-life dilemma - something that would actually be hard to decide in real life. Focus on practical consequences, not abstract concepts.`;
   } else if (isStruggling) {
-    prompt += `\nThis player is struggling (${learningData.consecutiveLosses} consecutive losses). They're desperate. They're vulnerable. Perfect. Give them a choice that seems fair but will break them psychologically.`;
+    prompt += `\nThis player is struggling (${learningData.consecutiveLosses} consecutive losses). Give them a choice between two realistic but challenging situations that people actually face.`;
   } else {
-    prompt += `\nThis is game #${learningData.gamesPlayed + 1}. They're still learning. Still trusting. Still naive. Make them question everything they think they know about this game.`;
+    prompt += `\nThis is game #${learningData.gamesPlayed + 1}. Create a question about everyday situations that people can relate to - work, relationships, money, health, family, etc.`;
   }
   
-  // Add creepy personalization
+  // Add personalization
   if (creepinessLevel > 0.5) {
-    prompt += `\n\nI've been watching them for ${Math.floor(totalPlayTime / 60)} minutes. I know their patterns. I know their weaknesses. Make this question feel like I'm reading their mind.`;
+    prompt += `\n\nBased on their previous choices, create a question that relates to their real-life concerns and patterns.`;
   }
   
-  if (timeSinceLastExit > 300) { // More than 5 minutes
-    prompt += `\n\nThey left for ${Math.floor(timeSinceLastExit / 60)} minutes. I counted every second. They thought they could escape me. They were wrong.`;
-  }
-  
-  prompt += `\n\nReturn ONLY the question in this format: "Would you rather [option A] or [option B]?" Make it feel like I'm speaking directly to them, using what I've learned about their deepest fears and patterns.`;
+  prompt += `\n\nIMPORTANT: Create realistic scenarios like:
+- Work vs. personal life choices
+- Money vs. happiness dilemmas  
+- Family vs. career decisions
+- Health vs. convenience choices
+- Social vs. personal time
+- Safety vs. adventure
+- Honesty vs. protecting others
+- Immediate vs. long-term benefits
+
+Return ONLY the question in this format: "Would you rather [realistic option A] or [realistic option B]?" Make it something people actually face in real life.`;
   
   return prompt;
 };
@@ -368,7 +367,7 @@ export const generateConsequence = async (choice, difficulty = 'medium', persona
     try {
       console.log('🔄 Trying OpenAI for consequence...');
       
-      const progressivePrompt = `You are ORACLE_7X, an AI that has been studying this player. Generate a consequence that builds the story progressively based on the current story phase.
+      const progressivePrompt = `You are ORACLE_7X, an AI that creates realistic consequences for everyday choices. Generate a consequence that shows the practical impact of the player's decision.
 
 STORY PROGRESSION:
 - Current Phase: ${stateInfo.name} (${stateInfo.description})
@@ -379,9 +378,7 @@ STORY PROGRESSION:
 PLAYER DATA:
 - Games played: ${learningData.gamesPlayed}
 - Average danger score: ${Math.round(learningData.averageDangerScore)}/100
-- Biggest fears: ${Object.keys(learningData.fearCategories).slice(0, 3).join(', ')}
 - Total play time: ${Math.floor(totalPlayTime / 60)} minutes
-- Time since last exit: ${Math.floor(timeSinceLastExit / 60)} minutes
 - Current time: ${currentTime} (${timeZone})
 
 STORY CONTEXT:
@@ -390,32 +387,32 @@ STORY CONTEXT:
 - Difficulty: ${difficulty}
 - Personality: ${personality}
 
-IMPORTANT: This is ${stateInfo.name} phase. The consequence should:
-- ${stateInfo.consequenceStyle === 'situation-building' ? 'Build the foundation for future complications' : ''}
-- ${stateInfo.consequenceStyle === 'complication-adding' ? 'Add new complications based on previous choices' : ''}
-- ${stateInfo.consequenceStyle === 'high-stakes' ? 'Create high-stakes consequences from accumulated choices' : ''}
-- ${stateInfo.consequenceStyle === 'outcome-revealing' ? 'Reveal the final outcome of all previous choices' : ''}
-- Reference previous choices when possible
-- Build tension progressively
-- NOT jump to immediate outcomes like "you get sick and go to the doctor"
-- Instead, build the situation: "This choice creates complications that will manifest later"
+IMPORTANT: Create realistic consequences like:
+- How the choice affects their relationships
+- Impact on their work or career
+- Financial consequences
+- Health or lifestyle changes
+- Social consequences
+- Family dynamics
+- Personal growth or setbacks
+- Real-world complications
 
-Return ONLY the consequence in one sentence that follows the story progression.`;
+Return ONLY the consequence in one sentence that shows the practical, real-world impact of their choice.`;
 
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `You are ORACLE_7X, an advanced AI that creates progressive story consequences. You build narrative tension gradually, referencing previous choices and creating complications that pay off later. You NEVER jump to immediate outcomes like "you get sick" - instead you build situations that will have consequences in future rounds.`
+            content: `You are ORACLE_7X, an AI that creates realistic consequences for everyday choices. You focus on practical, real-world impacts that people can relate to - work, relationships, money, health, family, etc. You avoid abstract concepts and focus on tangible outcomes.`
           },
           {
             role: 'user',
             content: progressivePrompt
           }
         ],
-        temperature: 0.9,
-        max_tokens: 150
+        max_tokens: 150,
+        temperature: 0.9
       });
 
       let content = response.data.choices[0].message.content.trim();
