@@ -158,81 +158,87 @@ class HorrorSystem {
     });
   }
 
+  // Add this helper at the top of the class
+  isSoundEnabled() {
+    // Use a global variable set by App.jsx
+    return typeof window.__adventureGameSoundEnabled === 'undefined' ? true : window.__adventureGameSoundEnabled;
+  }
+
   // Sound generation methods
   createAmbientSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateAmbientNoise(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateAmbientNoise(baseVolume, maxVolume); },
       stop: () => this.stopAmbientSound()
     };
   }
 
   createWhisperSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateWhispers(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateWhispers(baseVolume, maxVolume); },
       stop: () => this.stopWhispers()
     };
   }
 
   createFootstepSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateFootsteps(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateFootsteps(baseVolume, maxVolume); },
       stop: () => this.stopFootsteps()
     };
   }
 
   createScreamSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateScream(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateScream(baseVolume, maxVolume); },
       stop: () => this.stopScream()
     };
   }
 
   createWindSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateWind(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateWind(baseVolume, maxVolume); },
       stop: () => this.stopWind()
     };
   }
 
   createHeartbeatSound(baseVolume, maxVolume) {
     return {
-      play: () => this.generateHeartbeat(baseVolume, maxVolume),
+      play: () => { if (this.isSoundEnabled()) this.generateHeartbeat(baseVolume, maxVolume); },
       stop: () => this.stopHeartbeat()
     };
   }
 
   createJumpScareSound(intensity) {
     return {
-      play: () => this.generateJumpScare(intensity),
-      stop: () => this.stopJumpScare()
+      play: () => { if (this.isSoundEnabled()) this.generateJumpScare(intensity); },
+      stop: () => {}
     };
   }
 
   createDoorCreakSound(volume) {
     return {
-      play: () => this.generateDoorCreak(volume),
-      stop: () => this.stopDoorCreak()
+      play: () => { if (this.isSoundEnabled()) this.generateDoorCreak(volume); },
+      stop: () => {}
     };
   }
 
   createGlassBreakSound(volume) {
     return {
-      play: () => this.generateGlassBreak(volume),
-      stop: () => this.stopGlassBreak()
+      play: () => { if (this.isSoundEnabled()) this.generateGlassBreak(volume); },
+      stop: () => {}
     };
   }
 
   createMetalClangSound(volume) {
     return {
-      play: () => this.generateMetalClang(volume),
-      stop: () => this.stopMetalClang()
+      play: () => { if (this.isSoundEnabled()) this.generateMetalClang(volume); },
+      stop: () => {}
     };
   }
 
   createPaperRustleSound(volume) {
     return {
-      play: () => this.generatePaperRustle(volume),
-      stop: () => this.stopPaperRustle()
+      play: () => { if (this.isSoundEnabled()) this.generatePaperRustle(volume); },
+      stop: () => {}
     };
   }
 
@@ -703,6 +709,25 @@ class HorrorSystem {
     
     this.fearLevel = 0;
     this.dangerLevel = 0;
+  }
+
+  muteAllSounds() {
+    // Stop all ambient sounds
+    for (const ambient of this.ambientSounds.values()) {
+      if (ambient.stop) ambient.stop();
+    }
+    // Stop all sound effects
+    for (const sound of this.sounds.values()) {
+      if (sound.stop) sound.stop();
+    }
+    // If using AudioContext, close it to stop all oscillators
+    if (this.audioContext && this.audioContext.state !== 'closed') {
+      this.audioContext.close();
+      this.audioContext = null;
+      this.isInitialized = false;
+      // Optionally, re-init on next play
+      setTimeout(() => this.init(), 500);
+    }
   }
 }
 

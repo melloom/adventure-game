@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGameStats } from '../hooks/useLocalStorage';
 
 const AchievementSystem = () => {
   const { stats } = useGameStats();
   const [showAchievements, setShowAchievements] = useState(false);
+  const overlayRef = useRef(null);
 
   // Define special achievements
   const achievements = [
@@ -67,6 +68,16 @@ const AchievementSystem = () => {
 
   const unlockedCount = achievements.filter(a => a.unlocked).length;
 
+  // Scroll to overlay when it opens
+  useEffect(() => {
+    if (showAchievements && overlayRef.current) {
+      overlayRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, [showAchievements]);
+
   return (
     <div className="achievement-system">
       <button 
@@ -86,7 +97,7 @@ const AchievementSystem = () => {
       </button>
 
       {showAchievements && (
-        <div className="achievement-overlay">
+        <div className="achievement-overlay" ref={overlayRef}>
           <div className="achievement-content">
             <div className="achievement-header">
               <h2>🏅 ACHIEVEMENT SYSTEM</h2>

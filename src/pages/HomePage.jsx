@@ -2,35 +2,38 @@ import React, { useState } from 'react';
 import { useGameStats } from '../hooks/useLocalStorage';
 import { useCampaign } from '../hooks/useCampaign';
 import BadgeSystem from '../components/BadgeSystem';
+import AchievementSystem from '../components/AchievementSystem';
 import CampaignSelection from '../components/CampaignSelection';
+import useClickSound from '../hooks/useClickSound';
 
-const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) => {
+const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult, hasSavedGame, onContinueSavedGame }) => {
   const { stats } = useGameStats();
   const { getCampaignProgress } = useCampaign();
+  const { withClickSound } = useClickSound();
   const [showCampaignSelection, setShowCampaignSelection] = useState(false);
   const [gameMode, setGameMode] = useState('classic'); // 'classic' or 'campaign'
 
   const campaignProgress = getCampaignProgress();
 
-  const handleStartClassicGame = () => {
+  const handleStartClassicGame = withClickSound(() => {
     setGameMode('classic');
     onStartGame();
-  };
+  });
 
-  const handleStartCampaignGame = () => {
+  const handleStartCampaignGame = withClickSound(() => {
     setGameMode('campaign');
     setShowCampaignSelection(true);
-  };
+  });
 
-  const handleChapterSelect = (chapter) => {
+  const handleChapterSelect = withClickSound((chapter) => {
     setShowCampaignSelection(false);
     onStartGame(chapter);
-  };
+  });
 
-  const handleBackToMenu = () => {
+  const handleBackToMenu = withClickSound(() => {
     setShowCampaignSelection(false);
     setGameMode('classic');
-  };
+  });
 
   if (showCampaignSelection) {
     return (
@@ -104,11 +107,11 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
             <div className="stats-grid">
               <div className="stat-item">
                 <span className="stat-label">Games Played</span>
-                <span className="stat-value">{stats.gamesPlayed}</span>
+                <span className="stat-value">{stats.gamesPlayed || 0}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Games Won</span>
-                <span className="stat-value">{stats.gamesWon}</span>
+                <span className="stat-value">{stats.gamesWon || 0}</span>
               </div>
               <div className="stat-item">
                 <span className="stat-label">Win Rate</span>
@@ -118,7 +121,7 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
               </div>
               <div className="stat-item">
                 <span className="stat-label">Best Score</span>
-                <span className="stat-value">{stats.highestScore}</span>
+                <span className="stat-value">{stats.highestScore || 0}</span>
               </div>
             </div>
           </div>
@@ -130,6 +133,20 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
             <h2 className="controls-title">💀 SURVIVAL COMMAND CENTER</h2>
             <p className="controls-subtitle">Your fate awaits... Choose wisely or perish!</p>
             
+            {/* Continue Saved Game */}
+            {hasSavedGame && (
+              <div className="saved-game-section">
+                <h3>💾 Saved Game</h3>
+                <button className="continue-saved-button" onClick={withClickSound(onContinueSavedGame)}>
+                  <span className="button-icon">🔄</span>
+                  <div className="button-info">
+                    <span className="button-name">Continue Saved Game</span>
+                    <span className="button-description">Resume your previous session</span>
+                  </div>
+                </button>
+              </div>
+            )}
+
             {/* Game Modes */}
             <div className="game-modes">
               <h3>🎮 Game Modes</h3>
@@ -152,15 +169,23 @@ const HomePage = ({ onStartGame, onViewStats, onOpenSettings, lastGameResult }) 
               </div>
             </div>
             
-            {/* Badge System */}
-            <BadgeSystem />
+            {/* Badge and Achievement Systems */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '12px', 
+              marginBottom: '20px',
+              alignItems: 'stretch'
+            }}>
+              <BadgeSystem />
+              <AchievementSystem />
+            </div>
             
             {/* Action Buttons */}
             <div className="action-buttons">
-              <button className="stats-button" onClick={onViewStats}>
+              <button className="stats-button" onClick={withClickSound(onViewStats)}>
                 View Full Stats
               </button>
-              <button className="settings-button" onClick={onOpenSettings}>
+              <button className="settings-button" onClick={withClickSound(onOpenSettings)}>
                 Settings
               </button>
             </div>

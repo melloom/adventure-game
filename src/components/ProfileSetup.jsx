@@ -115,6 +115,11 @@ export default function ProfileSetup({ onProfileSaved }) {
             style={{width: '100%', padding: 8, borderRadius: 8, border: '1px solid #333', marginTop: 4}}
             autoFocus
           />
+          {currentStep.key === 'personality' && (
+            <div style={{fontSize: '12px', color: '#888', marginTop: '4px', fontStyle: 'italic'}}>
+              💡 Optional but recommended - helps create more personalized questions
+            </div>
+          )}
         </label>
         {error && <div style={{color:'#ff6b6b', marginBottom: 8}}>{error}</div>}
         {!showAiComment && (

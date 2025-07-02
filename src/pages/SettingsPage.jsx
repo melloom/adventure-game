@@ -3,9 +3,11 @@ import { useGameSettings } from '../hooks/useLocalStorage';
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import StorageAnalytics from '../components/StorageAnalytics';
 import AIPersonalityInterface from '../components/AIPersonalityInterface';
+import useClickSound from '../hooks/useClickSound';
 
-const SettingsPage = ({ onBack }) => {
+const SettingsPage = ({ onBack, onResetProfile }) => {
   const { settings, updateSetting, resetSettings } = useGameSettings();
+  const { withClickSound } = useClickSound();
   const { 
     resetPersonality, 
     getPersonalityInsights, 
@@ -18,23 +20,30 @@ const SettingsPage = ({ onBack }) => {
     updateSetting(key, value);
   };
 
-  const handleResetPersonality = () => {
+  const handleResetPersonality = withClickSound(() => {
     if (window.confirm('Are you sure you want to reset your AI relationship? This will erase all memory of your choices and reset the relationship to neutral.')) {
       resetPersonality();
     }
-  };
+  });
+
+  const handleResetProfile = withClickSound(() => {
+    if (window.confirm('Are you sure you want to reset your profile? This will take you back to the profile setup screen.')) {
+      onResetProfile();
+    }
+  });
 
   const insights = getPersonalityInsights();
   const fears = getPlayerFears();
   const recentChoices = getRecentChoices(5);
 
+  const [showFears, setShowFears] = React.useState(false);
+  const [showChoices, setShowChoices] = React.useState(false);
+
   return (
-    <div className="game-container">
+    <div className="settings-container">
       <h1 className="game-title">Settings</h1>
-      
-      <div className="settings-section">
+      <div className="settings-card">
         <h2>Game Settings</h2>
-        
         <div className="setting-item">
           <label className="setting-label">
             <span>Sound Effects</span>
@@ -45,7 +54,28 @@ const SettingsPage = ({ onBack }) => {
             />
           </label>
         </div>
-
+        <div className="setting-item">
+          <label className="setting-label">
+            <span>Background Music</span>
+            <button
+              className="music-toggle-btn"
+              onClick={() => handleSettingChange('soundEnabled', !settings.soundEnabled)}
+              style={{
+                background: settings.soundEnabled ? '#4CAF50' : '#f44336',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                padding: '8px 16px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+            >
+              {settings.soundEnabled ? '🔊 Playing' : '🔇 Muted'}
+            </button>
+          </label>
+        </div>
         <div className="setting-item">
           <label className="setting-label">
             <span>Difficulty</span>
@@ -59,7 +89,6 @@ const SettingsPage = ({ onBack }) => {
             </select>
           </label>
         </div>
-
         <div className="setting-item">
           <label className="setting-label">
             <span>Auto Save</span>
@@ -70,7 +99,6 @@ const SettingsPage = ({ onBack }) => {
             />
           </label>
         </div>
-
         <div className="setting-item">
           <label className="setting-label">
             <span>Theme</span>
@@ -85,7 +113,6 @@ const SettingsPage = ({ onBack }) => {
             </select>
           </label>
         </div>
-
         <div className="setting-item">
           <label className="setting-label">
             <span>Notifications</span>
@@ -96,7 +123,6 @@ const SettingsPage = ({ onBack }) => {
             />
           </label>
         </div>
-
         <div className="setting-item">
           <label className="setting-label">
             <span>Performance Mode</span>
@@ -111,81 +137,64 @@ const SettingsPage = ({ onBack }) => {
           </small>
         </div>
       </div>
-
-      <div className="settings-section">
+      <div className="settings-card">
         <h2>AI Personality System</h2>
-        
-        {/* AI Personality Interface */}
-        <AIPersonalityInterface 
-          showInsights={true}
-          showRelationship={true}
-        />
-        
-        {/* AI Personality Stats */}
-        <div className="ai-stats-grid">
-          <div className="ai-stat-card">
-            <h4>Relationship Status</h4>
-            <div className="stat-value">{insights.relationshipStatus}</div>
-            <div className="stat-label">Current AI Relationship</div>
-          </div>
-          
-          <div className="ai-stat-card">
-            <h4>Total Choices</h4>
-            <div className="stat-value">{insights.totalChoices}</div>
-            <div className="stat-label">Choices Made</div>
-          </div>
-          
-          <div className="ai-stat-card">
-            <h4>Fears Detected</h4>
-            <div className="stat-value">{insights.fearCount}</div>
-            <div className="stat-label">AI Knows Your Fears</div>
-          </div>
-          
-          <div className="ai-stat-card">
-            <h4>Patterns Found</h4>
-            <div className="stat-value">{insights.patternCount}</div>
-            <div className="stat-label">Choice Patterns</div>
-          </div>
-        </div>
-
-        {/* Player Fears Analysis */}
+        <AIPersonalityInterface showInsights={false} showRelationship={false} />
+        {/* Collapsible Fears Analysis */}
         {Object.keys(fears).length > 0 && (
-          <div className="fears-analysis">
-            <h4>Your Fears (AI Analysis)</h4>
-            <div className="fears-list">
-              {Object.entries(fears)
-                .sort(([,a], [,b]) => b - a)
-                .map(([fear, count]) => (
-                  <div key={fear} className="fear-item">
-                    <span className="fear-name">{fear}</span>
-                    <span className="fear-count">{count} times</span>
+          <div className="collapsible-section">
+            <button 
+              className="collapsible-header"
+              onClick={withClickSound(() => setShowFears(!showFears))}
+            >
+              <span>Your Fears (AI Analysis) - {Object.keys(fears).length} detected</span>
+              <span className="collapsible-icon">{showFears ? '▼' : '▶'}</span>
+            </button>
+            {showFears && (
+              <div className="fears-list compact">
+                {Object.entries(fears)
+                  .sort(([,a], [,b]) => b - a)
+                  .slice(0, 3) // Show only top 3
+                  .map(([fear, count]) => (
+                    <div key={fear} className="fear-item">
+                      <span className="fear-name">{fear}</span>
+                      <span className="fear-count">{count} times</span>
+                    </div>
+                  ))}
+                {Object.keys(fears).length > 3 && (
+                  <div className="more-indicator">+{Object.keys(fears).length - 3} more fears</div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+        {/* Collapsible Recent Choices */}
+        {recentChoices.length > 0 && (
+          <div className="collapsible-section">
+            <button 
+              className="collapsible-header"
+              onClick={withClickSound(() => setShowChoices(!showChoices))}
+            >
+              <span>Recent Choices - {recentChoices.length} choices</span>
+              <span className="collapsible-icon">{showChoices ? '▼' : '▶'}</span>
+            </button>
+            {showChoices && (
+              <div className="choices-list compact">
+                {recentChoices.slice(0, 3).map((choice, index) => (
+                  <div key={index} className="choice-item">
+                    <span className="choice-text">{choice.choice}</span>
+                    <span className="choice-round">R{choice.context.round}</span>
                   </div>
                 ))}
-            </div>
+                {recentChoices.length > 3 && (
+                  <div className="more-indicator">+{recentChoices.length - 3} more choices</div>
+                )}
+              </div>
+            )}
           </div>
         )}
-
-        {/* Recent Choices */}
-        {recentChoices.length > 0 && (
-          <div className="recent-choices">
-            <h4>Recent Choices</h4>
-            <div className="choices-list">
-              {recentChoices.map((choice, index) => (
-                <div key={index} className="choice-item">
-                  <span className="choice-text">{choice.choice}</span>
-                  <span className="choice-round">Round {choice.context.round}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* AI Personality Reset */}
         <div className="setting-item">
-          <button 
-            onClick={handleResetPersonality}
-            className="danger-button"
-          >
+          <button onClick={handleResetPersonality} className="danger-button">
             Reset AI Relationship
           </button>
           <small className="setting-description">
@@ -193,37 +202,43 @@ const SettingsPage = ({ onBack }) => {
           </small>
         </div>
       </div>
-
-      <div className="settings-section">
+      <div className="settings-card">
         <h2>Storage Management</h2>
         <StorageAnalytics />
       </div>
-
-      <div className="settings-section">
+      <div className="settings-card">
         <h2>Data Management</h2>
-        
         <div className="setting-item">
-          <button 
-            onClick={resetSettings}
-            className="danger-button"
-          >
+          <button onClick={resetSettings} className="danger-button">
             Reset All Settings
           </button>
           <small className="setting-description">
             This will reset all settings to their default values
           </small>
         </div>
+        <div className="setting-item">
+          <button onClick={handleResetProfile} className="danger-button">
+            Reset Profile
+          </button>
+          <small className="setting-description">
+            This will reset your profile and take you back to the profile setup screen
+          </small>
+        </div>
       </div>
-
       <div className="settings-actions">
-        <button onClick={onBack} className="back-button">
+        <button onClick={withClickSound(onBack)} className="back-button">
           Back to Menu
         </button>
       </div>
-
       <style jsx>{`
-        .settings-section {
-          margin-bottom: 30px;
+        .settings-container {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 20px;
+        }
+
+        .settings-card {
+          flex: 1;
           padding: 20px;
           background: rgba(255, 255, 255, 0.1);
           border-radius: 10px;
@@ -448,6 +463,96 @@ const SettingsPage = ({ onBack }) => {
             font-size: 20px;
           }
         }
+
+        /* Collapsible Section */
+        .collapsible-section {
+          margin-bottom: 20px;
+        }
+
+        .collapsible-header {
+          background: none;
+          border: none;
+          padding: 0;
+          font: inherit;
+          cursor: pointer;
+          outline: inherit;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          width: 100%;
+          text-align: left;
+          color: #fff;
+          font-weight: 500;
+        }
+
+        .collapsible-icon {
+          transition: transform 0.2s;
+        }
+
+        .collapsible-header.collapsed .collapsible-icon {
+          transform: rotate(90deg);
+        }
+
+                 .fears-list.compact {
+           margin-top: 12px;
+         }
+
+         .fears-list.compact .fear-item {
+           padding: 8px 12px;
+           background: rgba(255, 255, 255, 0.05);
+           border-radius: 6px;
+           margin-bottom: 8px;
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+         }
+
+         .fears-list.compact .fear-name {
+           font-weight: 500;
+           color: #fff;
+           text-transform: capitalize;
+         }
+
+         .fears-list.compact .fear-count {
+           font-size: 12px;
+           color: #ff4757;
+           font-weight: 600;
+         }
+
+         .more-indicator {
+           font-size: 12px;
+           color: #999;
+           font-style: italic;
+           text-align: center;
+           padding: 8px;
+         }
+
+         .choices-list.compact {
+           margin-top: 12px;
+         }
+
+         .choices-list.compact .choice-item {
+           padding: 8px 12px;
+           background: rgba(255, 255, 255, 0.05);
+           border-radius: 6px;
+           margin-bottom: 8px;
+           display: flex;
+           justify-content: space-between;
+           align-items: center;
+         }
+
+         .choices-list.compact .choice-text {
+           font-size: 14px;
+           color: #fff;
+           flex: 1;
+           margin-right: 10px;
+         }
+
+         .choices-list.compact .choice-round {
+           font-size: 12px;
+           color: #2196f3;
+           font-weight: 600;
+         }
       `}</style>
     </div>
   );

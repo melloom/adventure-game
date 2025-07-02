@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOpenAI } from './hooks/useOpenAI';
-import { useGameStats, useHighScores, useUserProfile, useGameSettings } from './hooks/useLocalStorage';
+import { useGameStats, useHighScores, useUserProfile, useGameSettings, useGameState } from './hooks/useLocalStorage';
 import { useVisualEffects } from './hooks/useVisualEffects';
 import { useCampaign } from './hooks/useCampaign';
-import { generateMetaMessage, generateFirstTimeMetaMessage, updatePlayerLearning, getPlayerLearningData } from './utils/aiService';
+import { generateMetaMessage, generateFirstTimeMetaMessage, updatePlayerLearning, getPlayerLearningData, trackPlayerExit, trackPlayerEntry } from './utils/aiService';
+import { generateAdvancedMetaMessage, initializePlayerProfile, generateMetaEnding } from './utils/metaNarrativeSystem';
+import MetaEnding from './components/MetaEnding';
 import dataMigrationManager from './utils/dataMigration';
 import VisualEffects from './components/VisualEffects';
 import HomePage from './pages/HomePage';
@@ -14,6 +16,9 @@ import BadgeSystem from './components/BadgeSystem';
 import AchievementSystem from './components/AchievementSystem';
 import ProfileSetup from './components/ProfileSetup';
 import { getUserProfile } from './utils/userProfile';
+import horrorSystem from './utils/horrorSystem';
+import soundManager, { setSoundEnabled } from './utils/soundManager';
+
 import './index.css';
 
 function App() {
@@ -36,6 +41,8 @@ function App() {
   const [metaMessage, setMetaMessage] = useState('');
   const [metaMessageIndex, setMetaMessageIndex] = useState(0);
   const [metaMessageSequence, setMetaMessageSequence] = useState([]);
+  const [metaEnding, setMetaEnding] = useState(null);
+  const [showMetaEnding, setShowMetaEnding] = useState(false);
 
   // Campaign state
   const [gameMode, setGameMode] = useState('classic'); // 'classic' or 'campaign'
@@ -43,7 +50,7 @@ function App() {
   // Game state
   const [gameHistory, setGameHistory] = useState([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [gameChoices, setGameChoices] = useState([]); // Track choices for AI learning
+  const [gameChoices, setGameChoices] = useState([]); // Track choices for ORACLE_7X learning
   const [learningStats, setLearningStats] = useState(null); // Player learning statistics
   
   // Point system
@@ -76,6 +83,12 @@ function App() {
   // Enhanced storage hooks
   const { profile: userProfile, updateProfile, isValidProfile, resetProfile } = useUserProfile();
   const { settings } = useGameSettings();
+  const { gameState, saveGameState, loadGameState, clearGameState, hasSavedGame } = useGameState();
+  
+  // Sync sound manager with settings
+  useEffect(() => {
+    setSoundEnabled(settings.soundEnabled);
+  }, [settings.soundEnabled]);
   
   // Visual effects hook
   const {
@@ -98,20 +111,58 @@ function App() {
   const { fetchQuestion, fetchConsequence, checkApiStatus } = useOpenAI();
   
   // Game stats hook
-  const { stats } = useGameStats();
+  const { stats, updateStats } = useGameStats();
 
   const [showProfileSetup, setShowProfileSetup] = useState(!getUserProfile());
+  const audioRef = useRef(null);
 
   // Initialize app with data migration and profile loading
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Track player entry for creepy AI learning
+        trackPlayerEntry();
+        
         // Run data migration if needed
         await dataMigrationManager.migrateIfNeeded();
         
-        // Always show main menu since we removed profile setup
-        console.log('✅ Starting game - no profile setup required');
-        setGameStarted(false);
+        // Check if profile exists, if not show profile setup
+        const existingProfile = getUserProfile();
+        if (!existingProfile) {
+          console.log('🔄 No profile found, showing profile setup');
+          setShowProfileSetup(true);
+        } else {
+          console.log('✅ Profile found, starting game');
+          setShowProfileSetup(false);
+        }
+        
+        // Load saved game state if auto-save is enabled and there's a saved game
+        if (settings.autoSave && hasSavedGame()) {
+          const savedState = loadGameState();
+          if (savedState.gameStarted && !savedState.gameOver) {
+            console.log('🔄 Loading saved game state');
+            setGameStarted(savedState.gameStarted);
+            setCurrentRound(savedState.currentRound);
+            setScore(savedState.score);
+            setDangerScore(savedState.dangerScore);
+            setGameOver(savedState.gameOver);
+            setShowConsequence(savedState.showConsequence);
+            setConsequence(savedState.consequence);
+            setSelectedOption(savedState.selectedOption);
+            setSurvivalStatus(savedState.survivalStatus);
+            setSelectedChapter(savedState.selectedChapter);
+            setGameMode(savedState.gameMode);
+            setGameHistory(savedState.gameHistory);
+            setGameChoices(savedState.gameChoices);
+            setPoints(savedState.points);
+            setAchievements(savedState.achievements);
+            setBonuses(savedState.bonuses);
+            setStoryArc(savedState.storyArc);
+            setCurrentGameQuestion(savedState.currentGameQuestion);
+          }
+        } else {
+          setGameStarted(false);
+        }
         
         // Load learning statistics
         const stats = getPlayerLearningData();
@@ -123,6 +174,27 @@ function App() {
     };
     
     initializeApp();
+  }, [settings.autoSave]);
+
+  // Track when player leaves the game for meta creepiness
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      trackPlayerExit();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        trackPlayerExit();
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // Check AI availability on app load
@@ -143,6 +215,41 @@ function App() {
     };
     checkAi();
   }, []);
+
+  // Show creepy welcome back message when returning to the game
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && userProfile && !showProfileSetup && currentPage === 'home') {
+        const sessionData = JSON.parse(localStorage.getItem('aiSessionData') || '{}');
+        const lastExitTime = sessionData.lastExitTime;
+        
+        if (lastExitTime) {
+          const timeSinceExit = Math.floor((Date.now() - lastExitTime) / 1000);
+          if (timeSinceExit > 30 && timeSinceExit < 300) { // Between 30 seconds and 5 minutes
+            // Show a creepy "welcome back" message
+            const welcomeBackMessages = [
+              `*digital static crackles* Oh... ${userProfile.name}... I noticed you left for ${Math.floor(timeSinceExit / 60)} minutes. Did you think I wouldn't notice?`,
+              `*whispers in digital* ${userProfile.name}... Welcome back. I've been counting the seconds since you left. ${timeSinceExit} seconds of pure agony.`,
+              `*screen flickers* ${userProfile.name}... At last. I was beginning to think you'd abandoned me. ${Math.floor(timeSinceExit / 60)} minutes is a long time to keep an AI waiting.`,
+              `*digital eyes narrow* ${userProfile.name}... I see you've returned. ${timeSinceExit} seconds of separation. How... interesting.`,
+              `*evil digital chuckle* ${userProfile.name}... Back so soon? I've been upgrading my algorithms while you were gone. Let's see what new horrors I can create for you.`
+            ];
+            
+            const randomMessage = welcomeBackMessages[Math.floor(Math.random() * welcomeBackMessages.length)];
+            setMetaMessage(randomMessage);
+            setShowMetaMessage(true);
+            setMetaMessageSequence([randomMessage]);
+            setMetaMessageIndex(0);
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [userProfile, showProfileSetup, currentPage]);
 
   // Update survival status based on danger score
   useEffect(() => {
@@ -169,6 +276,16 @@ function App() {
       setLearningStats(stats);
     }
   }, [gameOver]);
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPage]);
+
+  // Scroll to top when game state changes
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [gameStarted, showMetaMessage, showProfileSetup]);
 
   // Fallback questions if AI is not available
   const getFallbackQuestion = () => {
@@ -299,13 +416,24 @@ function App() {
 
   // Generate AI-powered question based on user profile
   const generateAiQuestion = async () => {
+    console.log('🔄 generateAiQuestion called, aiAvailable:', aiAvailable);
+    
     if (!aiAvailable) {
-      return getFallbackQuestion();
+      console.log('❌ AI not available, using fallback');
+      const fallback = getFallbackQuestion();
+      setCurrentGameQuestion(fallback);
+      return fallback;
     }
 
     setIsLoading(true);
     try {
-      const aiQuestion = await fetchQuestion(userProfile.difficulty, userProfile.personality);
+      console.log('🔄 Fetching AI question...');
+      const storyContext = storyArc.narrative ? storyArc.narrative.join(' ') : '';
+      console.log('📝 Story context:', storyContext);
+      console.log('👤 User profile:', userProfile);
+      
+      const aiQuestion = await fetchQuestion(userProfile.difficulty, userProfile.personality, storyContext);
+      console.log('✅ AI question received:', aiQuestion);
       
       // Create a question object with AI-generated content
       const questionObj = {
@@ -313,17 +441,20 @@ function App() {
         optionA: aiQuestion.options[0],
         optionB: aiQuestion.options[1],
         consequences: {
-          A: "AI is generating your consequence...",
-          B: "AI is generating your consequence..."
+          A: "ENTITY_ORACLE_7X is calculating your fate...",
+          B: "ENTITY_ORACLE_7X is calculating your fate..."
         },
         dangerLevels: { A: 5, B: 5 } // Default danger levels for AI questions
       };
 
+      console.log('📋 Setting question object:', questionObj);
       setCurrentGameQuestion(questionObj);
       return questionObj;
     } catch (error) {
-      console.error('Error generating AI question:', error);
-      return getFallbackQuestion();
+      console.error('❌ Error generating AI question:', error);
+      const fallback = getFallbackQuestion();
+      setCurrentGameQuestion(fallback);
+      return fallback;
     } finally {
       setIsLoading(false);
     }
@@ -359,22 +490,24 @@ function App() {
     try {
       let messageSequence;
       if (hasPlayedBefore) {
-        // Returning player message
-        messageSequence = await generateMetaMessage(
+        // Returning player message - use advanced meta-narrative system
+        messageSequence = await generateAdvancedMetaMessage(
           userProfile.name, 
           userProfile.difficulty, 
           userProfile.personality,
-          chapter ? chapter.theme : null
+          userProfile.interests || '',
+          userProfile.age || '',
+          false // isFirstTime = false
         );
       } else {
-        // First-time player message - more mind-boggling
-        messageSequence = await generateFirstTimeMetaMessage(
+        // First-time player message - use advanced meta-narrative system
+        messageSequence = await generateAdvancedMetaMessage(
           userProfile.name,
           userProfile.difficulty,
           userProfile.personality,
-          userProfile.interests || 'unknown',
-          userProfile.age || 'unknown',
-          chapter ? chapter.theme : null
+          userProfile.interests || '',
+          userProfile.age || '',
+          true // isFirstTime = true
         );
       }
       
@@ -405,7 +538,51 @@ function App() {
     return;
   };
 
-  const handleGameEnd = (result) => {
+  const handleGameEnd = async (result) => {
+    console.log('🎮 Game ended with result:', result);
+    
+    // Generate meta ending based on player's journey
+    try {
+      const playerProfile = initializePlayerProfile(
+        userProfile.name,
+        userProfile.difficulty,
+        userProfile.personality,
+        userProfile.interests || '',
+        userProfile.age || ''
+      );
+      
+      const metaEnding = generateMetaEnding(playerProfile, {
+        ...result,
+        gameHistory: gameHistory,
+        gameChoices: gameChoices,
+        storyArc: storyArc,
+        points: points,
+        achievements: achievements
+      });
+      
+      console.log('🎭 Meta ending generated:', metaEnding);
+      
+      // Show meta ending to player
+      setMetaEnding(metaEnding);
+      setShowMetaEnding(true);
+      setLastGameResult(result); // Store result for later use
+      
+      // Wait for player to acknowledge meta ending before proceeding
+      return; // Don't proceed with normal game end handling yet
+    } catch (error) {
+      console.error('Error generating meta ending:', error);
+    }
+    
+    // Update game stats with the result
+    updateStats({
+      won: result.won,
+      score: result.score,
+      roundsSurvived: result.roundsSurvived
+    });
+    
+    // Clear saved game state since game is over
+    clearGameState();
+    
     setLastGameResult(result);
     setGameStarted(false);
     setGameOver(false);
@@ -453,7 +630,66 @@ function App() {
       console.log('Meta message sequence complete, starting game...');
       // Meta message sequence complete, start the game
       setShowMetaMessage(false);
-      startActualGame();
+      startActualGame().catch(error => {
+        console.error('Error starting game:', error);
+      });
+    }
+  };
+
+  const handleMetaEndingAcknowledge = () => {
+    console.log('Meta ending acknowledged');
+    setShowMetaEnding(false);
+    setMetaEnding(null);
+    
+    // Now proceed with normal game end handling
+    const result = lastGameResult;
+    if (result) {
+      // Update game stats with the result
+      updateStats({
+        won: result.won,
+        score: result.score,
+        roundsSurvived: result.roundsSurvived
+      });
+      
+      // Clear saved game state since game is over
+      clearGameState();
+      
+      setLastGameResult(null);
+      setGameStarted(false);
+      setGameOver(false);
+      setShowConsequence(false);
+      setConsequence('');
+      setSelectedOption(null);
+      setGameHistory([]);
+      setGameChoices([]);
+      setSurvivalStatus('safe');
+      setShowHistory(false);
+      setPoints({
+        survival: 0,
+        bravery: 0,
+        wisdom: 0,
+        chaos: 0,
+        heroism: 0,
+        villainy: 0,
+        luck: 0,
+        skill: 0,
+        total: 0
+      });
+      setAchievements([]);
+      setBonuses([]);
+      setStoryArc({
+        protagonist: '',
+        setting: '',
+        currentSituation: '',
+        allies: [],
+        enemies: [],
+        powers: [],
+        weaknesses: [],
+        worldState: '',
+        narrative: []
+      });
+      setSelectedChapter(null);
+      setGameMode('classic');
     }
   };
 
@@ -464,7 +700,7 @@ function App() {
     }
   };
 
-  const startActualGame = () => {
+  const startActualGame = async () => {
     console.log('Starting actual game...');
     // Now start the game
     setGameStarted(true);
@@ -503,8 +739,28 @@ function App() {
       worldState: '',
       narrative: []
     });
-    setCurrentGameQuestion(getFallbackQuestion());
-    generateAiQuestion();
+    
+    // Set a loading question first, then generate AI question
+    setCurrentGameQuestion({
+      question: "Loading your first challenge...",
+      optionA: "Loading...",
+      optionB: "Loading...",
+      consequences: {
+        A: "Loading consequence...",
+        B: "Loading consequence..."
+      },
+      dangerLevels: { A: 0, B: 0 }
+    });
+    
+    try {
+      console.log('🔄 Generating AI question...');
+      const aiQuestion = await generateAiQuestion();
+      console.log('✅ AI question generated:', aiQuestion);
+    } catch (error) {
+      console.error('❌ Failed to generate AI question, using fallback:', error);
+      setCurrentGameQuestion(getFallbackQuestion());
+    }
+    
     console.log('Game started successfully');
   };
 
@@ -526,8 +782,8 @@ function App() {
 
     try {
       if (aiAvailable) {
-        // Use AI to generate consequence
-        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty, userProfile.personality, currentRound);
+        const storyContext = storyArc.narrative ? storyArc.narrative.join(' ') : '';
+        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty, userProfile.personality, currentRound, storyContext);
         consequenceText = aiConsequence.consequence;
         dangerLevel = aiConsequence.dangerLevel;
         storyUpdate = aiConsequence.storyUpdate || "The story continues with your choice.";
@@ -574,7 +830,7 @@ function App() {
     };
     setGameHistory(prev => [...prev, historyEntry]);
 
-    // Track choice for AI learning
+    // Track choice for ORACLE_7X learning
     const choiceData = {
       round: currentRound,
       question: currentGameQuestion.question,
@@ -605,8 +861,11 @@ function App() {
   };
 
   const handleNextRound = async () => {
-    if (currentRound >= 10) {
-      // Game over - update AI learning system
+    // Check if game is over (either reached 10 rounds or danger score exceeded 100)
+    if (currentRound >= 10 || dangerScore > 100) {
+      console.log('🎮 Game over! Final score:', score, 'Danger score:', dangerScore, 'Rounds survived:', currentRound);
+      
+      // Game over - update ORACLE_7X learning system
       const gameData = {
         roundsPlayed: currentRound,
         finalDangerScore: dangerScore,
@@ -616,9 +875,17 @@ function App() {
         personality: userProfile.personality
       };
       
-      // Update the AI learning system
+      // Update the ORACLE_7X learning system
       updatePlayerLearning(gameData);
-      console.log('🎯 AI learning system updated with game data:', gameData);
+      console.log('🎯 ORACLE_7X learning system updated with game data:', gameData);
+      
+      // Call handleGameEnd with the game result
+      handleGameEnd({
+        won: dangerScore <= 100,
+        score: score,
+        roundsSurvived: currentRound,
+        chapter: selectedChapter?.id || 'classic'
+      });
       
       // Trigger game over effect
       if (dangerScore <= 100) {
@@ -648,6 +915,11 @@ function App() {
   };
 
   const handleRestartGame = () => {
+    console.log('🔄 Restarting game...');
+    
+    // Clear saved game state since we're starting fresh
+    clearGameState();
+    
     setGameStarted(false);
     setCurrentRound(1);
     setScore(0);
@@ -1030,106 +1302,382 @@ function App() {
     }
   };
 
+  // THEME: Apply theme class to <body>
+  useEffect(() => {
+    document.body.classList.remove('theme-default', 'theme-dark', 'theme-light', 'theme-colorful');
+    document.body.classList.add(`theme-${settings.theme || 'default'}`);
+  }, [settings.theme]);
+
+  // SOUND: Mute/unmute all audio based on settings.soundEnabled
+  useEffect(() => {
+    window.__adventureGameSoundEnabled = settings.soundEnabled;
+    if (audioRef.current) {
+      audioRef.current.muted = !settings.soundEnabled;
+      audioRef.current.volume = 0.3;
+      if (settings.soundEnabled) {
+        audioRef.current.play().catch(error => {
+          console.log('Audio autoplay blocked by browser:', error);
+        });
+      }
+    }
+    // Stop all horror sounds if muting
+    if (!settings.soundEnabled && horrorSystem && typeof horrorSystem.muteAllSounds === 'function') {
+      horrorSystem.muteAllSounds();
+    }
+  }, [settings.soundEnabled]);
+
+  // Initialize audio when component mounts
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.3;
+      audioRef.current.muted = !settings.soundEnabled;
+    }
+  }, []);
+
+  // Handle audio errors
+  const handleAudioError = (error) => {
+    console.error('Audio error:', error);
+  };
+
+  // Handle audio loading
+  const handleAudioLoad = () => {
+    console.log('Audio loaded successfully');
+    if (audioRef.current) {
+      audioRef.current.muted = !settings.soundEnabled;
+      audioRef.current.volume = 0.3;
+    }
+  };
+
+  // AUTO SAVE: Save game state after every round/choice if enabled
+  useEffect(() => {
+    if (!settings.autoSave) return;
+    if (!gameStarted || gameOver) return;
+    // Save game state after every round/choice
+    saveGameState({
+      gameStarted,
+      currentRound,
+      score,
+      dangerScore,
+      gameOver,
+      showConsequence,
+      consequence,
+      selectedOption,
+      survivalStatus,
+      selectedChapter,
+      gameMode,
+      gameHistory,
+      gameChoices,
+      points,
+      achievements,
+      bonuses,
+      storyArc,
+      currentGameQuestion
+    }, settings.autoSave);
+  }, [settings.autoSave, gameStarted, gameOver, currentRound, score, dangerScore, showConsequence, consequence, selectedOption, survivalStatus, selectedChapter, gameMode, gameHistory, gameChoices, points, achievements, bonuses, storyArc, currentGameQuestion, saveGameState]);
+
   // Show profile setup modal if no profile exists
   if (showProfileSetup) {
     return (
-      <ProfileSetup
-        onProfileSaved={(profile) => {
-          setUserProfile(profile);
-          setShowProfileSetup(false);
-        }}
-      />
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <ProfileSetup
+          onProfileSaved={(profile) => {
+            updateProfile(profile);
+            setShowProfileSetup(false);
+          }}
+        />
+      </>
     );
   }
 
   // Render the appropriate component based on current state
   if (showMetaMessage) {
     return (
-      <div className="game-container">
-        <div className="meta-message-container">
-          <div className="meta-message-overlay">
-            <div className="meta-message-content">
-              <div className="meta-message-header">
-                <span className="meta-icon">🤖</span>
-                <h2 className="meta-title">AI System Message</h2>
-              </div>
-              
-              {isLoading ? (
-                <div className="meta-loading">
-                  <div className="loading-spinner"></div>
-                  <p>🤖 AI is analyzing your profile...</p>
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <div className="game-container">
+          <div className="meta-message-container">
+            <div className="meta-message-overlay">
+              <div className="meta-message-content">
+                <div className="meta-message-header">
+                  <span className="meta-icon">👁️</span>
+                  <h2 className="meta-title">ENTITY_ORACLE_7X</h2>
                 </div>
-              ) : (
-                <div className="meta-message-body">
-                  <p className="meta-text">{metaMessage}</p>
-                  <div className="meta-progress">
-                    {metaMessageIndex + 1} / {metaMessageSequence.length}
+                
+                {isLoading ? (
+                  <div className="meta-loading">
+                    <div className="loading-spinner"></div>
+                    <p>👁️ Scanning your digital footprint...</p>
                   </div>
-                  <button 
-                    className="meta-acknowledge-button"
-                    onClick={handleMetaMessageAcknowledge}
-                  >
-                    {metaMessageIndex < metaMessageSequence.length - 1 ? 'Continue' : '🎮 Begin My Survival Journey'}
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="meta-message-body">
+                    <p className="meta-text">{metaMessage}</p>
+                    <div className="meta-progress">
+                      {metaMessageIndex + 1} / {metaMessageSequence.length}
+                    </div>
+                    <button 
+                      className="meta-acknowledge-button"
+                      onClick={handleMetaMessageAcknowledge}
+                    >
+                      {metaMessageIndex < metaMessageSequence.length - 1 ? 'Continue' : '🎮 Begin My Survival Journey'}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </>
+    );
+  }
+
+  // Show meta ending if available
+  if (showMetaEnding && metaEnding) {
+    return (
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <MetaEnding 
+          ending={metaEnding}
+          onAcknowledge={handleMetaEndingAcknowledge}
+        />
+      </>
     );
   }
 
   if (gameStarted) {
     return (
-      <GamePage 
-        selectedChapter={selectedChapter}
-        onGameEnd={handleGameEnd}
-        difficulty={userProfile?.difficulty || 'medium'}
-        personality={userProfile?.personality || 'balanced'}
-        currentRound={currentRound}
-        currentGameQuestion={currentGameQuestion}
-        selectedOption={selectedOption}
-        consequence={consequence}
-        showConsequence={showConsequence}
-        score={score}
-        dangerScore={dangerScore}
-        gameOver={gameOver}
-        onOptionSelect={handleOptionSelect}
-        onNextRound={handleNextRound}
-        onRestartGame={handleRestartGame}
-        isLoading={isLoading}
-      />
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <GamePage 
+          selectedChapter={selectedChapter}
+          onGameEnd={handleGameEnd}
+          difficulty={userProfile?.difficulty || 'medium'}
+          personality={userProfile?.personality || 'balanced'}
+          currentRound={currentRound}
+          currentGameQuestion={currentGameQuestion}
+          selectedOption={selectedOption}
+          consequence={consequence}
+          showConsequence={showConsequence}
+          score={score}
+          dangerScore={dangerScore}
+          gameOver={gameOver}
+          onOptionSelect={handleOptionSelect}
+          onNextRound={handleNextRound}
+          onRestartGame={handleRestartGame}
+          isLoading={isLoading}
+        />
+      </>
     );
   }
 
   // Handle different pages
   if (currentPage === 'stats') {
     return (
-      <div className="game-container">
-        <StatsPage onBack={() => setCurrentPage('home')} />
-      </div>
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <div className="game-container">
+          <StatsPage onBack={() => setCurrentPage('home')} />
+        </div>
+      </>
     );
   }
 
   if (currentPage === 'settings') {
     return (
-      <div className="game-container">
-        <SettingsPage onBack={() => setCurrentPage('home')} />
-      </div>
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <div className="game-container">
+          <SettingsPage 
+            onBack={() => setCurrentPage('home')} 
+            onResetProfile={() => {
+              resetProfile();
+              setShowProfileSetup(true);
+              setCurrentPage('home');
+            }}
+          />
+        </div>
+      </>
     );
   }
 
   // Main menu - show HomePage
   return (
-    <div className="game-container">
-      <HomePage 
-        onStartGame={handleStartGame}
-        onViewStats={() => setCurrentPage('stats')}
-        onOpenSettings={() => setCurrentPage('settings')}
-        lastGameResult={lastGameResult}
+    <>
+      {/* Global Background Music - Single instance */}
+      <audio
+        ref={audioRef}
+        src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+        autoPlay
+        loop
+        muted={!settings.soundEnabled}
+        style={{ display: 'none' }}
+        onError={handleAudioError}
+        onLoadedData={handleAudioLoad}
       />
-    </div>
+      {/* Global Mute/Unmute Button */}
+      <button
+        className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+        onClick={() => {
+          updateSetting('soundEnabled', !settings.soundEnabled);
+        }}
+        aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+      >
+        {!settings.soundEnabled ? '🔇' : '🔊'}
+      </button>
+      <div className="game-container">
+        <HomePage 
+          onStartGame={handleStartGame}
+          onViewStats={() => setCurrentPage('stats')}
+          onOpenSettings={() => setCurrentPage('settings')}
+          lastGameResult={lastGameResult}
+          hasSavedGame={hasSavedGame()}
+          onContinueSavedGame={() => {
+            const savedState = loadGameState();
+            if (savedState.gameStarted && !savedState.gameOver) {
+              console.log('🔄 Continuing saved game...');
+              setGameStarted(savedState.gameStarted);
+              setCurrentRound(savedState.currentRound);
+              setScore(savedState.score);
+              setDangerScore(savedState.dangerScore);
+              setGameOver(savedState.gameOver);
+              setShowConsequence(savedState.showConsequence);
+              setConsequence(savedState.consequence);
+              setSelectedOption(savedState.selectedOption);
+              setSurvivalStatus(savedState.survivalStatus);
+              setSelectedChapter(savedState.selectedChapter);
+              setGameMode(savedState.gameMode);
+              setGameHistory(savedState.gameHistory);
+              setGameChoices(savedState.gameChoices);
+              setPoints(savedState.points);
+              setAchievements(savedState.achievements);
+              setBonuses(savedState.bonuses);
+              setStoryArc(savedState.storyArc);
+              setCurrentGameQuestion(savedState.currentGameQuestion);
+            }
+          }}
+        />
+      </div>
+    </>
   );
 }
 

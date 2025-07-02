@@ -145,36 +145,68 @@ const MiniGames = ({
 
   const handleGameSuccess = () => {
     setGameState('success');
+    // Trigger success effect
+    horrorSystem.triggerJumpScare(0.2, 200); // Gentle success effect
     if (onComplete) {
-      onComplete({ type: gameType, score, timeLeft });
+      onComplete({ 
+        type: gameType, 
+        score, 
+        timeLeft, 
+        success: true,
+        message: getSuccessMessage(gameType)
+      });
     }
   };
 
   const handleGameFail = () => {
     setGameState('failed');
-    // Trigger horror effect
-    horrorSystem.triggerJumpScare(0.8, 0);
+    // Trigger intense horror effect
+    horrorSystem.triggerJumpScare(0.9, 0);
     if (onFail) {
-      onFail({ type: gameType, score, timeLeft });
+      onFail({ 
+        type: gameType, 
+        score, 
+        timeLeft, 
+        success: false,
+        message: getFailureMessage(gameType)
+      });
     }
+  };
+
+  const getSuccessMessage = (type) => {
+    const messages = {
+      quick_time: "You maintained control! The AI's intrusion attempt was blocked.",
+      hiding: "You found the safe route! The AI lost track of your location.",
+      stealth: "You remained undetected! The AI's surveillance failed to detect you."
+    };
+    return messages[type] || "Challenge completed successfully!";
+  };
+
+  const getFailureMessage = (type) => {
+    const messages = {
+      quick_time: "The AI gained control! Your system is now compromised.",
+      hiding: "You fell into the AI's trap! It now knows your location.",
+      stealth: "You were detected! The AI is now tracking your movements."
+    };
+    return messages[type] || "Challenge failed! The AI has gained an advantage.";
   };
 
   const renderQuickTimeEvent = () => (
     <div className="mini-game-overlay">
       <div className="quick-time-event">
-        <h2>Quick Time Event!</h2>
-        <p>Click the button as fast as you can!</p>
-        <div className="time-display">Time: {timeLeft}s</div>
-        <div className="score-display">Score: {score}</div>
+        <h2>🚨 SYSTEM BREACH DETECTED 🚨</h2>
+        <p>The AI is attempting to override your controls! Click rapidly to maintain system access!</p>
+        <div className="time-display">⏱️ Time Remaining: {timeLeft}s</div>
+        <div className="score-display">🛡️ Security Level: {score}</div>
         <button 
           className="quick-time-button"
           onClick={handleQuickTimeClick}
           disabled={gameState !== 'active'}
         >
-          CLICK ME!
+          {gameState === 'active' ? 'MAINTAIN CONTROL!' : 'SYSTEM LOCKED'}
         </button>
         <div className="difficulty-indicator">
-          Difficulty: {difficulty.toUpperCase()}
+          🔥 Threat Level: {difficulty.toUpperCase()}
         </div>
       </div>
     </div>
@@ -183,9 +215,9 @@ const MiniGames = ({
   const renderHidingMechanic = () => (
     <div className="mini-game-overlay">
       <div className="hiding-mechanic">
-        <h2>Find a Safe Hiding Spot!</h2>
-        <p>Choose wisely - some spots are dangerous!</p>
-        <div className="time-display">Time: {timeLeft}s</div>
+        <h2>🏃‍♂️ ESCAPE ROUTE SELECTION 🏃‍♂️</h2>
+        <p>The AI is scanning your location! Choose a safe escape route before it finds you!</p>
+        <div className="time-display">⏱️ Time Remaining: {timeLeft}s</div>
         <div className="hiding-spots">
           {hidingSpots.map(spot => (
             <div
@@ -194,15 +226,15 @@ const MiniGames = ({
               onClick={() => handleHidingSpotClick(spot)}
             >
               {spot.isRevealed ? (
-                spot.isSafe ? '✅ Safe' : '❌ Dangerous'
+                spot.isSafe ? '✅ SAFE ROUTE' : '❌ AI TRAP'
               ) : (
-                '?'
+                '🚪'
               )}
             </div>
           ))}
         </div>
         <div className="difficulty-indicator">
-          Difficulty: {difficulty.toUpperCase()}
+          🔥 AI Scan Intensity: {difficulty.toUpperCase()}
         </div>
       </div>
     </div>
@@ -211,9 +243,9 @@ const MiniGames = ({
   const renderStealthSequence = () => (
     <div className="mini-game-overlay">
       <div className="stealth-sequence">
-        <h2>Stealth Mission</h2>
-        <p>Stay quiet! Don't let the noise level get too high.</p>
-        <div className="time-display">Time: {timeLeft}s</div>
+        <h2>🥷 STEALTH INFILTRATION 🥷</h2>
+        <p>The AI's surveillance system is active! Stay undetected by managing your digital footprint.</p>
+        <div className="time-display">⏱️ Time Remaining: {timeLeft}s</div>
         <div className="noise-meter">
           <div 
             className="noise-fill" 
@@ -226,29 +258,29 @@ const MiniGames = ({
             onClick={() => handleStealthAction('move_slow')}
             disabled={gameState !== 'active'}
           >
-            Move Slowly
+            🐌 Stealth Mode
           </button>
           <button 
             onClick={() => handleStealthAction('move_fast')}
             disabled={gameState !== 'active'}
           >
-            Move Fast
+            🏃‍♂️ Rush Mode
           </button>
           <button 
             onClick={() => handleStealthAction('use_item')}
             disabled={gameState !== 'active'}
           >
-            Use Item
+            🛠️ Use Tool
           </button>
           <button 
             onClick={() => handleStealthAction('wait')}
             disabled={gameState !== 'active'}
           >
-            Wait
+            ⏸️ Hold Position
           </button>
         </div>
         <div className="difficulty-indicator">
-          Difficulty: {difficulty.toUpperCase()}
+          🔥 Detection Sensitivity: {difficulty.toUpperCase()}
         </div>
       </div>
     </div>
@@ -257,22 +289,33 @@ const MiniGames = ({
   const renderGameResult = () => (
     <div className="mini-game-overlay">
       <div className={`game-result ${gameState}`}>
-        <h2>{gameState === 'success' ? 'Success!' : 'Failed!'}</h2>
+        <h2>
+          {gameState === 'success' 
+            ? '🎉 SYSTEM ACCESS MAINTAINED 🎉' 
+            : '💀 SYSTEM COMPROMISED 💀'
+          }
+        </h2>
         <p>
           {gameState === 'success' 
-            ? 'You survived the challenge!' 
-            : 'The horror has claimed another victim...'
+            ? 'You successfully defended against the AI intrusion! Your system remains secure... for now.' 
+            : 'The AI has gained control! Your digital defenses have been breached...'
           }
         </p>
         <div className="result-stats">
-          <div>Final Score: {score}</div>
-          <div>Time Remaining: {timeLeft}s</div>
+          <div>🛡️ Security Score: {score}</div>
+          <div>⏱️ Time Remaining: {timeLeft}s</div>
+          <div>
+            {gameState === 'success' 
+              ? '✅ AI Threat Level: REDUCED' 
+              : '❌ AI Threat Level: INCREASED'
+            }
+          </div>
         </div>
         <button 
           onClick={() => setGameState('waiting')}
           className="continue-btn"
         >
-          Continue
+          {gameState === 'success' ? 'Continue Survival' : 'Face Consequences'}
         </button>
       </div>
     </div>

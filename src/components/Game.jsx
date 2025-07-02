@@ -311,13 +311,17 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     try {
       let consequenceData;
       
+      // Get previous choices for story progression
+      const previousChoices = playerChoices.map(choice => choice.choice);
+      
       if (isCampaignMode && currentChapter) {
         // Campaign mode consequence generation
         consequenceData = await generateConsequence(
           choice,
           getChapterDifficulty(currentChapter.id),
           currentChapter.aiPersonality,
-          currentRound
+          currentRound,
+          previousChoices
         );
       } else {
         // Classic mode consequence generation
@@ -325,7 +329,8 @@ const Game = ({ selectedChapter, onGameEnd }) => {
           choice,
           difficulty,
           personality,
-          currentRound
+          currentRound,
+          previousChoices
         );
       }
       
@@ -490,23 +495,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setMiniGame(null);
     setMiniGameTriggered(false);
     
-    if (result && result.type === 'quick_time' && result.score < 5) {
-      setFearLevel(prev => prev + 2);
-      horrorSystem.triggerJumpScare(0.7, 0);
-      // Add consequence for failing quick-time
-      setConsequence("You were too slow! The AI has gained more control over your system...");
-    } else if (result && result.type === 'hiding' && !result.success) {
-      setFearLevel(prev => prev + 3);
-      horrorSystem.triggerJumpScare(1.0, 0);
-      setConsequence("You chose poorly! The AI found you and now has full access to your device...");
-    } else if (result && result.type === 'stealth' && result.noiseLevel >= 8) {
-      setFearLevel(prev => prev + 2);
-      horrorSystem.triggerJumpScare(0.8, 0);
-      setConsequence("You made too much noise! The AI detected your presence and is now tracking you...");
-    } else {
-      // Success - reduce fear level
+    if (result && result.success) {
+      // Success - reduce fear level and danger
       setFearLevel(prev => Math.max(0, prev - 1));
-      setConsequence("You survived the challenge! The AI's grip on your system has weakened slightly...");
+      setDangerLevel(prev => Math.max(1, prev - 0.5));
+      setConsequence(result.message || "You successfully defended against the AI intrusion!");
+    } else {
+      // Failure - increase fear and danger
+      setFearLevel(prev => prev + 2);
+      setDangerLevel(prev => Math.min(10, prev + 1));
+      setConsequence(result.message || "The AI has gained control over your system!");
     }
     
     // Continue to next round after mini-game
@@ -519,17 +517,11 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setMiniGame(null);
     setMiniGameTriggered(false);
     setFearLevel(prev => prev + 3);
+    setDangerLevel(prev => Math.min(10, prev + 1.5));
     horrorSystem.triggerJumpScare(1.0, 0);
     
-    // Severe consequences for failing mini-games
-    const failMessages = [
-      "Game over! The AI has complete control now. Your system is compromised...",
-      "You failed the test! The AI is now monitoring your every move...",
-      "Critical failure! The AI has breached your security completely...",
-      "You've been caught! The AI now owns your digital life..."
-    ];
-    
-    setConsequence(failMessages[Math.floor(Math.random() * failMessages.length)]);
+    // Use the specific failure message from the mini-game
+    setConsequence(result.message || "Critical failure! The AI has breached your security completely!");
     
     // Continue to next round after mini-game
     setTimeout(() => {
@@ -540,7 +532,7 @@ const Game = ({ selectedChapter, onGameEnd }) => {
   const AiIndicator = () => (
     <div className="ai-indicator">
       <span className={`ai-status ${aiStatus}`}>
-        {aiStatus === 'online' ? '🤖 AI Online' : '⚠️ AI Offline'}
+        {aiStatus === 'online' ? '👁️ ORACLE_7X ACTIVE' : '⚠️ ORACLE_7X DORMANT'}
       </span>
     </div>
   );
@@ -598,13 +590,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     showMiniGameTransition && (
       <div className="mini-game-transition-overlay">
         <div className="mini-game-transition-content">
-          <h2>⚠️ SYSTEM BREACH DETECTED ⚠️</h2>
-          <p>The AI is attempting to gain control...</p>
+          <h2>🚨 CRITICAL SYSTEM ALERT 🚨</h2>
+          <p>ORACLE_7X is attempting to breach your security protocols!</p>
           <div className="loading-dots">
             <span></span>
             <span></span>
             <span></span>
           </div>
+          <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#ff6600' }}>
+            Prepare for immediate countermeasures...
+          </p>
         </div>
       </div>
     )

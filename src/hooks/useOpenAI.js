@@ -2,9 +2,9 @@ import { useCallback } from 'react';
 import { generateQuestion, generateConsequence, calculateSurvival, testApiStatus } from '../utils/aiService';
 
 export const useOpenAI = () => {
-  const fetchQuestion = useCallback(async (difficulty = 'medium', personality = 'balanced') => {
+  const fetchQuestion = useCallback(async (difficulty = 'medium', personality = 'balanced', storyContext = '') => {
     try {
-      const question = await generateQuestion(difficulty, personality);
+      const question = await generateQuestion(difficulty, personality, storyContext);
       
       console.log('OpenAI Response:', question); // Debug: see what AI returns
       
@@ -80,9 +80,9 @@ export const useOpenAI = () => {
     }
   }, []);
 
-  const fetchConsequence = useCallback(async (choice, difficulty = 'medium', personality = 'balanced', round = 1) => {
+  const fetchConsequence = useCallback(async (choice, difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
     try {
-      const consequence = await generateConsequence(choice, difficulty, personality, round);
+      const consequence = await generateConsequence(choice, difficulty, personality, round, previousChoices);
       
       // Generate a danger level based on difficulty and round
       const baseDangerLevels = {

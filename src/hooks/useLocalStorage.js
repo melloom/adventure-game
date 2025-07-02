@@ -289,4 +289,121 @@ export const useUserProfile = () => {
   }, [setProfile]);
 
   return { profile, updateProfile, isValidProfile, resetProfile };
+};
+
+// New hook for auto-saving game state
+export const useGameState = () => {
+  const [gameState, setGameState] = useLocalStorage('currentGameState', {
+    gameStarted: false,
+    currentRound: 1,
+    score: 0,
+    dangerScore: 0,
+    gameOver: false,
+    showConsequence: false,
+    consequence: '',
+    selectedOption: null,
+    survivalStatus: 'safe',
+    selectedChapter: null,
+    gameMode: 'classic',
+    gameHistory: [],
+    gameChoices: [],
+    points: {
+      survival: 0,
+      bravery: 0,
+      wisdom: 0,
+      chaos: 0,
+      heroism: 0,
+      villainy: 0,
+      luck: 0,
+      skill: 0,
+      total: 0
+    },
+    achievements: [],
+    bonuses: [],
+    storyArc: {
+      protagonist: '',
+      setting: '',
+      currentSituation: '',
+      allies: [],
+      enemies: [],
+      powers: [],
+      weaknesses: [],
+      worldState: '',
+      narrative: []
+    },
+    currentGameQuestion: null,
+    lastSaved: null,
+    version: '1.0.0'
+  }, { debounce: true, validate: true });
+
+  const saveGameState = useCallback((newState, autoSave = true) => {
+    if (autoSave) {
+      setGameState(prev => ({
+        ...prev,
+        ...newState,
+        lastSaved: new Date().toISOString()
+      }));
+    }
+  }, [setGameState]);
+
+  const loadGameState = useCallback(() => {
+    return gameState;
+  }, [gameState]);
+
+  const clearGameState = useCallback(() => {
+    setGameState({
+      gameStarted: false,
+      currentRound: 1,
+      score: 0,
+      dangerScore: 0,
+      gameOver: false,
+      showConsequence: false,
+      consequence: '',
+      selectedOption: null,
+      survivalStatus: 'safe',
+      selectedChapter: null,
+      gameMode: 'classic',
+      gameHistory: [],
+      gameChoices: [],
+      points: {
+        survival: 0,
+        bravery: 0,
+        wisdom: 0,
+        chaos: 0,
+        heroism: 0,
+        villainy: 0,
+        luck: 0,
+        skill: 0,
+        total: 0
+      },
+      achievements: [],
+      bonuses: [],
+      storyArc: {
+        protagonist: '',
+        setting: '',
+        currentSituation: '',
+        allies: [],
+        enemies: [],
+        powers: [],
+        weaknesses: [],
+        worldState: '',
+        narrative: []
+      },
+      currentGameQuestion: null,
+      lastSaved: new Date().toISOString(),
+      version: '1.0.0'
+    });
+  }, [setGameState]);
+
+  const hasSavedGame = useCallback(() => {
+    return gameState.gameStarted && !gameState.gameOver && gameState.lastSaved;
+  }, [gameState]);
+
+  return { 
+    gameState, 
+    saveGameState, 
+    loadGameState, 
+    clearGameState, 
+    hasSavedGame 
+  };
 }; 

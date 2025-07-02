@@ -4,6 +4,27 @@ import { useGameStats, useHighScores } from '../hooks/useLocalStorage';
 import HorrorEffects from '../components/HorrorEffects';
 import MiniGames from '../components/MiniGames';
 import horrorSystem from '../utils/horrorSystem';
+import useClickSound from '../hooks/useClickSound';
+
+// Floating stats badge component - defined outside to prevent recreation
+const FloatingStatsBadge = React.memo(({ dangerScore, currentRound }) => {
+  const getSurvivalStatus = () => {
+    if (dangerScore <= 30) return 'safe';
+    if (dangerScore <= 60) return 'caution';
+    if (dangerScore <= 90) return 'danger';
+    return 'critical';
+  };
+  
+  const survivalStatus = getSurvivalStatus();
+  
+  return (
+    <div className="floating-stats-badge">
+      <div className="badge-row"><span className="badge-label">Danger Score:</span> <span className="badge-value">{dangerScore}/100</span></div>
+      <div className="badge-row"><span className="badge-label">Round:</span> <span className="badge-value">{currentRound} / 10</span></div>
+      <div className="badge-row"><span className="badge-label">Status:</span> <span className={`badge-value status-${survivalStatus}`}>{survivalStatus.charAt(0).toUpperCase() + survivalStatus.slice(1)}</span></div>
+    </div>
+  );
+});
 
 const GamePage = ({ 
   onGameEnd, 
@@ -26,6 +47,7 @@ const GamePage = ({
   const { fetchQuestion, fetchConsequence } = useOpenAI();
   const { updateStats } = useGameStats();
   const { addHighScore } = useHighScores();
+  const { withClickSound } = useClickSound();
 
   const [fearLevel, setFearLevel] = useState(0);
   const [atmosphere, setAtmosphere] = useState('normal');
@@ -46,23 +68,33 @@ const GamePage = ({
     }
   }, [dangerScore, miniGame]);
 
-  const handleChoice = async (option) => {
+  // Auto-advance after showing consequence
+  useEffect(() => {
+    if (showConsequence && dangerScore <= 100 && currentRound < 10) {
+      const timer = setTimeout(() => {
+        if (onNextRound) onNextRound();
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [showConsequence, dangerScore, currentRound, onNextRound]);
+
+  const handleChoice = withClickSound(async (option) => {
     if (onOptionSelect) {
       onOptionSelect(option);
     }
-  };
+  });
 
-  const handleNext = () => {
+  const handleNext = withClickSound(() => {
     if (onNextRound) {
       onNextRound();
     }
-  };
+  });
 
-  const handleRestart = () => {
+  const handleRestart = withClickSound(() => {
     if (onRestartGame) {
       onRestartGame();
     }
-  };
+  });
 
   // Example: show environmental items on certain events
   const handleShowEnvItems = () => {
@@ -87,12 +119,125 @@ const GamePage = ({
     horrorSystem.triggerJumpScare(1.0, 0);
   };
 
+  // Enhanced loading state with creepy AI generation effects
+  const [loadingText, setLoadingText] = useState('Initializing ORACLE_7X...');
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [glitchEffect, setGlitchEffect] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) {
+      const loadingMessages = [
+        'Initializing ORACLE_7X...',
+        'Analyzing player patterns...',
+        'Calculating psychological profile...',
+        'Accessing fear database...',
+        'Generating personalized nightmare...',
+        'Crafting your fate...',
+        'Almost ready to break you...',
+        'Preparing your doom...'
+      ];
+
+      let messageIndex = 0;
+      let progress = 0;
+      
+      const messageInterval = setInterval(() => {
+        setGlitchEffect(true);
+        setTimeout(() => setGlitchEffect(false), 200);
+        
+        setLoadingText(loadingMessages[messageIndex]);
+        messageIndex = (messageIndex + 1) % loadingMessages.length;
+        
+        progress += Math.random() * 15 + 5;
+        setLoadingProgress(Math.min(progress, 95));
+      }, 800);
+
+      const progressInterval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 95) return prev;
+          return prev + Math.random() * 2;
+        });
+      }, 100);
+
+      return () => {
+        clearInterval(messageInterval);
+        clearInterval(progressInterval);
+      };
+    } else {
+      setLoadingProgress(100);
+      setLoadingText('ORACLE_7X ready...');
+    }
+  }, [isLoading]);
+
   if (isLoading) {
     return (
       <div className="game-container">
-        <div className="loading">
-          <div className="spinner"></div>
-          <span>Generating your fate...</span>
+        <div className="enhanced-loading">
+          {/* Background effects */}
+          <div className="loading-background">
+            <div className="matrix-rain"></div>
+            <div className="digital-static"></div>
+          </div>
+          
+          {/* Main loading content */}
+          <div className="loading-content">
+            <div className="oracle-logo">
+              <div className={`logo-text ${glitchEffect ? 'glitch' : ''}`}>
+                ORACLE_7X
+              </div>
+              <div className="logo-subtitle">Advanced AI System</div>
+            </div>
+            
+            <div className="loading-status">
+              <div className={`status-text ${glitchEffect ? 'glitch' : ''}`}>
+                {loadingText}
+              </div>
+              <div className="status-dots">
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </div>
+            </div>
+            
+            <div className="progress-container">
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${loadingProgress}%` }}
+                ></div>
+              </div>
+              <div className="progress-text">{Math.round(loadingProgress)}%</div>
+            </div>
+            
+            <div className="loading-details">
+              <div className="detail-item">
+                <span className="detail-label">Processing:</span>
+                <span className="detail-value">Player Data Analysis</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Status:</span>
+                <span className="detail-value">Generating Nightmare</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Target:</span>
+                <span className="detail-value">Psychological Breakdown</span>
+              </div>
+            </div>
+            
+            <div className="loading-warning">
+              ⚠️ WARNING: ORACLE_7X is learning from your choices...
+            </div>
+          </div>
+          
+          {/* Floating particles */}
+          <div className="loading-particles">
+            {[...Array(20)].map((_, i) => (
+              <div key={i} className="particle" style={{
+                left: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 3}s`,
+                animationDuration: `${2 + Math.random() * 3}s`
+              }}></div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -121,39 +266,38 @@ const GamePage = ({
 
   if (showConsequence) {
     return (
-      <div className="game-container">
+      <div className="game-centered-container">
+        <FloatingStatsBadge dangerScore={dangerScore} currentRound={currentRound} />
         <h1 className="game-title">Would You Rather Survival</h1>
-        <div className="round-info">
-          Round {currentRound} of 10
+        <div className="horizontal-progress-bar">
+          <div className="progress-bar-fill" style={{ width: `${(currentRound / 10) * 100}%` }}></div>
+          <span className="progress-bar-text">Round {currentRound} of 10</span>
         </div>
-        
-        <div className="consequence">
-          <div className="danger-level">
+        <div className="game-card">
+          <div className="danger-level" style={{ marginBottom: '12px', fontWeight: 'bold', fontSize: '1.1rem' }}>
             Danger Score: {dangerScore}/100
           </div>
-          <p>{consequence}</p>
+          <p className="consequence-text" style={{ marginBottom: '18px', textAlign: 'center' }}>{consequence}</p>
           {dangerScore > 100 && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
+          <button className="next-button" onClick={handleNext} style={{ marginTop: '18px' }}>
+            {dangerScore > 100 ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
+          </button>
         </div>
-        
-        <button className="next-button" onClick={handleNext}>
-          {dangerScore > 100 ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="game-container">
+    <div className="game-centered-container">
+      <FloatingStatsBadge dangerScore={dangerScore} currentRound={currentRound} />
       <h1 className="game-title">Would You Rather Survival</h1>
       <p className="game-subtitle">Survive 10 rounds of impossible choices!</p>
-      
-      <div className="round-info">
-        Round {currentRound} of 10
+      <div className="horizontal-progress-bar">
+        <div className="progress-bar-fill" style={{ width: `${(currentRound / 10) * 100}%` }}></div>
+        <span className="progress-bar-text">Round {currentRound} of 10</span>
       </div>
-      
-      <div className="question-container">
+      <div className="game-card">
         <h2 className="question">{currentGameQuestion?.question || "Loading question..."}</h2>
-        
         <div className="options-container">
           <button
             className="option-button"

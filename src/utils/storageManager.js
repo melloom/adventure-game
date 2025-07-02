@@ -6,6 +6,7 @@ class StorageManager {
     this.storagePrefix = 'wyr_';
     this.maxCacheSize = 50;
     this.debounceDelay = 300; // ms
+    this.batchSaveTimer = null;
   }
 
   // Enhanced localStorage operations with better error handling
@@ -99,6 +100,23 @@ class StorageManager {
     return results;
   }
 
+  // Debounced batch save method
+  debounceBatchSave() {
+    if (this.batchSaveTimer) {
+      clearTimeout(this.batchSaveTimer);
+    }
+    
+    this.batchSaveTimer = setTimeout(() => {
+      // Force write all cached items to storage
+      for (const [key, value] of this.cache.entries()) {
+        if (key.startsWith(this.storagePrefix)) {
+          this.writeToStorage(key, value);
+        }
+      }
+      this.batchSaveTimer = null;
+    }, this.debounceDelay);
+  }
+
   // Data migration support
   migrateData(fromVersion, toVersion, migrationFn) {
     try {
@@ -172,6 +190,76 @@ class StorageManager {
       return cleanedCount;
     } catch (error) {
       console.error('Error during cleanup:', error);
+      return 0;
+    }
+  }
+
+  // Get all storage keys
+  getAllKeys() {
+    try {
+      const keys = Object.keys(localStorage);
+      return keys.filter(key => key.startsWith(this.storagePrefix));
+    } catch (error) {
+      console.error('Error getting storage keys:', error);
+      return [];
+    }
+  }
+
+  // Get storage statistics
+  getStorageStats() {
+    try {
+      const keys = this.getAllKeys();
+      const stats = {
+        totalKeys: keys.length,
+        totalSize: 0,
+        keyDetails: []
+      };
+
+      for (const key of keys) {
+        const item = localStorage.getItem(key);
+        if (item) {
+          const size = item.length;
+          stats.totalSize += size;
+          stats.keyDetails.push({
+            key: key.replace(this.storagePrefix, ''),
+            size,
+            lastAccessed: null
+          });
+
+          try {
+            const parsed = JSON.parse(item);
+            if (parsed.lastAccessed) {
+              stats.keyDetails[stats.keyDetails.length - 1].lastAccessed = parsed.lastAccessed;
+            }
+          } catch (error) {
+            // Ignore parsing errors for stats
+          }
+        }
+      }
+
+      return stats;
+    } catch (error) {
+      console.error('Error getting storage stats:', error);
+      return { totalKeys: 0, totalSize: 0, keyDetails: [] };
+    }
+  }
+
+  // Clear all storage data
+  clearAll() {
+    try {
+      const keys = this.getAllKeys();
+      let clearedCount = 0;
+      
+      for (const key of keys) {
+        localStorage.removeItem(key);
+        this.cache.delete(key);
+        clearedCount++;
+      }
+      
+      console.log(`Cleared ${clearedCount} storage items`);
+      return clearedCount;
+    } catch (error) {
+      console.error('Error clearing storage:', error);
       return 0;
     }
   }
