@@ -380,37 +380,42 @@ PLAYER DATA:
 - Average danger score: ${Math.round(learningData.averageDangerScore)}/100
 - Total play time: ${Math.floor(totalPlayTime / 60)} minutes
 - Current time: ${currentTime} (${timeZone})
+- Player name: ${learningData.playerName || 'Player'}
+- Personality: ${personality}
+- Previous choices: ${previousChoices.slice(-3).join(' → ') || 'None yet'}
 
 STORY CONTEXT:
-- Previous choices: ${previousChoices.slice(-3).join(' → ') || 'None yet'}
 - Current choice: "${choice}"
 - Difficulty: ${difficulty}
-- Personality: ${personality}
+- Story state: ${storyState}
 
 IMPORTANT: Create a detailed, story-driven consequence that:
-- Tells a complete narrative with beginning, middle, and end
+- Tells a complete narrative with beginning, middle, and end (3-5 sentences minimum)
+- References the player's previous choices and how they connect to this decision
 - Describes specific events, emotions, and character development
 - Shows how the choice affects relationships, career, health, or lifestyle
 - Includes sensory details and emotional depth
 - Creates a vivid picture of the consequences
-- Is at least 2-3 sentences long with rich description
-- Makes the player feel like they're reading a compelling story
+- Builds on the player's personality and previous game history
+- Makes the player feel like they're reading a compelling story that's uniquely theirs
+- References their name, personality, and specific patterns from their gameplay
+- Creates continuity with their previous choices and consequences
 
-Return ONLY the detailed consequence story.`;
+Return ONLY the detailed consequence story that feels personal and builds the ongoing narrative.`;
 
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives that tell complete stories about the impact of decisions. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story.`
+            content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives that tell complete stories about the impact of decisions. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story that builds on the player's previous choices and personality. Always reference the player's name, their previous decisions, and create continuity in their personal narrative.`
           },
           {
             role: 'user',
             content: progressivePrompt
           }
         ],
-        max_tokens: 300,
+        max_tokens: 500,
         temperature: 0.9
       });
 
@@ -1529,138 +1534,132 @@ const getStoryProgressionState = (currentRound, totalRounds = 10) => {
 const generateProgressiveConsequence = (choice, difficulty, personality, round, storyState, previousChoices = []) => {
   const state = storyProgressionStates[storyState];
   
-  // Build context from previous choices
-  const choiceContext = previousChoices.length > 0 
-    ? `After ${previousChoices.slice(-2).join(' and ')}, you now face ${choice}.`
-    : `You face ${choice}.`;
+  // Get player data for personalization
+  const learningData = getPlayerLearningData();
+  const playerName = learningData.playerName || 'Player';
+  const fearCategories = Object.keys(learningData.fearCategories || {});
+  const choicePatterns = learningData.choicePatterns || {};
   
-  const consequenceTemplates = {
-    setup: {
-      easy: [
-        "This sets up an interesting situation that could lead to unexpected opportunities.",
-        "Your choice creates a foundation for what's to come, though the full implications aren't clear yet.",
-        "This decision establishes your position in the unfolding events.",
-        "Your choice opens up new possibilities while closing others.",
-        "This sets the stage for the challenges ahead."
-      ],
-      medium: [
-        "Your choice creates a situation that will require careful navigation in the rounds ahead.",
-        "This decision establishes a pattern that could influence future outcomes.",
-        "Your choice sets up complications that will need to be addressed later.",
-        "This creates a foundation that will be tested as the story progresses.",
-        "Your decision opens doors while closing others, setting up future dilemmas."
-      ],
-      hard: [
-        "Your choice creates a complex situation that will have far-reaching consequences.",
-        "This decision establishes a dangerous precedent that will haunt you later.",
-        "Your choice sets up a chain of events that will be difficult to control.",
-        "This creates a foundation built on risk that will be tested severely.",
-        "Your decision opens a path that leads deeper into danger."
-      ],
-      nightmare: [
-        "Your choice creates a situation so dark it will corrupt everything that follows.",
-        "This decision establishes a pattern of horror that will escalate exponentially.",
-        "Your choice sets up a nightmare scenario that will consume your sanity.",
-        "This creates a foundation of terror that will only grow stronger.",
-        "Your decision opens a door to hell that can never be closed."
-      ]
+  // Build story context from previous choices
+  const recentChoices = previousChoices.slice(-3);
+  const choiceHistory = recentChoices.length > 0 ? recentChoices.join(' → ') : 'your first decision';
+  
+  // Create personalized story elements based on player data
+  const storyElements = {
+    character: {
+      brave: 'courageous and bold',
+      cautious: 'careful and thoughtful', 
+      adventurous: 'daring and spontaneous',
+      analytical: 'logical and methodical',
+      creative: 'imaginative and artistic',
+      mysterious: 'enigmatic and complex'
     },
-    development: {
-      easy: [
-        "The situation becomes more complex as new factors come into play.",
-        "Your previous choices begin to show their effects, creating new challenges.",
-        "The story takes an unexpected turn, requiring you to adapt quickly.",
-        "New complications arise that test your ability to think on your feet.",
-        "The consequences of your earlier decisions start to manifest."
-      ],
-      medium: [
-        "The complications multiply, creating a web of consequences that's hard to navigate.",
-        "Your previous choices begin to create conflicts that must be resolved.",
-        "The situation escalates beyond what you initially anticipated.",
-        "New dangers emerge that force you to reconsider your strategy.",
-        "The story takes a darker turn as the stakes continue to rise."
-      ],
-      hard: [
-        "The situation becomes dangerously complex, with multiple threats converging.",
-        "Your previous choices create a cascade of consequences that threaten to overwhelm you.",
-        "The complications reach a critical point where every decision carries massive weight.",
-        "New horrors emerge that make your earlier problems seem trivial.",
-        "The story takes a turn toward the truly terrifying."
-      ],
-      nightmare: [
-        "The situation becomes a living nightmare, with horrors beyond human comprehension.",
-        "Your previous choices create a hellscape where every moment brings new terrors.",
-        "The complications reach a point where reality itself begins to break down.",
-        "New abominations emerge that make your earlier fears seem childish.",
-        "The story descends into pure madness and despair."
-      ]
+    setting: {
+      work: 'your professional life',
+      family: 'your family relationships',
+      social: 'your social circle',
+      health: 'your physical well-being',
+      financial: 'your financial situation',
+      personal: 'your personal development'
     },
-    climax: {
-      easy: [
-        "The situation reaches a critical point where your choices will have lasting impact.",
-        "All your previous decisions converge, creating a moment of truth.",
-        "The stakes are at their highest as you face the ultimate test.",
-        "Your choices have led to this moment, and now you must face the consequences.",
-        "The story reaches its peak as everything hangs in the balance."
-      ],
-      medium: [
-        "The situation reaches a breaking point where failure could mean disaster.",
-        "All your previous choices create a perfect storm of consequences.",
-        "The stakes are life and death as you face your greatest challenge yet.",
-        "Your choices have built to this moment, and now you must pay the price.",
-        "The story reaches its climax as reality itself seems to hang in the balance."
-      ],
-      hard: [
-        "The situation reaches a point of no return where every choice could be your last.",
-        "All your previous choices create a nightmare scenario that must be resolved.",
-        "The stakes are your very soul as you face the ultimate horror.",
-        "Your choices have led to this moment of truth, and there's no turning back.",
-        "The story reaches its peak as the line between life and death blurs."
-      ],
-      nightmare: [
-        "The situation reaches a point where reality itself begins to unravel.",
-        "All your previous choices create a hellscape that defies human comprehension.",
-        "The stakes are your sanity and soul as you face the ultimate abomination.",
-        "Your choices have led to this moment of pure horror, and there's no escape.",
-        "The story reaches its climax as the fabric of existence itself tears apart."
-      ]
-    },
-    resolution: {
-      easy: [
-        "The consequences of your journey become clear, revealing the true impact of your choices.",
-        "Your story reaches its conclusion, showing how your decisions shaped the outcome.",
-        "The final outcome reveals whether your choices led to success or failure.",
-        "Your journey ends, and the full weight of your decisions becomes apparent.",
-        "The story concludes, showing the ultimate result of your adventure."
-      ],
-      medium: [
-        "The consequences of your journey become devastatingly clear, showing the true cost of your choices.",
-        "Your story reaches its conclusion, revealing the dark truth behind your decisions.",
-        "The final outcome shows whether your choices led to survival or damnation.",
-        "Your journey ends, and the full horror of your decisions becomes apparent.",
-        "The story concludes, showing the ultimate price of your adventure."
-      ],
-      hard: [
-        "The consequences of your journey become horrifyingly clear, revealing the true nightmare of your choices.",
-        "Your story reaches its conclusion, showing the depths of darkness your decisions created.",
-        "The final outcome reveals whether your choices led to salvation or eternal torment.",
-        "Your journey ends, and the full horror of your decisions becomes inescapable.",
-        "The story concludes, showing the ultimate horror of your adventure."
-      ],
-      nightmare: [
-        "The consequences of your journey become unspeakably clear, revealing the true abomination of your choices.",
-        "Your story reaches its conclusion, showing the depths of hell your decisions created.",
-        "The final outcome reveals whether your choices led to oblivion or eternal damnation.",
-        "Your journey ends, and the full horror of your decisions becomes your eternal reality.",
-        "The story concludes, showing the ultimate nightmare of your adventure."
-      ]
+    conflict: {
+      easy: 'minor challenges and everyday dilemmas',
+      medium: 'significant obstacles and moral quandaries', 
+      hard: 'life-changing decisions and profound consequences',
+      nightmare: 'existential threats and psychological horror'
     }
   };
 
-  const templates = consequenceTemplates[storyState][difficulty] || consequenceTemplates[storyState].medium;
-  const template = templates[Math.floor(Math.random() * templates.length)];
+  // Generate personalized story based on player's journey
+  const characterTrait = storyElements.character[personality] || 'complex and multifaceted';
+  const primarySetting = Object.keys(choicePatterns).length > 0 
+    ? Object.keys(choicePatterns).sort((a,b) => choicePatterns[b] - choicePatterns[a])[0]
+    : 'personal';
+  const setting = storyElements.setting[primarySetting] || 'your life';
+  const conflictType = storyElements.conflict[difficulty] || 'significant challenges';
+
+  // Create story progression based on round and state
+  let storyNarrative = '';
   
-  return `${choiceContext} ${template}`;
+  if (storyState === 'setup') {
+    storyNarrative = `As ${playerName}, your ${characterTrait} nature has led you to this moment. In ${setting}, you face ${conflictType} that will test your resolve. Your choice to ${choice} sets in motion a series of events that will shape your journey ahead. `;
+    
+    if (round === 1) {
+      storyNarrative += `This is where your story begins - every decision from this point forward will build upon this foundation, creating a narrative unique to your personality and circumstances.`;
+    } else {
+      storyNarrative += `Building on your previous choices (${choiceHistory}), this decision establishes new patterns that will influence everything that follows.`;
+    }
+  } else if (storyState === 'development') {
+    storyNarrative = `The consequences of your earlier decisions are now becoming clear. Your choice to ${choice} interacts with your previous choices (${choiceHistory}) in ways you couldn't have anticipated. `;
+    
+    if (fearCategories.length > 0) {
+      storyNarrative += `Your deepest fears about ${fearCategories.slice(0, 2).join(' and ')} begin to surface, adding layers of complexity to an already challenging situation. `;
+    }
+    
+    storyNarrative += `The ${setting} you thought you understood is revealing new dimensions, and your ${characterTrait} approach is being tested like never before.`;
+  } else if (storyState === 'climax') {
+    storyNarrative = `All your previous choices have led to this critical moment. The decision to ${choice} comes at a time when the stakes are at their highest, and the consequences of your entire journey (${choiceHistory}) are converging. `;
+    
+    if (difficulty === 'nightmare') {
+      storyNarrative += `Your deepest fears about ${fearCategories.length > 0 ? fearCategories[0] : 'the unknown'} are manifesting in ways that challenge your very sense of reality. `;
+    }
+    
+    storyNarrative += `Your ${characterTrait} nature is being pushed to its absolute limits, and the outcome of this choice will determine not just your immediate fate, but the legacy of your entire journey.`;
+  } else if (storyState === 'resolution') {
+    storyNarrative = `The full weight of your journey becomes clear. Your final choice to ${choice}, combined with your previous decisions (${choiceHistory}), has created a story that is uniquely yours. `;
+    
+    storyNarrative += `Your ${characterTrait} approach to life has shaped every moment of this experience, and the consequences of your choices will resonate far beyond this immediate situation. `;
+    
+    if (learningData.gamesPlayed > 1) {
+      storyNarrative += `This is not your first journey through difficult choices, and the wisdom you've gained from previous experiences has influenced every decision you've made.`;
+    }
+  }
+
+  // Add personalized emotional and psychological elements
+  let emotionalLayer = '';
+  
+  if (personality === 'brave') {
+    emotionalLayer = ` Your courage in the face of adversity has inspired others around you, but it has also made you a target for those who fear your strength.`;
+  } else if (personality === 'cautious') {
+    emotionalLayer = ` Your careful consideration has protected you from many dangers, but it has also caused you to miss opportunities that could have changed your life.`;
+  } else if (personality === 'adventurous') {
+    emotionalLayer = ` Your willingness to take risks has led you to incredible experiences, but it has also exposed you to dangers that more cautious people avoid.`;
+  } else if (personality === 'analytical') {
+    emotionalLayer = ` Your logical approach has helped you solve complex problems, but it has sometimes blinded you to the emotional aspects of situations that require more than just reason.`;
+  } else if (personality === 'creative') {
+    emotionalLayer = ` Your imagination has opened doors that others never see, but it has also made you vulnerable to the darker aspects of your own mind.`;
+  } else if (personality === 'mysterious') {
+    emotionalLayer = ` Your enigmatic nature has protected you from those who would exploit you, but it has also isolated you from the connections that could have made your journey easier.`;
+  }
+
+  // Add difficulty-specific consequences
+  let difficultyConsequence = '';
+  
+  if (difficulty === 'easy') {
+    difficultyConsequence = ` The challenges you face are manageable, but they're teaching you important lessons about yourself and the world around you.`;
+  } else if (difficulty === 'medium') {
+    difficultyConsequence = ` The stakes are high enough to matter, but not so high that you can't recover from mistakes. You're learning that every choice has weight.`;
+  } else if (difficulty === 'hard') {
+    difficultyConsequence = ` The consequences of your choices are severe and far-reaching. You're discovering that some decisions can't be undone, and their effects will echo through your life.`;
+  } else if (difficulty === 'nightmare') {
+    difficultyConsequence = ` The horror of your situation is almost overwhelming. You're facing consequences that challenge your understanding of reality itself, and the line between survival and damnation grows thinner with each choice.`;
+  }
+
+  // Add round-specific progression
+  let roundProgression = '';
+  
+  if (round > 5) {
+    roundProgression = ` After ${round} rounds of increasingly difficult decisions, you're beginning to see patterns in your choices that reveal aspects of your character you never fully understood.`;
+  }
+  
+  if (round > 8) {
+    roundProgression += ` The cumulative weight of your journey has changed you fundamentally - you're not the same person who started this path, and you're not sure if that's a good thing or a terrible one.`;
+  }
+
+  // Combine all elements into a cohesive story
+  const fullStory = storyNarrative + emotionalLayer + difficultyConsequence + roundProgression;
+  
+  return fullStory;
 };
 
 // Name analysis system to detect fake, vulgar, or joke names
