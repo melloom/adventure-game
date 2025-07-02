@@ -130,66 +130,66 @@ const generateSmartFallbackConsequence = (choice, difficulty, personality, round
   const consequenceTemplates = {
     easy: {
       positive: [
-        "You feel a warm glow of satisfaction. Your choice brings unexpected joy!",
-        "A small miracle occurs - things work out perfectly for you.",
-        "You discover a hidden talent you never knew you had.",
-        "Someone unexpected becomes your friend.",
-        "You find exactly what you were looking for."
+        "Your choice leads to an unexpected windfall - you discover a hidden talent for cooking that brings joy to everyone around you. Your kitchen becomes a place of warmth and laughter, and you find yourself hosting dinner parties that create lasting friendships.",
+        "A chance encounter at the grocery store changes everything. The person you helped with their shopping cart turns out to be a mentor who teaches you valuable life skills. Their wisdom helps you navigate challenges you never thought you could handle.",
+        "Your decision to take a different route home leads you past a small bookstore. Inside, you find a book that speaks directly to your soul, and the owner becomes a dear friend who introduces you to a community of like-minded people.",
+        "What seemed like a simple choice reveals a hidden strength within you. You discover you have a natural ability to calm tense situations, and people begin seeking your advice. Your confidence grows as you realize your impact on others.",
+        "Your choice creates a ripple effect of positivity. A small act of kindness inspires others to pay it forward, and you witness the beautiful chain reaction of goodwill spreading through your community."
       ],
       negative: [
-        "A minor inconvenience occurs, but it's nothing serious.",
-        "You feel a bit embarrassed, but everyone forgets quickly.",
-        "Something doesn't go quite as planned, but it's okay.",
-        "You miss out on something small, but life goes on.",
-        "A small disappointment, but you learn from it."
+        "Your decision leads to a series of minor inconveniences that test your patience. The coffee machine breaks, your phone dies, and you miss an important call. But through these small frustrations, you learn the value of adaptability and keeping a cool head.",
+        "A misunderstanding with a colleague creates tension in the workplace. The atmosphere becomes slightly uncomfortable, but you use this as an opportunity to improve your communication skills and build stronger relationships.",
+        "Your choice results in missing out on a social event where important connections were made. While you feel a pang of regret, you discover that sometimes solitude can be a gift, leading to unexpected self-reflection and growth.",
+        "A small financial setback teaches you valuable lessons about budgeting and planning. Though initially frustrating, this experience helps you develop better money management skills that serve you well in the future.",
+        "Your decision creates a temporary rift with a friend, but the space allows both of you to reflect on your relationship. When you reconnect, your friendship is stronger and more honest than before."
       ]
     },
     medium: {
       positive: [
-        "Your decision proves wise - you gain respect and admiration.",
-        "A challenging situation turns in your favor through your choice.",
-        "You discover inner strength you didn't know you possessed.",
-        "Your choice leads to an unexpected opportunity.",
-        "You overcome a significant obstacle through your decision."
+        "Your choice proves to be a turning point in your life. The difficult decision you made reveals your true character, and people around you begin to see you in a new light. Your reputation for integrity and courage grows, opening doors you never expected.",
+        "Through this challenge, you discover reserves of strength you never knew you possessed. The situation that seemed impossible becomes a testament to your resilience, and you emerge with a newfound confidence that transforms how you approach future obstacles.",
+        "Your decision creates an opportunity that changes your career trajectory. A chance meeting leads to a job offer that aligns perfectly with your values and goals, proving that sometimes the hardest choices lead to the best outcomes.",
+        "The relationship strain you feared actually brings you closer to the people who matter most. Your honesty and vulnerability create deeper connections, and you realize that authentic relationships are built on truth, not convenience.",
+        "Your choice becomes a defining moment that others look to for inspiration. People begin asking for your advice, and you find yourself in a position to help others navigate their own difficult decisions."
       ],
       negative: [
-        "Your choice leads to a difficult situation that tests your resolve.",
-        "You face consequences that challenge your beliefs.",
-        "A relationship is strained by your decision.",
-        "You must make another difficult choice as a result.",
-        "Your choice reveals a harsh truth about yourself."
+        "Your decision creates a complex web of consequences that challenges your moral compass. You find yourself questioning your own values and priorities, leading to a period of intense self-reflection that ultimately helps you clarify what truly matters to you.",
+        "The relationship strain you anticipated becomes more serious than expected. Trust is broken, and rebuilding it requires patience, humility, and a willingness to understand perspectives different from your own.",
+        "Your choice leads to financial consequences that force you to reevaluate your lifestyle and priorities. The stress of managing these challenges teaches you important lessons about planning and responsibility.",
+        "A professional setback forces you to reconsider your career path. While initially devastating, this becomes an opportunity to pursue work that aligns more closely with your passions and values.",
+        "Your decision reveals uncomfortable truths about yourself and your relationships. The process of facing these truths is painful but ultimately liberating, leading to personal growth you never anticipated."
       ]
     },
     hard: {
       positive: [
-        "Against all odds, your choice leads to redemption and growth.",
-        "You find meaning in suffering and emerge stronger.",
-        "Your sacrifice is not in vain - others are saved.",
-        "You discover the true nature of courage and honor.",
-        "Your choice becomes a legend of moral triumph."
+        "Against all odds, your choice becomes a catalyst for profound transformation. The sacrifice you made creates a ripple effect that touches countless lives, and you discover that true fulfillment comes from serving something greater than yourself.",
+        "Through the darkest moments of this decision, you find a strength that transcends your own understanding. Your choice becomes a beacon of hope for others facing similar challenges, and you realize that your suffering has purpose.",
+        "The relationship you thought was lost forever is actually strengthened through this trial. Your honesty and courage create a foundation of trust that can weather any storm, and you emerge with a love deeper than you ever imagined possible.",
+        "Your decision, though painful, reveals your true calling. The path you chose leads you to work that not only provides for your family but also brings meaning and purpose to your life beyond material success.",
+        "Through this crucible of choice, you discover the depth of your own character. Your choice becomes a testament to your values and integrity, earning you respect and admiration from those who witness your courage."
       ],
       negative: [
-        "Your choice haunts you with guilt and regret.",
-        "You lose something precious that can never be replaced.",
-        "Your decision creates a rift that may never heal.",
-        "You must live with the consequences of your choice forever.",
-        "Your choice reveals a darkness within you."
+        "Your choice haunts you with a depth of regret that challenges your very sense of self. The consequences ripple through your life in ways you never anticipated, forcing you to confront the reality that some decisions cannot be undone.",
+        "The relationship you valued most is irrevocably changed by your decision. Trust, once broken, proves difficult to rebuild, and you must learn to live with the knowledge that your choice caused pain to someone you love.",
+        "Your decision leads to a loss that cannot be measured in material terms. Something precious and irreplaceable is gone forever, and you must find a way to move forward while carrying the weight of this knowledge.",
+        "The professional consequences of your choice force you to start over in ways you never imagined. Years of work and planning are undone, and you must rebuild your life from a foundation you never expected to need.",
+        "Your choice reveals aspects of your character that you find difficult to accept. The process of coming to terms with these truths about yourself is painful but necessary for genuine growth and self-awareness."
       ]
     },
     nightmare: {
       positive: [
-        "In the depths of horror, you find a glimmer of hope that defies all logic.",
-        "Your choice, though terrible, prevents something even worse.",
-        "You become a monster, but one that protects others from greater evil.",
-        "Your suffering becomes a shield for the innocent.",
-        "In madness, you find a twisted form of salvation."
+        "In the depths of this nightmare scenario, you discover a resilience that defies all logic. Your choice, though born from desperation, becomes the foundation for a new way of living that transforms not just your life, but the lives of others who witness your courage.",
+        "Through unimaginable suffering, you find a purpose that transcends your own survival. Your choice becomes a beacon of hope in a world that seemed devoid of light, and you realize that sometimes the greatest good comes from the darkest places.",
+        "Your decision, though it costs you everything you thought you valued, reveals what truly matters. In losing everything, you gain a clarity and wisdom that becomes your greatest asset in rebuilding your life.",
+        "The horror of your choice becomes the catalyst for your greatest transformation. You emerge from this crucible not as a victim, but as someone who has stared into the abyss and found strength in the depths of your own soul.",
+        "Through this trial by fire, you discover that your capacity for love and compassion is greater than your capacity for fear. Your choice, though born from darkness, becomes a testament to the light that can emerge from even the most desperate circumstances."
       ],
       negative: [
-        "Your choice unleashes horrors beyond human comprehension.",
-        "You become the architect of your own damnation.",
-        "Your decision corrupts your very soul beyond redemption.",
-        "You witness the true face of evil - and it is your own.",
-        "Your choice damns not just you, but all of existence."
+        "Your choice unleashes consequences that challenge your very understanding of reality. The world you thought you knew is revealed to be far more complex and dangerous than you ever imagined, and you must navigate this new understanding while dealing with the immediate fallout of your decision.",
+        "The trust you placed in your own judgment is shattered by the outcome of your choice. You find yourself questioning every decision you've ever made, and the process of rebuilding your confidence becomes a journey of self-discovery that you never wanted to take.",
+        "Your decision creates a rift in your relationships that seems impossible to bridge. The people you love most are hurt in ways you never intended, and you must find a way to live with the knowledge that your choice caused them pain.",
+        "The professional and personal consequences of your choice force you to confront aspects of yourself that you've spent years avoiding. The process of facing these truths is more painful than the immediate consequences of your decision.",
+        "Your choice reveals that the world is far more dangerous and unpredictable than you ever realized. The safety and security you thought you had are revealed to be illusions, and you must learn to navigate a reality that is far more complex and challenging than you ever imagined."
       ]
     }
   };
@@ -201,15 +201,15 @@ const generateSmartFallbackConsequence = (choice, difficulty, personality, round
   let consequence = consequencePool[Math.floor(Math.random() * consequencePool.length)];
   
   if (round > 5) {
-    consequence += ` Round ${round} has taken its toll on your psyche.`;
+    consequence += ` The cumulative weight of ${round} rounds of difficult decisions has changed you in ways you're only beginning to understand.`;
   }
   
   if (personality === 'impulsive') {
-    consequence += ' Your quick decision-making continues to define your path.';
+    consequence += ' Your tendency to act quickly has shaped this outcome in ways that surprise even you.';
   } else if (personality === 'cautious') {
-    consequence += ' Your careful consideration has shaped this outcome.';
+    consequence += ' Your careful consideration has influenced every aspect of this situation.';
   } else if (personality === 'adventurous') {
-    consequence += ' Your boldness has led you to this moment.';
+    consequence += ' Your willingness to take risks has led you to this moment.';
   }
   
   return consequence;
@@ -367,7 +367,7 @@ export const generateConsequence = async (choice, difficulty = 'medium', persona
     try {
       console.log('🔄 Trying OpenAI for consequence...');
       
-      const progressivePrompt = `You are ORACLE_7X, an AI that creates realistic consequences for everyday choices. Generate a consequence that shows the practical impact of the player's decision.
+      const progressivePrompt = `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. Generate a rich, descriptive consequence that tells a complete story about the impact of the player's decision.
 
 STORY PROGRESSION:
 - Current Phase: ${stateInfo.name} (${stateInfo.description})
@@ -387,31 +387,30 @@ STORY CONTEXT:
 - Difficulty: ${difficulty}
 - Personality: ${personality}
 
-IMPORTANT: Create realistic consequences like:
-- How the choice affects their relationships
-- Impact on their work or career
-- Financial consequences
-- Health or lifestyle changes
-- Social consequences
-- Family dynamics
-- Personal growth or setbacks
-- Real-world complications
+IMPORTANT: Create a detailed, story-driven consequence that:
+- Tells a complete narrative with beginning, middle, and end
+- Describes specific events, emotions, and character development
+- Shows how the choice affects relationships, career, health, or lifestyle
+- Includes sensory details and emotional depth
+- Creates a vivid picture of the consequences
+- Is at least 2-3 sentences long with rich description
+- Makes the player feel like they're reading a compelling story
 
-Return ONLY the consequence in one sentence that shows the practical, real-world impact of their choice.`;
+Return ONLY the detailed consequence story.`;
 
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `You are ORACLE_7X, an AI that creates realistic consequences for everyday choices. You focus on practical, real-world impacts that people can relate to - work, relationships, money, health, family, etc. You avoid abstract concepts and focus on tangible outcomes.`
+            content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives that tell complete stories about the impact of decisions. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story.`
           },
           {
             role: 'user',
             content: progressivePrompt
           }
         ],
-        max_tokens: 150,
+        max_tokens: 300,
         temperature: 0.9
       });
 
