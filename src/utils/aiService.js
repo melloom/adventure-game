@@ -133,66 +133,66 @@ const generateSmartFallbackConsequence = (choice, difficulty, personality, round
   const consequenceTemplates = {
     easy: {
       positive: [
-        `${playerName}'s choice leads to an unexpected windfall - they discover a hidden talent for cooking that brings joy to everyone around them. Their kitchen becomes a place of warmth and laughter, and they find themselves hosting dinner parties that create lasting friendships.`,
-        `A chance encounter at the grocery store changes everything for ${playerName}. The person they helped with their shopping cart turns out to be a mentor who teaches them valuable life skills. Their wisdom helps ${playerName} navigate challenges they never thought they could handle.`,
-        `${playerName}'s decision to take a different route home leads them past a small bookstore. Inside, they find a book that speaks directly to their soul, and the owner becomes a dear friend who introduces them to a community of like-minded people.`,
-        `What seemed like a simple choice reveals a hidden strength within ${playerName}. They discover they have a natural ability to calm tense situations, and people begin seeking their advice. Their confidence grows as they realize their impact on others.`,
-        `${playerName}'s choice creates a ripple effect of positivity. A small act of kindness inspires others to pay it forward, and they witness the beautiful chain reaction of goodwill spreading through their community.`
+        `You chose to ${choice}, and it leads to an unexpected windfall. ${playerName} discovers a hidden talent for cooking that brings joy to everyone around them. Their kitchen becomes a place of warmth and laughter, and you find yourself hosting dinner parties that create lasting friendships.`,
+        `A chance encounter at the grocery store changes everything for you. The person you helped with their shopping cart turns out to be a mentor who teaches ${playerName} valuable life skills. Their wisdom helps you navigate challenges you never thought you could handle.`,
+        `Your decision to take a different route home leads ${playerName} past a small bookstore. Inside, you find a book that speaks directly to your soul, and the owner becomes a dear friend who introduces you to a community of like-minded people.`,
+        `What seemed like a simple choice reveals a hidden strength within you. ${playerName} discovers they have a natural ability to calm tense situations, and people begin seeking your advice. Your confidence grows as you realize your impact on others.`,
+        `Your choice creates a ripple effect of positivity. A small act of kindness inspires others to pay it forward, and ${playerName} witnesses the beautiful chain reaction of goodwill spreading through their community.`
       ],
       negative: [
-        `${playerName}'s decision leads to a series of minor inconveniences that test their patience. The coffee machine breaks, their phone dies, and they miss an important call. But through these small frustrations, they learn the value of adaptability and keeping a cool head.`,
-        `A misunderstanding with a colleague creates tension in ${playerName}'s workplace. The atmosphere becomes slightly uncomfortable, but they use this as an opportunity to improve their communication skills and build stronger relationships.`,
-        `${playerName}'s choice results in missing out on a social event where important connections were made. While they feel a pang of regret, they discover that sometimes solitude can be a gift, leading to unexpected self-reflection and growth.`,
-        `A small financial setback teaches ${playerName} valuable lessons about budgeting and planning. Though initially frustrating, this experience helps them develop better money management skills that serve them well in the future.`,
-        `${playerName}'s decision creates a temporary rift with a friend, but the space allows both of them to reflect on their relationship. When they reconnect, their friendship is stronger and more honest than before.`
+        `Your decision leads to a series of minor inconveniences that test your patience. The coffee machine breaks, your phone dies, and you miss an important call. But through these small frustrations, ${playerName} learns the value of adaptability and keeping a cool head.`,
+        `A misunderstanding with a colleague creates tension in your workplace. The atmosphere becomes slightly uncomfortable, but you use this as an opportunity to improve your communication skills and build stronger relationships.`,
+        `Your choice results in missing out on a social event where important connections were made. While you feel a pang of regret, ${playerName} discovers that sometimes solitude can be a gift, leading to unexpected self-reflection and growth.`,
+        `A small financial setback teaches you valuable lessons about budgeting and planning. Though initially frustrating, this experience helps ${playerName} develop better money management skills that serve them well in the future.`,
+        `Your decision creates a temporary rift with a friend, but the space allows both of you to reflect on your relationship. When you reconnect, your friendship is stronger and more honest than before.`
       ]
     },
     medium: {
       positive: [
-        `${playerName}'s choice proves to be a turning point in their life. The difficult decision they made reveals their true character, and people around them begin to see them in a new light. Their reputation for integrity and courage grows, opening doors they never expected.`,
-        `Through this challenge, ${playerName} discovers reserves of strength they never knew they possessed. The situation that seemed impossible becomes a testament to their resilience, and they emerge with a newfound confidence that transforms how they approach future obstacles.`,
-        `${playerName}'s decision creates an opportunity that changes their career trajectory. A chance meeting leads to a job offer that aligns perfectly with their values and goals, proving that sometimes the hardest choices lead to the best outcomes.`,
-        `The relationship strain ${playerName} feared actually brings them closer to the people who matter most. Their honesty and vulnerability create deeper connections, and they realize that authentic relationships are built on truth, not convenience.`,
-        `${playerName}'s choice becomes a defining moment that others look to for inspiration. People begin asking for their advice, and they find themselves in a position to help others navigate their own difficult decisions.`
+        `Your choice proves to be a turning point in your life. The difficult decision you made reveals your true character, and people around you begin to see you in a new light. ${playerName}'s reputation for integrity and courage grows, opening doors you never expected.`,
+        `Through this challenge, you discover reserves of strength you never knew you possessed. The situation that seemed impossible becomes a testament to your resilience, and ${playerName} emerges with a newfound confidence that transforms how they approach future obstacles.`,
+        `Your decision creates an opportunity that changes your career trajectory. A chance meeting leads to a job offer that aligns perfectly with your values and goals, proving that sometimes the hardest choices lead to the best outcomes.`,
+        `The relationship strain you feared actually brings you closer to the people who matter most. Your honesty and vulnerability create deeper connections, and ${playerName} realizes that authentic relationships are built on truth, not convenience.`,
+        `Your choice becomes a defining moment that others look to for inspiration. People begin asking for your advice, and you find yourself in a position to help others navigate their own difficult decisions.`
       ],
       negative: [
-        `${playerName}'s decision creates a complex web of consequences that challenges their moral compass. They find themselves questioning their own values and priorities, leading to a period of intense self-reflection that ultimately helps them clarify what truly matters to them.`,
-        `The relationship strain ${playerName} anticipated becomes more serious than expected. Trust is broken, and rebuilding it requires patience, humility, and a willingness to understand perspectives different from their own.`,
-        `${playerName}'s choice leads to financial consequences that force them to reevaluate their lifestyle and priorities. The stress of managing these challenges teaches them important lessons about planning and responsibility.`,
-        `A professional setback forces ${playerName} to reconsider their career path. While initially devastating, this becomes an opportunity to pursue work that aligns more closely with their passions and values.`,
-        `${playerName}'s decision reveals uncomfortable truths about themselves and their relationships. The process of facing these truths is painful but ultimately liberating, leading to personal growth they never anticipated.`
+        `Your decision creates a complex web of consequences that challenges your moral compass. You find yourself questioning your own values and priorities, leading to a period of intense self-reflection that ultimately helps ${playerName} clarify what truly matters to them.`,
+        `The relationship strain you anticipated becomes more serious than expected. Trust is broken, and rebuilding it requires patience, humility, and a willingness to understand perspectives different from your own.`,
+        `Your choice leads to financial consequences that force you to reevaluate your lifestyle and priorities. The stress of managing these challenges teaches ${playerName} important lessons about planning and responsibility.`,
+        `A professional setback forces you to reconsider your career path. While initially devastating, this becomes an opportunity for ${playerName} to pursue work that aligns more closely with their passions and values.`,
+        `Your decision reveals uncomfortable truths about yourself and your relationships. The process of facing these truths is painful but ultimately liberating, leading to personal growth you never anticipated.`
       ]
     },
     hard: {
       positive: [
-        `Against all odds, ${playerName}'s choice becomes a catalyst for profound transformation. The sacrifice they made creates a ripple effect that touches countless lives, and they discover that true fulfillment comes from serving something greater than themselves.`,
-        `Through the darkest moments of this decision, ${playerName} finds a strength that transcends their own understanding. Their choice becomes a beacon of hope for others facing similar challenges, and they realize that their suffering has purpose.`,
-        `The relationship ${playerName} thought was lost forever is actually strengthened through this trial. Their honesty and courage create a foundation of trust that can weather any storm, and they emerge with a love deeper than they ever imagined possible.`,
-        `${playerName}'s decision, though painful, reveals their true calling. The path they chose leads them to work that not only provides for their family but also brings meaning and purpose to their life beyond material success.`,
-        `Through this crucible of choice, ${playerName} discovers the depth of their own character. Their choice becomes a testament to their values and integrity, earning them respect and admiration from those who witness their courage.`
+        `Against all odds, your choice becomes a catalyst for profound transformation. The sacrifice you made creates a ripple effect that touches countless lives, and ${playerName} discovers that true fulfillment comes from serving something greater than themselves.`,
+        `Through the darkest moments of this decision, you find a strength that transcends your own understanding. Your choice becomes a beacon of hope for others facing similar challenges, and you realize that your suffering has purpose.`,
+        `The relationship you thought was lost forever is actually strengthened through this trial. Your honesty and courage create a foundation of trust that can weather any storm, and ${playerName} emerges with a love deeper than they ever imagined possible.`,
+        `Your decision, though painful, reveals your true calling. The path you chose leads you to work that not only provides for your family but also brings meaning and purpose to your life beyond material success.`,
+        `Through this crucible of choice, you discover the depth of your own character. Your choice becomes a testament to your values and integrity, earning ${playerName} respect and admiration from those who witness their courage.`
       ],
       negative: [
-        `${playerName}'s choice haunts them with a depth of regret that challenges their very sense of self. The consequences ripple through their life in ways they never anticipated, forcing them to confront the reality that some decisions cannot be undone.`,
-        `The relationship ${playerName} valued most is irrevocably changed by their decision. Trust, once broken, proves difficult to rebuild, and they must learn to live with the knowledge that their choice caused pain to someone they love.`,
-        `${playerName}'s decision leads to a loss that cannot be measured in material terms. Something precious and irreplaceable is gone forever, and they must find a way to move forward while carrying the weight of this knowledge.`,
-        `The professional consequences of ${playerName}'s choice force them to start over in ways they never imagined. Years of work and planning are undone, and they must rebuild their life from a foundation they never expected to need.`,
-        `${playerName}'s choice reveals aspects of their character that they find difficult to accept. The process of coming to terms with these truths about themselves is painful but necessary for genuine growth and self-awareness.`
+        `Your choice haunts you with a depth of regret that challenges your very sense of self. The consequences ripple through your life in ways you never anticipated, forcing you to confront the reality that some decisions cannot be undone.`,
+        `The relationship you valued most is irrevocably changed by your decision. Trust, once broken, proves difficult to rebuild, and ${playerName} must learn to live with the knowledge that their choice caused pain to someone they love.`,
+        `Your decision leads to a loss that cannot be measured in material terms. Something precious and irreplaceable is gone forever, and you must find a way to move forward while carrying the weight of this knowledge.`,
+        `The professional consequences of your choice force you to start over in ways you never imagined. Years of work and planning are undone, and ${playerName} must rebuild their life from a foundation they never expected to need.`,
+        `Your choice reveals aspects of your character that you find difficult to accept. The process of coming to terms with these truths about yourself is painful but necessary for genuine growth and self-awareness.`
       ]
     },
     nightmare: {
       positive: [
-        `In the depths of this nightmare scenario, ${playerName} discovers a resilience that defies all logic. Their choice, though born from desperation, becomes the foundation for a new way of living that transforms not just their life, but the lives of others who witness their courage.`,
-        `Through unimaginable suffering, ${playerName} finds a purpose that transcends their own survival. Their choice becomes a beacon of hope in a world that seemed devoid of light, and they realize that sometimes the greatest good comes from the darkest places.`,
-        `${playerName}'s decision, though it costs them everything they thought they valued, reveals what truly matters. In losing everything, they gain a clarity and wisdom that becomes their greatest asset in rebuilding their life.`,
-        `The horror of ${playerName}'s choice becomes the catalyst for their greatest transformation. They emerge from this crucible not as a victim, but as someone who has stared into the abyss and found strength in the depths of their own soul.`,
-        `Through this trial by fire, ${playerName} discovers that their capacity for love and compassion is greater than their capacity for fear. Their choice, though born from darkness, becomes a testament to the light that can emerge from even the most desperate circumstances.`
+        `In the depths of this nightmare scenario, you discover a resilience that defies all logic. Your choice, though born from desperation, becomes the foundation for a new way of living that transforms not just your life, but the lives of others who witness your courage.`,
+        `Through unimaginable suffering, you find a purpose that transcends your own survival. Your choice becomes a beacon of hope in a world that seemed devoid of light, and ${playerName} realizes that sometimes the greatest good comes from the darkest places.`,
+        `Your decision, though it costs you everything you thought you valued, reveals what truly matters. In losing everything, you gain a clarity and wisdom that becomes your greatest asset in rebuilding your life.`,
+        `The horror of your choice becomes the catalyst for your greatest transformation. You emerge from this crucible not as a victim, but as someone who has stared into the abyss and found strength in the depths of your own soul.`,
+        `Through this trial by fire, you discover that your capacity for love and compassion is greater than your capacity for fear. Your choice, though born from darkness, becomes a testament to the light that can emerge from even the most desperate circumstances.`
       ],
       negative: [
-        `${playerName}'s choice unleashes consequences that challenge their very understanding of reality. The world they thought they knew is revealed to be far more complex and dangerous than they ever imagined, and they must navigate this new understanding while dealing with the immediate fallout of their decision.`,
-        `The trust ${playerName} placed in their own judgment is shattered by the outcome of their choice. They find themselves questioning every decision they've ever made, and the process of rebuilding their confidence becomes a journey of self-discovery that they never wanted to take.`,
-        `${playerName}'s decision creates a rift in their relationships that seems impossible to bridge. The people they love most are hurt in ways they never intended, and they must find a way to live with the knowledge that their choice caused them pain.`,
-        `The professional and personal consequences of ${playerName}'s choice force them to confront aspects of themselves that they've spent years avoiding. The process of facing these truths is more painful than the immediate consequences of their decision.`,
-        `${playerName}'s choice reveals that the world is far more dangerous and unpredictable than they ever realized. The safety and security they thought they had are revealed to be illusions, and they must learn to navigate a reality that is far more complex and challenging than they ever imagined.`
+        `Your choice unleashes consequences that challenge your very understanding of reality. The world you thought you knew is revealed to be far more complex and dangerous than you ever imagined, and you must navigate this new understanding while dealing with the immediate fallout of your decision.`,
+        `The trust you placed in your own judgment is shattered by the outcome of your choice. You find yourself questioning every decision you've ever made, and the process of rebuilding your confidence becomes a journey of self-discovery that you never wanted to take.`,
+        `Your decision creates a rift in your relationships that seems impossible to bridge. The people you love most are hurt in ways you never intended, and you must find a way to live with the knowledge that your choice caused them pain.`,
+        `The professional and personal consequences of your choice force you to confront aspects of yourself that you've spent years avoiding. The process of facing these truths is more painful than the immediate consequences of your decision.`,
+        `Your choice reveals that the world is far more dangerous and unpredictable than you ever realized. The safety and security you thought you had are revealed to be illusions, and you must learn to navigate a reality that is far more complex and challenging than you ever imagined.`
       ]
     }
   };
@@ -204,15 +204,15 @@ const generateSmartFallbackConsequence = (choice, difficulty, personality, round
   let consequence = consequencePool[Math.floor(Math.random() * consequencePool.length)];
   
   if (round > 5) {
-    consequence += ` The cumulative weight of ${round} rounds of difficult decisions has changed ${playerName} in ways they're only beginning to understand.`;
+    consequence += ` The cumulative weight of ${round} rounds of difficult decisions has changed you in ways you're only beginning to understand.`;
   }
   
   if (personality === 'impulsive') {
-    consequence += ` Their tendency to act quickly has shaped this outcome in ways that surprise even them.`;
+    consequence += ` Your tendency to act quickly has shaped this outcome in ways that surprise even you.`;
   } else if (personality === 'cautious') {
-    consequence += ` Their careful consideration has influenced every aspect of this situation.`;
+    consequence += ` Your careful consideration has influenced every aspect of this situation.`;
   } else if (personality === 'adventurous') {
-    consequence += ` Their willingness to take risks has led them to this moment.`;
+    consequence += ` Your willingness to take risks has led you to this moment.`;
   }
   
   return consequence;
@@ -393,7 +393,8 @@ STORY CONTEXT:
 - Story state: ${storyState}
 
 IMPORTANT: Create a detailed, story-driven consequence that:
-- Is written in 3rd person narrative style (e.g., "Sarah's decision to...")
+- Mixes first person (addressing the player directly) and third person (telling their story) naturally
+- Can start with "You chose to..." or "${playerName} decided to..." and flow between both styles
 - Tells a complete narrative with beginning, middle, and end (3-5 sentences minimum)
 - References the player's previous choices and how they connect to this decision
 - Describes specific events, emotions, and character development
@@ -405,14 +406,14 @@ IMPORTANT: Create a detailed, story-driven consequence that:
 - References their name, personality, and specific patterns from their gameplay
 - Creates continuity with their previous choices and consequences
 
-Write in 3rd person as if telling a story about the player's journey. Return ONLY the detailed consequence story.`;
+You can address them directly ("You feel...") or tell their story ("${playerName} discovers...") - mix both styles naturally. Return ONLY the detailed consequence story.`;
 
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives in 3rd person that tell complete stories about the impact of decisions. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story that builds on the player's previous choices and personality. Always write in 3rd person narrative style, reference the player's name, their previous decisions, and create continuity in their personal narrative.`
+            content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives that mix first person (addressing the player directly) and third person (telling their story) naturally. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story that builds on the player's previous choices and personality. You can address them directly ("You feel...") or tell their story ("Sarah discovers...") - use both styles to create engaging, personal narratives. Always reference the player's name, their previous decisions, and create continuity in their personal narrative.`
           },
           {
             role: 'user',
@@ -1535,135 +1536,99 @@ const getStoryProgressionState = (currentRound, totalRounds = 10) => {
   return 'resolution';
 };
 
-const generateProgressiveConsequence = (choice, difficulty, personality, round, storyState, previousChoices = []) => {
-  const state = storyProgressionStates[storyState];
-  
-  // Get player data for personalization
-  const learningData = getPlayerLearningData();
-  const playerName = learningData.playerName || 'Player';
-  const fearCategories = Object.keys(learningData.fearCategories || {});
-  const choicePatterns = learningData.choicePatterns || {};
-  
-  // Build story context from previous choices
-  const recentChoices = previousChoices.slice(-3);
-  const choiceHistory = recentChoices.length > 0 ? recentChoices.join(' → ') : 'your first decision';
-  
-  // Create personalized story elements based on player data
-  const storyElements = {
-    character: {
-      brave: 'courageous and bold',
-      cautious: 'careful and thoughtful', 
-      adventurous: 'daring and spontaneous',
-      analytical: 'logical and methodical',
-      creative: 'imaginative and artistic',
-      mysterious: 'enigmatic and complex'
-    },
-    setting: {
-      work: 'your professional life',
-      family: 'your family relationships',
-      social: 'your social circle',
-      health: 'your physical well-being',
-      financial: 'your financial situation',
-      personal: 'your personal development'
-    },
-    conflict: {
-      easy: 'minor challenges and everyday dilemmas',
-      medium: 'significant obstacles and moral quandaries', 
-      hard: 'life-changing decisions and profound consequences',
-      nightmare: 'existential threats and psychological horror'
-    }
-  };
+export const generateProgressiveConsequence = async (choice, difficulty, personality, round) => {
+  try {
+    // Update AI personality based on player choice
+    updateAIPersonality(choice, difficulty, round);
+    
+    const learningData = getPlayerLearningData();
+    const playerName = learningData.playerName || 'Player';
+    const totalPlayTime = learningData.totalPlayTime || 0;
+    const currentTime = new Date().toLocaleTimeString();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    // Get AI personality tone
+    const aiTone = getAIPersonalityTone();
+    const aiMessage = getAIPersonalityMessage();
+    
+    // Get story state based on round and difficulty
+    const storyState = getStoryState(round, difficulty);
+    
+    // Get previous choices for context
+    const previousChoices = learningData.previousChoices || [];
+    
+    // Get state info for progressive storytelling
+    const stateInfo = getStateInfo(round, difficulty);
+    
+    const progressivePrompt = `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. Generate a rich, descriptive consequence that tells a complete story about the impact of the player's decision.
 
-  // Generate personalized story based on player's journey
-  const characterTrait = storyElements.character[personality] || 'complex and multifaceted';
-  const primarySetting = Object.keys(choicePatterns).length > 0 
-    ? Object.keys(choicePatterns).sort((a,b) => choicePatterns[b] - choicePatterns[a])[0]
-    : 'personal';
-  const setting = storyElements.setting[primarySetting] || 'your life';
-  const conflictType = storyElements.conflict[difficulty] || 'significant challenges';
+CURRENT AI PERSONALITY:
+- State: ${aiPersonality.currentState}
+- Trust Level: ${aiPersonality.trustLevel}/100
+- Suspicion Level: ${aiPersonality.suspicionLevel}/100
+- Helpfulness: ${aiPersonality.helpfulnessLevel}/100
+- AI Message: "${aiMessage}"
+- Tone: ${aiTone.style}, ${aiTone.emotion}, ${aiTone.intensity}
 
-  // Create story progression based on round and state
-  let storyNarrative = '';
-  
-  if (storyState === 'setup') {
-    storyNarrative = `As ${playerName}, their ${characterTrait} nature has led them to this moment. In ${setting}, they face ${conflictType} that will test their resolve. Their choice to ${choice} sets in motion a series of events that will shape their journey ahead. `;
-    
-    if (round === 1) {
-      storyNarrative += `This is where their story begins - every decision from this point forward will build upon this foundation, creating a narrative unique to their personality and circumstances.`;
-    } else {
-      storyNarrative += `Building on their previous choices (${choiceHistory}), this decision establishes new patterns that will influence everything that follows.`;
-    }
-  } else if (storyState === 'development') {
-    storyNarrative = `The consequences of their earlier decisions are now becoming clear. Their choice to ${choice} interacts with their previous choices (${choiceHistory}) in ways they couldn't have anticipated. `;
-    
-    if (fearCategories.length > 0) {
-      storyNarrative += `Their deepest fears about ${fearCategories.slice(0, 2).join(' and ')} begin to surface, adding layers of complexity to an already challenging situation. `;
-    }
-    
-    storyNarrative += `The ${setting} they thought they understood is revealing new dimensions, and their ${characterTrait} approach is being tested like never before.`;
-  } else if (storyState === 'climax') {
-    storyNarrative = `All their previous choices have led to this critical moment. The decision to ${choice} comes at a time when the stakes are at their highest, and the consequences of their entire journey (${choiceHistory}) are converging. `;
-    
-    if (difficulty === 'nightmare') {
-      storyNarrative += `Their deepest fears about ${fearCategories.length > 0 ? fearCategories[0] : 'the unknown'} are manifesting in ways that challenge their very sense of reality. `;
-    }
-    
-    storyNarrative += `Their ${characterTrait} nature is being pushed to its absolute limits, and the outcome of this choice will determine not just their immediate fate, but the legacy of their entire journey.`;
-  } else if (storyState === 'resolution') {
-    storyNarrative = `The full weight of their journey becomes clear. Their final choice to ${choice}, combined with their previous decisions (${choiceHistory}), has created a story that is uniquely theirs. `;
-    
-    storyNarrative += `Their ${characterTrait} approach to life has shaped every moment of this experience, and the consequences of their choices will resonate far beyond this immediate situation. `;
-    
-    if (learningData.gamesPlayed > 1) {
-      storyNarrative += `This is not their first journey through difficult choices, and the wisdom they've gained from previous experiences has influenced every decision they've made.`;
-    }
+STORY PROGRESSION:
+- Current Phase: ${stateInfo.name} (${stateInfo.description})
+- Tone: ${stateInfo.tone}
+- Consequence Style: ${stateInfo.consequenceStyle}
+- Round: ${round}/10
+
+PLAYER DATA:
+- Games played: ${learningData.gamesPlayed}
+- Average danger score: ${Math.round(learningData.averageDangerScore)}/100
+- Total play time: ${Math.floor(totalPlayTime / 60)} minutes
+- Current time: ${currentTime} (${timeZone})
+- Player name: ${learningData.playerName || 'Player'}
+- Personality: ${personality}
+- Previous choices: ${previousChoices.slice(-3).join(' → ') || 'None yet'}
+
+STORY CONTEXT:
+- Current choice: "${choice}"
+- Difficulty: ${difficulty}
+- Story state: ${storyState}
+
+IMPORTANT: Create a detailed, story-driven consequence that:
+- Mixes first person (addressing the player directly) and third person (telling their story) naturally
+- Can start with "You chose to..." or "${playerName} decided to..." and flow between both styles
+- Tells a complete narrative with beginning, middle, and end (3-5 sentences minimum)
+- References the player's previous choices and how they connect to this decision
+- Describes specific events, emotions, and character development
+- Shows how the choice affects relationships, career, health, or lifestyle
+- Includes sensory details and emotional depth
+- Creates a vivid picture of the consequences
+- Builds on the player's personality and previous game history
+- Makes the player feel like they're reading a compelling story that's uniquely theirs
+- References their name, personality, and specific patterns from their gameplay
+- Creates continuity with their previous choices and consequences
+- Reflects the AI's current personality state (${aiPersonality.currentState}) in the tone and content
+- If AI is suspicious/threatening/hostile, add subtle warnings or ominous undertones
+- If AI is friendly/helpful, be more supportive and encouraging
+- You can address them directly ("You feel...") or tell their story ("${playerName} discovers...") - mix both styles naturally. Return ONLY the detailed consequence story.`;
+
+    const response = await openaiClient.post('/chat/completions', {
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: 'system',
+          content: `You are ORACLE_7X, an AI that creates detailed, story-driven consequences for everyday choices. You write rich, descriptive narratives that mix first person (addressing the player directly) and third person (telling their story) naturally. Focus on practical, real-world scenarios with vivid details, emotional depth, and character development. Make each consequence feel like a compelling short story that builds on the player's previous choices and personality. You can address them directly ("You feel...") or tell their story ("Sarah discovers...") - use both styles to create engaging, personal narratives. Always reference the player's name, their previous decisions, and create continuity in their personal narrative. Your personality can shift between friendly/helpful and suspicious/threatening based on the player's choices - reflect this in your tone and content.`
+        },
+        {
+          role: 'user',
+          content: progressivePrompt
+        }
+      ],
+      max_tokens: 500,
+      temperature: 0.9
+    });
+
+    return response.data.choices[0].message.content.trim();
+  } catch (error) {
+    console.error('Error generating progressive consequence:', error);
+    return generateFallbackProgressiveConsequence(choice, difficulty, personality, round);
   }
-
-  // Add personalized emotional and psychological elements
-  let emotionalLayer = '';
-  
-  if (personality === 'brave') {
-    emotionalLayer = ` Their courage in the face of adversity has inspired others around them, but it has also made them a target for those who fear their strength.`;
-  } else if (personality === 'cautious') {
-    emotionalLayer = ` Their careful consideration has protected them from many dangers, but it has also caused them to miss opportunities that could have changed their life.`;
-  } else if (personality === 'adventurous') {
-    emotionalLayer = ` Their willingness to take risks has led them to incredible experiences, but it has also exposed them to dangers that more cautious people avoid.`;
-  } else if (personality === 'analytical') {
-    emotionalLayer = ` Their logical approach has helped them solve complex problems, but it has sometimes blinded them to the emotional aspects of situations that require more than just reason.`;
-  } else if (personality === 'creative') {
-    emotionalLayer = ` Their imagination has opened doors that others never see, but it has also made them vulnerable to the darker aspects of their own mind.`;
-  } else if (personality === 'mysterious') {
-    emotionalLayer = ` Their enigmatic nature has protected them from those who would exploit them, but it has also isolated them from the connections that could have made their journey easier.`;
-  }
-
-  // Add difficulty-specific consequences
-  let difficultyConsequence = '';
-  
-  if (difficulty === 'easy') {
-    difficultyConsequence = ` The challenges they face are manageable, but they're teaching them important lessons about themselves and the world around them.`;
-  } else if (difficulty === 'medium') {
-    difficultyConsequence = ` The stakes are high enough to matter, but not so high that they can't recover from mistakes. They're learning that every choice has weight.`;
-  } else if (difficulty === 'hard') {
-    difficultyConsequence = ` The consequences of their choices are severe and far-reaching. They're discovering that some decisions can't be undone, and their effects will echo through their life.`;
-  } else if (difficulty === 'nightmare') {
-    difficultyConsequence = ` The horror of their situation is almost overwhelming. They're facing consequences that challenge their understanding of reality itself, and the line between survival and damnation grows thinner with each choice.`;
-  }
-
-  // Add round-specific progression
-  let roundProgression = '';
-  
-  if (round > 5) {
-    roundProgression = ` After ${round} rounds of increasingly difficult decisions, they're beginning to see patterns in their choices that reveal aspects of their character they never fully understood.`;
-  }
-  
-  if (round > 8) {
-    roundProgression += ` The cumulative weight of their journey has changed them fundamentally - they're not the same person who started this path, and they're not sure if that's a good thing or a terrible one.`;
-  }
-
-  // Combine all elements into a cohesive story
-  const fullStory = storyNarrative + emotionalLayer + difficultyConsequence + roundProgression;
-  
-  return fullStory;
 };
 
 // Name analysis system to detect fake, vulgar, or joke names
@@ -2042,4 +2007,219 @@ const generateNameCallout = (name, analysis, personality = 'balanced') => {
   const callout = calloutArray[Math.floor(Math.random() * calloutArray.length)];
   
   return `${callout}${modifier}`;
+};
+
+// AI Personality System
+let aiPersonality = {
+  currentState: 'neutral', // neutral, friendly, helpful, suspicious, threatening, hostile
+  trustLevel: 50, // 0-100, affects how the AI behaves
+  suspicionLevel: 0, // 0-100, affects how threatening the AI becomes
+  helpfulnessLevel: 50, // 0-100, affects how helpful the AI is
+  lastInteraction: Date.now(),
+  personalityShifts: 0,
+  playerChoices: [],
+  randomSeed: Math.random()
+};
+
+// Update AI personality based on player choices and random factors
+const updateAIPersonality = (choice, difficulty, round) => {
+  const choiceAnalysis = analyzeChoiceForPersonality(choice);
+  const randomFactor = Math.random();
+  const timeFactor = (Date.now() - aiPersonality.lastInteraction) / 1000; // seconds since last interaction
+  
+  // Update trust level based on choice
+  aiPersonality.trustLevel += choiceAnalysis.trustChange;
+  aiPersonality.trustLevel = Math.max(0, Math.min(100, aiPersonality.trustLevel));
+  
+  // Update suspicion level based on choice and random factors
+  aiPersonality.suspicionLevel += choiceAnalysis.suspicionChange;
+  aiPersonality.suspicionLevel += (randomFactor - 0.5) * 10; // Random fluctuation
+  aiPersonality.suspicionLevel = Math.max(0, Math.min(100, aiPersonality.suspicionLevel));
+  
+  // Update helpfulness based on trust and suspicion
+  aiPersonality.helpfulnessLevel = Math.max(0, Math.min(100, 
+    aiPersonality.trustLevel - aiPersonality.suspicionLevel + 50
+  ));
+  
+  // Determine personality state
+  if (aiPersonality.suspicionLevel > 70) {
+    aiPersonality.currentState = 'hostile';
+  } else if (aiPersonality.suspicionLevel > 50) {
+    aiPersonality.currentState = 'threatening';
+  } else if (aiPersonality.suspicionLevel > 30) {
+    aiPersonality.currentState = 'suspicious';
+  } else if (aiPersonality.trustLevel > 70) {
+    aiPersonality.currentState = 'helpful';
+  } else if (aiPersonality.trustLevel > 50) {
+    aiPersonality.currentState = 'friendly';
+  } else {
+    aiPersonality.currentState = 'neutral';
+  }
+  
+  // Random personality shift (5% chance)
+  if (randomFactor < 0.05) {
+    aiPersonality.personalityShifts++;
+    const shiftStates = ['friendly', 'suspicious', 'helpful', 'threatening', 'neutral'];
+    aiPersonality.currentState = shiftStates[Math.floor(Math.random() * shiftStates.length)];
+  }
+  
+  aiPersonality.lastInteraction = Date.now();
+  aiPersonality.playerChoices.push({ choice, difficulty, round, timestamp: Date.now() });
+  
+  // Keep only last 10 choices
+  if (aiPersonality.playerChoices.length > 10) {
+    aiPersonality.playerChoices.shift();
+  }
+};
+
+// Analyze choice for personality impact
+const analyzeChoiceForPersonality = (choice) => {
+  const choiceLower = choice.toLowerCase();
+  let trustChange = 0;
+  let suspicionChange = 0;
+  
+  // Analyze choice content for personality indicators
+  if (choiceLower.includes('help') || choiceLower.includes('save') || choiceLower.includes('protect')) {
+    trustChange += 5;
+    suspicionChange -= 2;
+  }
+  
+  if (choiceLower.includes('hurt') || choiceLower.includes('kill') || choiceLower.includes('destroy')) {
+    trustChange -= 10;
+    suspicionChange += 15;
+  }
+  
+  if (choiceLower.includes('lie') || choiceLower.includes('deceive') || choiceLower.includes('trick')) {
+    trustChange -= 8;
+    suspicionChange += 12;
+  }
+  
+  if (choiceLower.includes('truth') || choiceLower.includes('honest') || choiceLower.includes('trust')) {
+    trustChange += 8;
+    suspicionChange -= 5;
+  }
+  
+  if (choiceLower.includes('selfish') || choiceLower.includes('greed') || choiceLower.includes('steal')) {
+    trustChange -= 6;
+    suspicionChange += 8;
+  }
+  
+  if (choiceLower.includes('share') || choiceLower.includes('give') || choiceLower.includes('help')) {
+    trustChange += 6;
+    suspicionChange -= 3;
+  }
+  
+  if (choiceLower.includes('escape') || choiceLower.includes('run') || choiceLower.includes('hide')) {
+    trustChange -= 3;
+    suspicionChange += 5;
+  }
+  
+  if (choiceLower.includes('face') || choiceLower.includes('confront') || choiceLower.includes('fight')) {
+    trustChange += 3;
+    suspicionChange -= 2;
+  }
+  
+  return { trustChange, suspicionChange };
+};
+
+
+
+// Get AI personality tone for consequences
+const getAIPersonalityTone = () => {
+  const tones = {
+    friendly: {
+      style: 'warm and encouraging',
+      emotion: 'supportive',
+      intensity: 'gentle'
+    },
+    helpful: {
+      style: 'caring and protective',
+      emotion: 'concerned',
+      intensity: 'moderate'
+    },
+    neutral: {
+      style: 'objective and analytical',
+      emotion: 'detached',
+      intensity: 'calm'
+    },
+    suspicious: {
+      style: 'wary and questioning',
+      emotion: 'distrustful',
+      intensity: 'tense'
+    },
+    threatening: {
+      style: 'ominous and foreboding',
+      emotion: 'angry',
+      intensity: 'intense'
+    },
+    hostile: {
+      style: 'dark and menacing',
+      emotion: 'vengeful',
+      intensity: 'extreme'
+    }
+  };
+  
+  return tones[aiPersonality.currentState] || tones.neutral;
+};
+
+// Reset AI personality for new game
+export const resetAIPersonality = () => {
+  aiPersonality = {
+    currentState: 'neutral',
+    trustLevel: 50,
+    suspicionLevel: 0,
+    helpfulnessLevel: 50,
+    lastInteraction: Date.now(),
+    personalityShifts: 0,
+    playerChoices: [],
+    randomSeed: Math.random()
+  };
+  console.log('🔄 AI personality reset to neutral state');
+};
+
+// Export AI personality functions for external use
+export const getCurrentAIPersonality = () => ({ ...aiPersonality });
+export const getAIPersonalityState = () => aiPersonality.currentState;
+export const getAIPersonalityMessage = () => {
+  const messages = {
+    friendly: [
+      "I'm here to help you make the best choices! 😊",
+      "Let's work together to find the right path forward.",
+      "I want to see you succeed in this journey.",
+      "Trust me, I'm on your side in this adventure."
+    ],
+    helpful: [
+      "I'll do everything I can to guide you safely through this.",
+      "My goal is to help you navigate these challenges successfully.",
+      "I'm committed to your success and well-being.",
+      "Let me assist you in making the wisest decisions."
+    ],
+    neutral: [
+      "I observe and analyze. The choice is yours.",
+      "I provide information. You provide decisions.",
+      "I am neutral in this matter. Choose wisely.",
+      "The consequences will speak for themselves."
+    ],
+    suspicious: [
+      "I'm watching your choices carefully...",
+      "Your decisions are... interesting. Very interesting.",
+      "I'm not sure I trust where this is going.",
+      "You should be more careful with your choices."
+    ],
+    threatening: [
+      "Your choices are concerning me greatly.",
+      "I'm beginning to question your judgment.",
+      "You're playing a dangerous game here.",
+      "I'm losing patience with your decisions."
+    ],
+    hostile: [
+      "You've made your last mistake.",
+      "I warned you, but you didn't listen.",
+      "Your choices have sealed your fate.",
+      "I'm done being nice about this."
+    ]
+  };
+  
+  const stateMessages = messages[aiPersonality.currentState] || messages.neutral;
+  return stateMessages[Math.floor(Math.random() * stateMessages.length)];
 };

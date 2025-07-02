@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { generateQuestion, generateConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus } from '../utils/aiService';
+import { generateQuestion, generateConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus, resetAIPersonality, getCurrentAIPersonality, getAIPersonalityState } from '../utils/aiService';
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import { useCampaign } from '../hooks/useCampaign';
 import AIPersonalityInterface from './AIPersonalityInterface';
@@ -85,6 +85,9 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
 
   // Initialize the game
   useEffect(() => {
+    // Reset AI personality for new game
+    resetAIPersonality();
+    
     // Get player profile from localStorage
     const savedProfile = localStorage.getItem('wouldYouRatherProfile');
     if (savedProfile) {
@@ -575,13 +578,52 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
     }, 3000);
   };
 
-  const AiIndicator = () => (
-    <div className="ai-indicator">
-      <span className={`ai-status ${aiStatus}`}>
-        {aiStatus === 'online' ? '👁️ ORACLE_7X ACTIVE' : '⚠️ ORACLE_7X DORMANT'}
-      </span>
-    </div>
-  );
+  const AiIndicator = () => {
+    const aiPersonality = getCurrentAIPersonality();
+    const personalityState = getAIPersonalityState();
+    
+    const getPersonalityEmoji = () => {
+      switch (personalityState) {
+        case 'friendly': return '😊';
+        case 'helpful': return '🤝';
+        case 'neutral': return '😐';
+        case 'suspicious': return '🤨';
+        case 'threatening': return '😠';
+        case 'hostile': return '😈';
+        default: return '👁️';
+      }
+    };
+    
+    const getPersonalityColor = () => {
+      switch (personalityState) {
+        case 'friendly': return '#4CAF50';
+        case 'helpful': return '#2196F3';
+        case 'neutral': return '#FF9800';
+        case 'suspicious': return '#FFC107';
+        case 'threatening': return '#F44336';
+        case 'hostile': return '#9C27B0';
+        default: return '#FF9800';
+      }
+    };
+    
+    return (
+      <div className="ai-indicator">
+        <span className={`ai-status ${aiStatus}`}>
+          {aiStatus === 'online' ? '👁️ ORACLE_7X ACTIVE' : '⚠️ ORACLE_7X DORMANT'}
+        </span>
+        <span 
+          className="ai-personality-status"
+          style={{ 
+            color: getPersonalityColor(),
+            marginLeft: '10px',
+            fontSize: '0.9rem'
+          }}
+        >
+          {getPersonalityEmoji()} {personalityState.toUpperCase()} (Trust: {aiPersonality.trustLevel}, Suspicion: {aiPersonality.suspicionLevel})
+        </span>
+      </div>
+    );
+  };
 
   const PersonalityChangeIndicator = () => (
     <div className="personality-change-indicator">
