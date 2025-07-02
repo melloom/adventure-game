@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { generateQuestion, generateConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus, resetAIPersonality, getCurrentAIPersonality, getAIPersonalityState } from '../utils/aiService';
+import { generateQuestion, generateConsequence, generateAdvancedConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus, resetAIPersonality, getCurrentAIPersonality, getAIPersonalityState } from '../utils/aiService';
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import { useCampaign } from '../hooks/useCampaign';
 import AIPersonalityInterface from './AIPersonalityInterface';
 import AdvancedAISystems from './AdvancedAISystems';
+import AIPsychologicalManipulation from './AIPsychologicalManipulation';
 import aiPersonalitySystem from '../utils/aiPersonalitySystem';
 
 const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
@@ -86,6 +87,7 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
   
   // Advanced AI Systems state
   const [showAdvancedAI, setShowAdvancedAI] = useState(false);
+  const [showPsychologicalManipulation, setShowPsychologicalManipulation] = useState(false);
 
   // Initialize the game
   useEffect(() => {
@@ -326,7 +328,7 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
       
       if (isCampaignMode && currentChapter) {
         // Campaign mode consequence generation
-        consequenceData = await generateConsequence(
+        consequenceData = await generateAdvancedConsequence(
           choice,
           getChapterDifficulty(currentChapter.id),
           currentChapter.aiPersonality,
@@ -335,7 +337,7 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
         );
       } else {
         // Classic mode consequence generation
-        consequenceData = await generateConsequence(
+        consequenceData = await generateAdvancedConsequence(
           choice,
           difficulty,
           personality,
@@ -345,8 +347,8 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
       }
       
       setConsequence(consequenceData.consequence);
-      setDangerLevel(consequenceData.dangerLevel);
-      setSurvived(consequenceData.survived);
+      setDangerLevel(consequenceData.dangerLevel || Math.floor(Math.random() * 10) + 1);
+      setSurvived(consequenceData.survived !== undefined ? consequenceData.survived : Math.random() > 0.5);
       
       // Update AI personality relationship
       const personality = isCampaignMode && currentChapter 
@@ -868,10 +870,39 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
           {showAdvancedAI ? '🔒' : '🤖'}
         </button>
         
+        {/* Psychological Manipulation Toggle */}
+        <button 
+          className="psychological-manipulation-toggle-button"
+          onClick={() => setShowPsychologicalManipulation(!showPsychologicalManipulation)}
+          title="Toggle AI Psychological Manipulation"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '120px',
+            background: 'linear-gradient(135deg, #2c0000 0%, #440000 100%)',
+            border: '1px solid #ff4444',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'Courier New, monospace',
+            fontSize: '0.9rem',
+            zIndex: 1000
+          }}
+        >
+          {showPsychologicalManipulation ? '🔒' : '🧠'}
+        </button>
+        
         {/* Advanced AI Systems */}
         <AdvancedAISystems 
           playerName={playerName}
           isVisible={showAdvancedAI}
+        />
+        
+        {/* AI Psychological Manipulation */}
+        <AIPsychologicalManipulation 
+          isVisible={showPsychologicalManipulation}
+          onClose={() => setShowPsychologicalManipulation(false)}
         />
         
         <h1 className="game-title">Would You Rather Survival</h1>

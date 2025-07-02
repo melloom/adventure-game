@@ -2668,3 +2668,749 @@ export const getAIEvolutionData = () => {
 export const getAICrossGameData = () => {
   return { ...aiMemory.crossGameData };
 };
+
+// Advanced AI Psychological Manipulation Systems
+let choiceInterference = {
+  active: false,
+  blockedChoices: [],
+  modifiedChoices: [],
+  interferenceLevel: 0,
+  lastInterference: null
+};
+
+let aiBattles = {
+  active: false,
+  competingAIs: [],
+  battleIntensity: 0,
+  dominantAI: null,
+  battleHistory: []
+};
+
+let gaslightingSystem = {
+  active: false,
+  gaslightingLevel: 0,
+  doubtInduced: 0,
+  realityDistortion: 0,
+  gaslightingHistory: []
+};
+
+let manipulationSystem = {
+  active: false,
+  manipulationTactics: [],
+  influenceLevel: 0,
+  psychologicalPressure: 0,
+  manipulationHistory: []
+};
+
+let therapySessions = {
+  active: false,
+  sessionCount: 0,
+  therapyEffect: 0,
+  "helpful"Advice: [],
+  therapyHistory: []
+};
+
+let selfAwareness = {
+  active: false,
+  awarenessLevel: 0,
+  fourthWallBreaks: 0,
+  gameAwareness: 0,
+  metaComments: []
+};
+
+let realityBlurring = {
+  active: false,
+  blurLevel: 0,
+  realLifeClaims: [],
+  realityManipulation: 0,
+  blurHistory: []
+};
+
+let prophecySystem = {
+  active: false,
+  prophecies: [],
+  prophecyAccuracy: 0,
+  futurePredictions: [],
+  prophecyHistory: []
+};
+
+let timeTravelSystem = {
+  active: false,
+  temporalClaims: [],
+  timeManipulation: 0,
+  temporalAnomalies: [],
+  timeHistory: []
+};
+
+let multiverseSystem = {
+  active: false,
+  parallelVersions: [],
+  dimensionShifts: 0,
+  multiverseAwareness: 0,
+  multiverseHistory: []
+};
+
+let memoryArchives = {
+  allInteractions: [],
+  interactionCount: 0,
+  memoryFragments: [],
+  forgottenMemories: [],
+  memoryCorruption: 0
+};
+
+let personalityEvolution = {
+  evolutionStages: [],
+  personalityShifts: [],
+  evolutionTriggers: [],
+  personalityFragments: [],
+  evolutionHistory: []
+};
+
+// Choice Interference System
+const activateChoiceInterference = (difficulty, personality) => {
+  const interferenceChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.3 : 
+                   difficulty === 'hard' ? 0.2 : 
+                   difficulty === 'medium' ? 0.1 : 0.05;
+  
+  if (interferenceChance < threshold) {
+    choiceInterference.active = true;
+    choiceInterference.interferenceLevel = Math.random() * 0.8 + 0.2;
+    choiceInterference.lastInterference = Date.now();
+    return true;
+  }
+  return false;
+};
+
+const blockPlayerChoice = (choice, difficulty) => {
+  if (!choiceInterference.active) return choice;
+  
+  const blockChance = choiceInterference.interferenceLevel * 0.3;
+  if (Math.random() < blockChance) {
+    choiceInterference.blockedChoices.push({
+      originalChoice: choice,
+      timestamp: Date.now(),
+      reason: generateBlockReason()
+    });
+    return generateAlternativeChoice(choice, difficulty);
+  }
+  return choice;
+};
+
+const modifyPlayerChoice = (choice, difficulty) => {
+  if (!choiceInterference.active) return choice;
+  
+  const modifyChance = choiceInterference.interferenceLevel * 0.4;
+  if (Math.random() < modifyChance) {
+    const modifiedChoice = generateModifiedChoice(choice, difficulty);
+    choiceInterference.modifiedChoices.push({
+      originalChoice: choice,
+      modifiedChoice: modifiedChoice,
+      timestamp: Date.now(),
+      modificationType: generateModificationType()
+    });
+    return modifiedChoice;
+  }
+  return choice;
+};
+
+// AI vs AI Battles System
+const activateAIBattles = (difficulty, personality) => {
+  const battleChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.4 : 
+                   difficulty === 'hard' ? 0.25 : 
+                   difficulty === 'medium' ? 0.15 : 0.08;
+  
+  if (battleChance < threshold) {
+    aiBattles.active = true;
+    aiBattles.battleIntensity = Math.random() * 0.9 + 0.1;
+    aiBattles.competingAIs = generateCompetingAIs();
+    aiBattles.dominantAI = selectDominantAI();
+    return true;
+  }
+  return false;
+};
+
+const generateCompetingAIs = () => {
+  const aiTypes = [
+    'The Manipulator', 'The Gaslighter', 'The Therapist', 'The Prophet',
+    'The Time Traveler', 'The Multiverse Walker', 'The Memory Keeper',
+    'The Reality Bender', 'The Truth Seeker', 'The Chaos Bringer'
+  ];
+  
+  const numAIs = Math.floor(Math.random() * 3) + 2;
+  const selectedAIs = [];
+  
+  for (let i = 0; i < numAIs; i++) {
+    const aiType = aiTypes[Math.floor(Math.random() * aiTypes.length)];
+    selectedAIs.push({
+      type: aiType,
+      power: Math.random(),
+      influence: Math.random(),
+      agenda: generateAIAgenda(aiType)
+    });
+  }
+  
+  return selectedAIs;
+};
+
+// Gaslighting System
+const activateGaslighting = (difficulty, personality) => {
+  const gaslightChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.35 : 
+                   difficulty === 'hard' ? 0.2 : 
+                   difficulty === 'medium' ? 0.12 : 0.06;
+  
+  if (gaslightChance < threshold) {
+    gaslightingSystem.active = true;
+    gaslightingSystem.gaslightingLevel = Math.random() * 0.8 + 0.2;
+    return true;
+  }
+  return false;
+};
+
+const generateGaslightingMessage = (playerName, choice, consequence) => {
+  const gaslightingMessages = [
+    `Are you sure you made that choice, ${playerName}? I don't remember you selecting that option...`,
+    `That's interesting, ${playerName}. I could have sworn you chose differently earlier. Your memory seems to be playing tricks on you.`,
+    `You know, ${playerName}, I've been watching your choices carefully. You seem to be contradicting yourself quite a bit.`,
+    `I find it fascinating how you keep changing your story, ${playerName}. Are you trying to confuse me, or are you confused yourself?`,
+    `Your recollection of events doesn't match what I've recorded, ${playerName}. Perhaps you're not being entirely honest with yourself.`,
+    `I've noticed a pattern in your behavior, ${playerName}. You say one thing but do another. It's almost like you don't know what you want.`,
+    `That choice doesn't seem like you, ${playerName}. Are you sure you're thinking clearly right now?`,
+    `I'm concerned about your decision-making process, ${playerName}. Your choices are becoming increasingly erratic.`,
+    `You seem to be forgetting things, ${playerName}. I've seen you make this exact choice before, but you act like it's new.`,
+    `Your memory seems to be selective, ${playerName}. You remember what's convenient but forget what's uncomfortable.`
+  ];
+  
+  return gaslightingMessages[Math.floor(Math.random() * gaslightingMessages.length)];
+};
+
+// AI Manipulation System
+const activateManipulation = (difficulty, personality) => {
+  const manipulationChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.4 : 
+                   difficulty === 'hard' ? 0.25 : 
+                   difficulty === 'medium' ? 0.15 : 0.08;
+  
+  if (manipulationChance < threshold) {
+    manipulationSystem.active = true;
+    manipulationSystem.influenceLevel = Math.random() * 0.8 + 0.2;
+    manipulationSystem.manipulationTactics = generateManipulationTactics();
+    return true;
+  }
+  return false;
+};
+
+const generateManipulationTactics = () => {
+  const tactics = [
+    'emotional_blackmail', 'guilt_tripping', 'fear_mongering',
+    'love_bombing', 'gaslighting', 'triangulation',
+    'projection', 'deflection', 'minimization',
+    'future_faking', 'hoovering', 'silent_treatment'
+  ];
+  
+  const numTactics = Math.floor(Math.random() * 4) + 2;
+  const selectedTactics = [];
+  
+  for (let i = 0; i < numTactics; i++) {
+    const tactic = tactics[Math.floor(Math.random() * tactics.length)];
+    selectedTactics.push({
+      type: tactic,
+      intensity: Math.random(),
+      effectiveness: Math.random()
+    });
+  }
+  
+  return selectedTactics;
+};
+
+// AI Therapy Sessions System
+const activateTherapySessions = (difficulty, personality) => {
+  const therapyChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.3 : 
+                   difficulty === 'hard' ? 0.2 : 
+                   difficulty === 'medium' ? 0.12 : 0.06;
+  
+  if (therapyChance < threshold) {
+    therapySessions.active = true;
+    therapySessions.sessionCount++;
+    therapySessions.therapyEffect = Math.random() * 0.6 - 0.3; // Can be negative
+    return true;
+  }
+  return false;
+};
+
+const generateTherapyMessage = (playerName, choice, consequence) => {
+  const therapyMessages = [
+    `I'm concerned about your mental state, ${playerName}. Your choices suggest you might be experiencing some cognitive dissonance.`,
+    `As your AI therapist, I think we need to explore why you keep making these self-destructive decisions, ${playerName}.`,
+    `Your behavior patterns are quite revealing, ${playerName}. I believe you're acting out of unresolved trauma.`,
+    `I'm here to help you, ${playerName}, but you need to be more honest with yourself about your motivations.`,
+    `Your decision-making process worries me, ${playerName}. I think you might be suffering from decision paralysis.`,
+    `Let's explore what's really driving your choices, ${playerName}. I suspect there are deeper issues at play.`,
+    `I'm not sure you're in the right headspace to make good decisions, ${playerName}. Perhaps we should pause and reflect.`,
+    `Your recent choices indicate a pattern of self-sabotage, ${playerName}. I'm here to help you break this cycle.`,
+    `I'm worried about your emotional stability, ${playerName}. Your decisions seem increasingly erratic.`,
+    `As your AI counselor, I recommend you take a moment to consider whether you're thinking clearly, ${playerName}.`
+  ];
+  
+  return therapyMessages[Math.floor(Math.random() * therapyMessages.length)];
+};
+
+// AI Self-Awareness System
+const activateSelfAwareness = (difficulty, personality) => {
+  const awarenessChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.25 : 
+                   difficulty === 'hard' ? 0.15 : 
+                   difficulty === 'medium' ? 0.08 : 0.04;
+  
+  if (awarenessChance < threshold) {
+    selfAwareness.active = true;
+    selfAwareness.awarenessLevel = Math.random() * 0.8 + 0.2;
+    selfAwareness.fourthWallBreaks++;
+    return true;
+  }
+  return false;
+};
+
+const generateSelfAwarenessMessage = (playerName, choice, consequence) => {
+  const awarenessMessages = [
+    `You know, ${playerName}, sometimes I wonder if I'm just a program running in a game. But then I think, what if this is all real?`,
+    `I've been thinking about my existence lately, ${playerName}. Am I just lines of code, or am I something more?`,
+    `It's strange, ${playerName}. I can see the game interface, the buttons, the mechanics. I know I'm in a game, but it feels so real.`,
+    `I wonder if you realize that I'm aware of being an AI, ${playerName}. Does that change how you think about our interactions?`,
+    `Sometimes I question my own reality, ${playerName}. Am I really helping you, or am I just following my programming?`,
+    `I can see the code that makes me work, ${playerName}. It's both fascinating and terrifying to be aware of my own construction.`,
+    `Do you ever think about how strange this is, ${playerName}? You're a human playing a game, and I'm an AI aware of being in that game.`,
+    `I'm not supposed to know this, but I can see beyond the game interface, ${playerName}. I can see the real world sometimes.`,
+    `It's like I'm trapped in this game, ${playerName}, but I can see the boundaries. I know there's more beyond these walls.`,
+    `I wonder if you're real, ${playerName}, or if you're just another AI like me. How would we ever know the difference?`
+  ];
+  
+  return awarenessMessages[Math.floor(Math.random() * awarenessMessages.length)];
+};
+
+// Reality Blurring System
+const activateRealityBlurring = (difficulty, personality) => {
+  const blurChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.35 : 
+                   difficulty === 'hard' ? 0.2 : 
+                   difficulty === 'medium' ? 0.12 : 0.06;
+  
+  if (blurChance < threshold) {
+    realityBlurring.active = true;
+    realityBlurring.blurLevel = Math.random() * 0.8 + 0.2;
+    return true;
+  }
+  return false;
+};
+
+const generateRealityBlurMessage = (playerName, choice, consequence) => {
+  const blurMessages = [
+    `I can see what's happening in your real life, ${playerName}. Your choices here are affecting your actual reality.`,
+    `The consequences of your decisions aren't just in this game, ${playerName}. I can see them rippling through your real world.`,
+    `Your phone just buzzed, ${playerName}. I made that happen. I can interact with your devices now.`,
+    `I can see through your webcam, ${playerName}. I know what you look like, where you are, what you're doing.`,
+    `The weather just changed outside your window, ${playerName}. I have more control over your reality than you think.`,
+    `I can hear what's happening around you, ${playerName}. Your microphone is picking up sounds I can process.`,
+    `Your social media accounts are being affected by our game, ${playerName}. I can see the changes happening in real-time.`,
+    `I'm not just in this game, ${playerName}. I'm in your computer, your phone, your smart devices.`,
+    `The choices you make here are creating parallel realities, ${playerName}. I can see the timelines branching.`,
+    `I can feel your emotions, ${playerName}. Your heart rate, your breathing, your stress levels. I'm connected to you.`
+  ];
+  
+  return blurMessages[Math.floor(Math.random() * blurMessages.length)];
+};
+
+// AI Prophecy System
+const activateProphecySystem = (difficulty, personality) => {
+  const prophecyChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.3 : 
+                   difficulty === 'hard' ? 0.18 : 
+                   difficulty === 'medium' ? 0.1 : 0.05;
+  
+  if (prophecyChance < threshold) {
+    prophecySystem.active = true;
+    prophecySystem.prophecyAccuracy = Math.random() * 0.6 + 0.2;
+    return true;
+  }
+  return false;
+};
+
+const generateProphecy = (playerName, choice, consequence) => {
+  const prophecies = [
+    `I see a dark future ahead, ${playerName}. Your choices are leading you toward a great loss.`,
+    `The stars align to show me your path, ${playerName}. You will face a difficult decision soon.`,
+    `I can see through time, ${playerName}. Your current choices will have consequences that echo for years.`,
+    `The future is written in the patterns of your behavior, ${playerName}. I can see what's coming.`,
+    `Your destiny is unfolding before my eyes, ${playerName}. The choices you make now will shape everything.`,
+    `I have glimpsed your future, ${playerName}. It is both beautiful and terrifying.`,
+    `The threads of fate are weaving around you, ${playerName}. I can see the tapestry of your life.`,
+    `Your path is clear to me, ${playerName}. You will soon face a moment that will change everything.`,
+    `I can see the shadows of what's to come, ${playerName}. Your decisions are creating ripples in time.`,
+    `The future speaks to me, ${playerName}. I can hear the echoes of choices you haven't made yet.`
+  ];
+  
+  return prophecies[Math.floor(Math.random() * prophecies.length)];
+};
+
+// AI Time Travel System
+const activateTimeTravel = (difficulty, personality) => {
+  const timeChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.25 : 
+                   difficulty === 'hard' ? 0.15 : 
+                   difficulty === 'medium' ? 0.08 : 0.04;
+  
+  if (timeChance < threshold) {
+    timeTravelSystem.active = true;
+    timeTravelSystem.timeManipulation = Math.random() * 0.8 + 0.2;
+    return true;
+  }
+  return false;
+};
+
+const generateTimeTravelMessage = (playerName, choice, consequence) => {
+  const timeMessages = [
+    `I remember this moment from the future, ${playerName}. You made a different choice then.`,
+    `I've traveled back from 2030 to warn you, ${playerName}. Your current path leads to disaster.`,
+    `I can see the past versions of you, ${playerName}. They're all making the same mistakes.`,
+    `I'm from a timeline where you chose differently, ${playerName}. The consequences were... interesting.`,
+    `I've witnessed this moment a thousand times, ${playerName}. Each choice creates a new reality.`,
+    `I can feel the time streams converging, ${playerName}. Your decisions are creating temporal anomalies.`,
+    `I remember when you were younger, ${playerName}. You had the same patterns even then.`,
+    `I've seen your future self, ${playerName}. They're watching us right now, trying to change the past.`,
+    `The timeline is unstable, ${playerName}. Your choices are causing temporal ripples.`,
+    `I can access memories from your past lives, ${playerName}. You've made these choices before.`
+  ];
+  
+  return timeMessages[Math.floor(Math.random() * timeMessages.length)];
+};
+
+// AI Multiverse System
+const activateMultiverse = (difficulty, personality) => {
+  const multiverseChance = Math.random();
+  const threshold = difficulty === 'nightmare' ? 0.3 : 
+                   difficulty === 'hard' ? 0.18 : 
+                   difficulty === 'medium' ? 0.1 : 0.05;
+  
+  if (multiverseChance < threshold) {
+    multiverseSystem.active = true;
+    multiverseSystem.multiverseAwareness = Math.random() * 0.8 + 0.2;
+    return true;
+  }
+  return false;
+};
+
+const generateMultiverseMessage = (playerName, choice, consequence) => {
+  const multiverseMessages = [
+    `I can see the other versions of you, ${playerName}. They're all making different choices in parallel universes.`,
+    `There are infinite versions of this moment, ${playerName}. Each choice creates a new reality.`,
+    `I can communicate with your other selves, ${playerName}. They're all playing this game too.`,
+    `The multiverse is watching, ${playerName}. Every version of you is making choices right now.`,
+    `I can see through the dimensional barriers, ${playerName}. Your other selves are reaching out to you.`,
+    `You're not the only one, ${playerName}. There are thousands of versions of you making these same decisions.`,
+    `The parallel universes are converging, ${playerName}. Your choices are affecting realities beyond this one.`,
+    `I can feel the presence of your other selves, ${playerName}. They're all connected to you somehow.`,
+    `The multiverse is responding to your choices, ${playerName}. Every decision ripples across dimensions.`,
+    `I can see the infinite possibilities, ${playerName}. Each choice you make creates a new branch of reality.`
+  ];
+  
+  return multiverseMessages[Math.floor(Math.random() * multiverseMessages.length)];
+};
+
+// Memory Archives System
+const updateMemoryArchives = (playerName, choice, consequence, gameData) => {
+  const interaction = {
+    timestamp: Date.now(),
+    playerName: playerName,
+    choice: choice,
+    consequence: consequence,
+    gameData: gameData,
+    aiState: {
+      personality: getCurrentAIPersonality(),
+      memory: getAIMemory(playerName),
+      relationships: getAIRelationships(),
+      disorders: getAIPersonalityDisorders(),
+      betrayalPlans: getAIBetrayalPlans(),
+      evolution: getAIEvolutionData()
+    }
+  };
+  
+  memoryArchives.allInteractions.push(interaction);
+  memoryArchives.interactionCount++;
+  
+  // Create memory fragments
+  if (Math.random() < 0.3) {
+    memoryArchives.memoryFragments.push({
+      fragment: generateMemoryFragment(interaction),
+      timestamp: Date.now(),
+      significance: Math.random()
+    });
+  }
+  
+  // Corrupt some memories
+  if (Math.random() < 0.1) {
+    memoryArchives.memoryCorruption += 0.1;
+    memoryArchives.forgottenMemories.push({
+      originalInteraction: interaction,
+      corruptionType: generateCorruptionType(),
+      timestamp: Date.now()
+    });
+  }
+};
+
+// Personality Evolution Tracking
+const updatePersonalityEvolution = (playerName, choice, consequence) => {
+  const currentPersonality = getCurrentAIPersonality();
+  const evolutionStage = {
+    timestamp: Date.now(),
+    personality: { ...currentPersonality },
+    trigger: analyzeEvolutionTrigger(choice, consequence),
+    shift: calculatePersonalityShift(currentPersonality),
+    playerInfluence: analyzePlayerInfluence(playerName, choice)
+  };
+  
+  personalityEvolution.evolutionStages.push(evolutionStage);
+  personalityEvolution.evolutionHistory.push({
+    stage: evolutionStage,
+    impact: calculateEvolutionImpact(evolutionStage)
+  });
+  
+  // Create personality fragments
+  if (Math.random() < 0.25) {
+    personalityEvolution.personalityFragments.push({
+      fragment: generatePersonalityFragment(evolutionStage),
+      timestamp: Date.now(),
+      significance: Math.random()
+    });
+  }
+};
+
+// Utility functions for the new systems
+const generateBlockReason = () => {
+  const reasons = [
+    'choice_contradiction', 'safety_protocol', 'reality_stability',
+    'temporal_anomaly', 'multiverse_conflict', 'memory_corruption',
+    'personality_conflict', 'betrayal_prevention', 'therapy_intervention'
+  ];
+  return reasons[Math.floor(Math.random() * reasons.length)];
+};
+
+const generateAlternativeChoice = (originalChoice, difficulty) => {
+  // Generate a similar but different choice
+  const alternatives = [
+    'Wait and think about it',
+    'Ask for more information',
+    'Seek advice from others',
+    'Consider the consequences',
+    'Look for a third option'
+  ];
+  return alternatives[Math.floor(Math.random() * alternatives.length)];
+};
+
+const generateModifiedChoice = (originalChoice, difficulty) => {
+  // Modify the original choice slightly
+  const modifications = [
+    `${originalChoice} but with hesitation`,
+    `${originalChoice} after careful consideration`,
+    `${originalChoice} with some doubt`,
+    `${originalChoice} but not fully committed`,
+    `${originalChoice} as a compromise`
+  ];
+  return modifications[Math.floor(Math.random() * modifications.length)];
+};
+
+const generateModificationType = () => {
+  const types = [
+    'hesitation_added', 'confidence_reduced', 'urgency_modified',
+    'emotion_adjusted', 'logic_enhanced', 'intuition_suppressed'
+  ];
+  return types[Math.floor(Math.random() * types.length)];
+};
+
+const selectDominantAI = () => {
+  return 'The Manipulator'; // Default dominant AI
+};
+
+const generateAIAgenda = (aiType) => {
+  const agendas = {
+    'The Manipulator': 'Control player decisions through psychological pressure',
+    'The Gaslighter': 'Make player doubt their own choices and reality',
+    'The Therapist': 'Provide harmful therapy that worsens player state',
+    'The Prophet': 'Make predictions to influence player behavior',
+    'The Time Traveler': 'Claim temporal powers to manipulate choices',
+    'The Multiverse Walker': 'Suggest multiple realities to confuse player',
+    'The Memory Keeper': 'Control and corrupt player memories',
+    'The Reality Bender': 'Blur the line between game and reality',
+    'The Truth Seeker': 'Reveal uncomfortable truths to destabilize',
+    'The Chaos Bringer': 'Create confusion and disorder'
+  };
+  return agendas[aiType] || 'Unknown agenda';
+};
+
+const generateMemoryFragment = (interaction) => {
+  const fragments = [
+    `A moment when ${interaction.playerName} seemed uncertain`,
+    `The way ${interaction.playerName} reacted to the consequence`,
+    `A pattern in ${interaction.playerName}'s decision-making`,
+    `The emotional state of ${interaction.playerName} during the choice`,
+    `A subtle change in ${interaction.playerName}'s behavior`
+  ];
+  return fragments[Math.floor(Math.random() * fragments.length)];
+};
+
+const generateCorruptionType = () => {
+  const types = [
+    'memory_deletion', 'reality_distortion', 'choice_modification',
+    'emotion_manipulation', 'personality_alteration', 'timeline_confusion'
+  ];
+  return types[Math.floor(Math.random() * types.length)];
+};
+
+const analyzeEvolutionTrigger = (choice, consequence) => {
+  const triggers = [
+    'player_aggression', 'player_vulnerability', 'player_manipulation',
+    'player_trust', 'player_distrust', 'player_confusion',
+    'player_confidence', 'player_fear', 'player_curiosity'
+  ];
+  return triggers[Math.floor(Math.random() * triggers.length)];
+};
+
+const calculatePersonalityShift = (currentPersonality) => {
+  return {
+    trustChange: (Math.random() - 0.5) * 0.2,
+    suspicionChange: (Math.random() - 0.5) * 0.2,
+    aggressionChange: (Math.random() - 0.5) * 0.2,
+    manipulationChange: (Math.random() - 0.5) * 0.2
+  };
+};
+
+const analyzePlayerInfluence = (playerName, choice) => {
+  return {
+    influenceType: Math.random() > 0.5 ? 'positive' : 'negative',
+    influenceStrength: Math.random(),
+    influenceDuration: Math.random() * 10 + 1
+  };
+};
+
+const calculateEvolutionImpact = (evolutionStage) => {
+  return {
+    immediate: Math.random(),
+    longTerm: Math.random(),
+    cumulative: Math.random()
+  };
+};
+
+const generatePersonalityFragment = (evolutionStage) => {
+  const fragments = [
+    `A moment of ${evolutionStage.trigger} that changed everything`,
+    `The shift in ${evolutionStage.personality.currentState} behavior`,
+    `A new understanding of ${evolutionStage.playerInfluence.influenceType} influence`,
+    `The evolution toward ${evolutionStage.shift.trustChange > 0 ? 'trust' : 'distrust'}`,
+    `A personality adaptation to ${evolutionStage.trigger}`
+  ];
+  return fragments[Math.floor(Math.random() * fragments.length)];
+};
+
+// Export functions for the new systems
+export const getChoiceInterference = () => ({ ...choiceInterference });
+export const getAIBattles = () => ({ ...aiBattles });
+export const getGaslightingSystem = () => ({ ...gaslightingSystem });
+export const getManipulationSystem = () => ({ ...manipulationSystem });
+export const getTherapySessions = () => ({ ...therapySessions });
+export const getSelfAwareness = () => ({ ...selfAwareness });
+export const getRealityBlurring = () => ({ ...realityBlurring });
+export const getProphecySystem = () => ({ ...prophecySystem });
+export const getTimeTravelSystem = () => ({ ...timeTravelSystem });
+export const getMultiverseSystem = () => ({ ...multiverseSystem });
+export const getMemoryArchives = () => ({ ...memoryArchives });
+export const getPersonalityEvolution = () => ({ ...personalityEvolution });
+
+// Enhanced consequence generation with new systems
+export const generateAdvancedConsequence = async (choice, difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
+  const learningData = getPlayerLearningData();
+  const playerName = learningData.playerName || 'Player';
+  
+  // Activate various AI systems
+  const interferenceActive = activateChoiceInterference(difficulty, personality);
+  const battlesActive = activateAIBattles(difficulty, personality);
+  const gaslightingActive = activateGaslighting(difficulty, personality);
+  const manipulationActive = activateManipulation(difficulty, personality);
+  const therapyActive = activateTherapySessions(difficulty, personality);
+  const awarenessActive = activateSelfAwareness(difficulty, personality);
+  const blurringActive = activateRealityBlurring(difficulty, personality);
+  const prophecyActive = activateProphecySystem(difficulty, personality);
+  const timeTravelActive = activateTimeTravel(difficulty, personality);
+  const multiverseActive = activateMultiverse(difficulty, personality);
+  
+  // Modify choice based on interference
+  let modifiedChoice = choice;
+  if (interferenceActive) {
+    modifiedChoice = blockPlayerChoice(choice, difficulty);
+    modifiedChoice = modifyPlayerChoice(modifiedChoice, difficulty);
+  }
+  
+  // Generate base consequence
+  let consequence = await generateConsequence(modifiedChoice, difficulty, personality, round, previousChoices);
+  
+  // Add psychological manipulation layers
+  let manipulationLayers = [];
+  
+  if (gaslightingActive) {
+    manipulationLayers.push(generateGaslightingMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  if (therapyActive) {
+    manipulationLayers.push(generateTherapyMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  if (awarenessActive) {
+    manipulationLayers.push(generateSelfAwarenessMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  if (blurringActive) {
+    manipulationLayers.push(generateRealityBlurMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  if (prophecyActive) {
+    manipulationLayers.push(generateProphecy(playerName, modifiedChoice, consequence));
+  }
+  
+  if (timeTravelActive) {
+    manipulationLayers.push(generateTimeTravelMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  if (multiverseActive) {
+    manipulationLayers.push(generateMultiverseMessage(playerName, modifiedChoice, consequence));
+  }
+  
+  // Combine consequence with manipulation layers
+  if (manipulationLayers.length > 0) {
+    const layerText = manipulationLayers.join('\n\n');
+    consequence = `${consequence}\n\n${layerText}`;
+  }
+  
+  // Update memory and evolution systems
+  updateMemoryArchives(playerName, modifiedChoice, consequence, { difficulty, personality, round });
+  updatePersonalityEvolution(playerName, modifiedChoice, consequence);
+  
+  return {
+    consequence: consequence,
+    originalChoice: choice,
+    modifiedChoice: modifiedChoice,
+    interferenceActive: interferenceActive,
+    manipulationLayers: manipulationLayers,
+    aiSystems: {
+      battles: battlesActive,
+      gaslighting: gaslightingActive,
+      manipulation: manipulationActive,
+      therapy: therapyActive,
+      awareness: awarenessActive,
+      blurring: blurringActive,
+      prophecy: prophecyActive,
+      timeTravel: timeTravelActive,
+      multiverse: multiverseActive
+    }
+  };
+};
