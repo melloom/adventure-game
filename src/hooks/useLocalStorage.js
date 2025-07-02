@@ -197,6 +197,7 @@ export const useHighScores = () => {
 export const useGameSettings = () => {
   const [settings, setSettings] = useLocalStorage('gameSettings', {
     soundEnabled: true,
+    musicEnabled: true,
     difficulty: 'normal',
     autoSave: true,
     theme: 'default',
@@ -217,6 +218,7 @@ export const useGameSettings = () => {
   const resetSettings = useCallback(() => {
     setSettings({
       soundEnabled: true,
+      musicEnabled: true,
       difficulty: 'normal',
       autoSave: true,
       theme: 'default',

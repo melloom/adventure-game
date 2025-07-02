@@ -4,7 +4,7 @@ import { useGameStats, useHighScores, useUserProfile, useGameSettings, useGameSt
 import { useVisualEffects } from './hooks/useVisualEffects';
 import { useCampaign } from './hooks/useCampaign';
 import { generateMetaMessage, generateFirstTimeMetaMessage, updatePlayerLearning, getPlayerLearningData, trackPlayerExit, trackPlayerEntry } from './utils/aiService';
-import { generateAdvancedMetaMessage, initializePlayerProfile, generateMetaEnding } from './utils/metaNarrativeSystem';
+import { initializePlayerProfile, generateMetaEnding } from './utils/metaNarrativeSystem';
 import MetaEnding from './components/MetaEnding';
 import dataMigrationManager from './utils/dataMigration';
 import VisualEffects from './components/VisualEffects';
@@ -490,24 +490,20 @@ function App() {
     try {
       let messageSequence;
       if (hasPlayedBefore) {
-        // Returning player message - use advanced meta-narrative system
-        messageSequence = await generateAdvancedMetaMessage(
+        // Returning player message - use original AI service
+        messageSequence = await generateMetaMessage(
           userProfile.name, 
           userProfile.difficulty, 
-          userProfile.personality,
-          userProfile.interests || '',
-          userProfile.age || '',
-          false // isFirstTime = false
+          userProfile.personality
         );
       } else {
-        // First-time player message - use advanced meta-narrative system
-        messageSequence = await generateAdvancedMetaMessage(
+        // First-time player message - use original AI service
+        messageSequence = await generateFirstTimeMetaMessage(
           userProfile.name,
           userProfile.difficulty,
           userProfile.personality,
           userProfile.interests || '',
-          userProfile.age || '',
-          true // isFirstTime = true
+          userProfile.age || ''
         );
       }
       
@@ -1544,6 +1540,7 @@ function App() {
           onOptionSelect={handleOptionSelect}
           onNextRound={handleNextRound}
           onRestartGame={handleRestartGame}
+          onBackToMenu={() => setGameStarted(false)}
           isLoading={isLoading}
         />
       </>

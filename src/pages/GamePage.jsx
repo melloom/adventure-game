@@ -41,6 +41,7 @@ const GamePage = ({
   onOptionSelect,
   onNextRound,
   onRestartGame,
+  onBackToMenu,
   isLoading
 }) => {
 
@@ -282,6 +283,14 @@ const GamePage = ({
           <button className="next-button" onClick={handleNext} style={{ marginTop: '18px' }}>
             {dangerScore > 100 ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
           </button>
+          {/* Back to Menu button */}
+          <button 
+            className="back-button"
+            style={{ marginTop: '10px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+            onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+          >
+            ← Back to Menu
+          </button>
         </div>
       </div>
     );
@@ -312,6 +321,14 @@ const GamePage = ({
             {currentGameQuestion?.optionB || "Option B"}
           </button>
         </div>
+        {/* Back to Menu button */}
+        <button 
+          className="back-button"
+          style={{ marginTop: '16px', display: 'block', marginLeft: 'auto', marginRight: 'auto' }}
+          onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+        >
+          ← Back to Menu
+        </button>
       </div>
       <HorrorEffects 
         atmosphere={atmosphere}

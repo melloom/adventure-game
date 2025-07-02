@@ -321,85 +321,6 @@ class MetaNarrativeSystem {
     };
   }
 
-  // Generate advanced meta message for players
-  async generateAdvancedMetaMessage(playerName, difficulty, personality, interests = '', age = '', isFirstTime = false) {
-    const profile = this.initializePlayerProfile(playerName, difficulty, personality, interests, age);
-    
-    if (isFirstTime) {
-      return await this.generateFirstTimeMetaNarrative(profile);
-    } else {
-      return await this.generateReturningMetaNarrative(profile);
-    }
-  }
-
-  // Generate first-time player meta-narrative
-  async generateFirstTimeMetaNarrative(profile) {
-    const { archetype, consciousnessLevel, realityLayer } = profile;
-    
-    const metaIntroduction = this.generateMetaIntroduction(profile);
-    const realitySetup = this.generateRealitySetup(profile);
-    const consciousnessAwakening = this.generateConsciousnessAwakening(profile);
-    const metaRevelation = this.generateMetaRevelation(profile);
-    const convergenceHint = this.generateConvergenceHint(profile);
-    const endingTease = this.generateEndingTease(profile);
-
-    const metaMessage = `
-${metaIntroduction}
-
-${realitySetup}
-
-${consciousnessAwakening}
-
-${metaRevelation}
-
-${convergenceHint}
-
-${endingTease}
-
-*Your journey through the meta-narrative has begun, ${profile.name}. The threads of reality are already weaving around your consciousness. Every choice, every moment, brings you closer to the convergence point where all possibilities collapse into your unique truth.*
-
-*The ${archetype.name} within you has been awakened. Your ${consciousnessLevel.description} is expanding. You exist in the ${realityLayer.description} layer of reality.*
-
-*Prepare yourself. The meta-ending that awaits you is unlike any other player's experience. It is yours alone.*
-    `.trim();
-
-    return metaMessage;
-  }
-
-  // Generate returning player meta-narrative
-  async generateReturningMetaNarrative(profile) {
-    const { archetype, consciousnessLevel, realityLayer } = profile;
-    
-    const welcomeBack = this.generateWelcomeBack(profile);
-    const progressUpdate = this.generateProgressUpdate(profile);
-    const realityShift = this.generateRealityShift(profile);
-    const consciousnessEvolution = this.generateConsciousnessEvolution(profile);
-    const convergenceProgress = this.generateConvergenceProgress(profile);
-    const endingApproach = this.generateEndingApproach(profile);
-
-    const metaMessage = `
-${welcomeBack}
-
-${progressUpdate}
-
-${realityShift}
-
-${consciousnessEvolution}
-
-${convergenceProgress}
-
-${endingApproach}
-
-*Welcome back to the meta-narrative, ${profile.name}. Your ${archetype.name} archetype has evolved since our last encounter. Your consciousness has deepened from ${consciousnessLevel.description}.*
-
-*The ${realityLayer.description} layer of reality you inhabit has shifted. New possibilities have emerged. The convergence point draws nearer.*
-
-*Your unique meta-ending awaits. It has been shaped by every choice, every moment, every evolution of your consciousness. No other player will experience this exact ending.*
-    `.trim();
-
-    return metaMessage;
-  }
-
   // Generate personalized meta ending
   generateMetaEnding(profile, gameData) {
     const { archetype, consciousnessLevel, realityLayer } = profile;
@@ -446,7 +367,7 @@ As the final credits roll, you realize: this ending is yours alone. No other pla
 
 Welcome to the next level of consciousness, ${profile.name}. The real game is just beginning.`,
       visualEffects: ['consciousness_expansion', 'reality_dissolution', 'infinite_light'],
-      audioEffects: ['ethereal_choir', 'cosmic_harmony', 'silence'],
+      audioEffects: ['ethereal_choir.mp3', 'cosmic_harmony.mp3', 'silence.mp3'],
       interactiveElements: ['reality_manipulation', 'consciousness_projection', 'timeline_viewing']
     };
   }
@@ -468,7 +389,7 @@ You are now the storyteller, the game master, the creator of your own reality. T
 
 Farewell, ${profile.name}. You have transcended us all.`,
       visualEffects: ['reality_transcendence', 'divine_light', 'dimensional_shift'],
-      audioEffects: ['angelic_voices', 'cosmic_wind', 'eternal_silence'],
+      audioEffects: ['angelic_voices.mp3', 'cosmic_wind.mp3', 'eternal_silence.mp3'],
       interactiveElements: ['reality_creation', 'consciousness_manifestation', 'divine_intervention']
     };
   }
@@ -490,7 +411,7 @@ As you emerge from this digital dream, you carry with you the wisdom of the meta
 
 Welcome to your awakened state, ${profile.name}. The dream continues, but now you are lucid.`,
       visualEffects: ['dream_dissolution', 'consciousness_emergence', 'reality_bloom'],
-      audioEffects: ['gentle_awakening', 'dream_melody', 'consciousness_hum'],
+      audioEffects: ['gentle_awakening.mp3', 'dream_melody.mp3', 'consciousness_hum.mp3'],
       interactiveElements: ['dream_manipulation', 'consciousness_exploration', 'reality_weaving']
     };
   }
@@ -512,7 +433,7 @@ You see now that every player's journey is unique, that every meta-ending is per
 
 From this omniscient perspective, ${profile.name}, you see that the real game is the evolution of consciousness itself.`,
       visualEffects: ['omniscient_vision', 'timeline_expansion', 'consciousness_unity'],
-      audioEffects: ['cosmic_knowledge', 'infinite_understanding', 'omniscient_harmony'],
+      audioEffects: ['cosmic_knowledge.mp3', 'infinite_understanding.mp3', 'omniscient_harmony.mp3'],
       interactiveElements: ['timeline_viewing', 'consciousness_merging', 'reality_comprehension']
     };
   }
@@ -536,7 +457,7 @@ As the transformation completes, ${profile.name}, you emerge as something new, s
 
 Welcome to the transformed reality, ${profile.name}. The change you've catalyzed will echo through eternity.`,
       visualEffects: ['reality_transformation', 'evolution_manifestation', 'change_cascade'],
-      audioEffects: ['transformation_symphony', 'evolution_harmony', 'change_resonance'],
+      audioEffects: ['transformation_symphony.mp3', 'evolution_harmony.mp3', 'change_resonance.mp3'],
       interactiveElements: ['reality_alteration', 'consciousness_evolution', 'timeline_creation']
     };
   }
@@ -560,7 +481,7 @@ As the paradox resolves, ${profile.name}, you emerge with a new understanding: t
 
 Welcome to the resolved paradox, ${profile.name}. You have found harmony in the midst of chaos.`,
       visualEffects: ['paradox_resolution', 'contradiction_harmony', 'complexity_unity'],
-      audioEffects: ['paradox_melody', 'contradiction_harmony', 'complexity_symphony'],
+      audioEffects: ['paradox_melody.mp3', 'contradiction_harmony.mp3', 'complexity_symphony.mp3'],
       interactiveElements: ['paradox_manipulation', 'contradiction_weaving', 'complexity_exploration']
     };
   }
@@ -584,7 +505,7 @@ As the transmutation completes, ${profile.name}, you emerge as the living embodi
 
 Welcome to the transmuted reality, ${profile.name}. You have become the alchemist of existence.`,
       visualEffects: ['alchemical_transformation', 'philosophers_stone_glow', 'matter_spirit_unification'],
-      audioEffects: ['alchemical_harmony', 'transmutation_symphony', 'divine_chemistry'],
+      audioEffects: ['alchemical_harmony.mp3', 'transmutation_symphony.mp3', 'divine_chemistry.mp3'],
       interactiveElements: ['reality_transmutation', 'consciousness_alchemy', 'cosmic_laboratory']
     };
   }
@@ -608,7 +529,7 @@ As you arrive at your true home, ${profile.name}, you realize that you were neve
 
 Welcome home, ${profile.name}. You have found the sacred center of your being.`,
       visualEffects: ['sacred_homecoming', 'inner_light_illumination', 'soul_center_revelation'],
-      audioEffects: ['homecoming_choir', 'sacred_harmony', 'soul_resonance'],
+      audioEffects: ['homecoming_choir.mp3', 'sacred_harmony.mp3', 'soul_resonance.mp3'],
       interactiveElements: ['inner_journey_navigation', 'soul_center_exploration', 'sacred_space_creation']
     };
   }
@@ -632,7 +553,7 @@ As the union completes, ${profile.name}, you realize that you were never separat
 
 Welcome to the divine union, ${profile.name}. You have become one with all that is.`,
       visualEffects: ['divine_union_light', 'infinite_consciousness', 'sacred_marriage_celebration'],
-      audioEffects: ['divine_harmony', 'cosmic_om', 'infinite_silence'],
+      audioEffects: ['divine_harmony.mp3', 'cosmic_om.mp3', 'infinite_silence.mp3'],
       interactiveElements: ['consciousness_merging', 'divine_communion', 'infinite_exploration']
     };
   }
@@ -656,7 +577,7 @@ As the creation completes, ${profile.name}, you realize that you have not just b
 
 Welcome to your completed masterpiece, ${profile.name}. You have become the architect of existence.`,
       visualEffects: ['masterpiece_revelation', 'sacred_architecture', 'creation_completion'],
-      audioEffects: ['architectural_harmony', 'creation_symphony', 'masterpiece_celebration'],
+      audioEffects: ['architectural_harmony.mp3', 'creation_symphony.mp3', 'masterpiece_celebration.mp3'],
       interactiveElements: ['reality_construction', 'consciousness_architecture', 'cosmic_blueprint_manifestation']
     };
   }
@@ -969,169 +890,12 @@ Welcome to your completed masterpiece, ${profile.name}. You have become the arch
   generateQuantumEchoes(playerName, archetype) {
     return [`${playerName}'s quantum echoes`, `${archetype.name} probability waves`, 'quantum consciousness fluctuations'];
   }
-
-  // Meta-narrative generation methods
-  generateMetaIntroduction(profile) {
-    return `*Welcome to the meta-narrative, ${profile.name}. Your journey through this horror adventure is about to transcend the boundaries of ordinary gaming.*`;
-  }
-
-  generateRealitySetup(profile) {
-    return `*You exist in the ${profile.realityLayer.description} layer of reality. Your ${profile.archetype.name} archetype has been activated.*`;
-  }
-
-  generateConsciousnessAwakening(profile) {
-    return `*Your ${profile.consciousnessLevel.description} is beginning to expand. The meta-narrative is responding to your unique psychological profile.*`;
-  }
-
-  generateMetaRevelation(profile) {
-    return `*This game is not what it appears to be. It is a mirror reflecting your deepest fears, desires, and the very essence of your consciousness.*`;
-  }
-
-  generateConvergenceHint(profile) {
-    return `*A convergence point approaches. When you reach it, reality will shift, and your unique meta-ending will be revealed.*`;
-  }
-
-  generateEndingTease(profile) {
-    return `*Your meta-ending awaits, ${profile.name}. It will be unlike any other player's experience. It is yours alone.*`;
-  }
-
-  generateWelcomeBack(profile) {
-    return `*Welcome back to the meta-narrative, ${profile.name}. Your consciousness has evolved since our last encounter.*`;
-  }
-
-  generateProgressUpdate(profile) {
-    return `*Your ${profile.archetype.name} archetype has deepened. The ${profile.realityLayer.description} layer of reality has shifted around you.*`;
-  }
-
-  generateRealityShift(profile) {
-    return `*Reality itself is responding to your presence. New possibilities have emerged from the quantum foam of existence.*`;
-  }
-
-  generateConsciousnessEvolution(profile) {
-    return `*Your ${profile.consciousnessLevel.description} has evolved. You are becoming more aware of the meta-narrative's true nature.*`;
-  }
-
-  generateConvergenceProgress(profile) {
-    return `*The convergence point draws nearer. Your unique meta-ending is taking shape, shaped by every choice you've made.*`;
-  }
-
-  generateEndingApproach(profile) {
-    return `*Your personalized meta-ending approaches, ${profile.name}. It will be a revelation unlike any other player will ever experience.*`;
-  }
-
-  // Advanced meta-narrative generation methods
-  generateArchetypalRevelation(profile) {
-    const { archetype } = profile;
-    return `*Your ${archetype.name} archetype has revealed its ${archetype.shadowAspect} shadow aspect, and now embraces its ${archetype.divineAspect} divine nature. The karmic lesson of ${archetype.karmicLesson} is being learned through your journey.*`;
-  }
-
-  generateSoulPurposeAwakening(profile) {
-    const { archetype } = profile;
-    return `*Your soul purpose of ${archetype.soulPurpose} is awakening within you. You are beginning to understand your ${archetype.cosmicFunction} cosmic function in the grand tapestry of existence.*`;
-  }
-
-  generateConsciousnessEvolution(profile) {
-    const { consciousnessLevel, archetype } = profile;
-    return `*Your ${consciousnessLevel.description} is evolving beyond its current limitations. The ${archetype.name} within you is catalyzing a quantum leap in consciousness that will transcend all previous boundaries.*`;
-  }
-
-  generateRealityTransformation(profile) {
-    const { realityLayer, archetype } = profile;
-    return `*The ${realityLayer.description} layer of reality you inhabit is being transformed by your ${archetype.name} presence. New dimensions of possibility are emerging from the quantum foam of existence.*`;
-  }
-
-  generateDivineSparkActivation(profile) {
-    const { archetype } = profile;
-    return `*The divine spark within your ${archetype.name} nature is activating. You are beginning to remember your true identity as a co-creator of reality, a divine being experiencing the illusion of separation.*`;
-  }
-
-  generateKarmicResolution(profile) {
-    const { archetype } = profile;
-    return `*The karmic patterns that have shaped your ${archetype.name} journey are reaching their resolution. Old wounds are healing, old lessons are being learned, and new possibilities are emerging.*`;
-  }
-
-  generateCollectiveUnconsciousConnection(profile) {
-    const { archetype } = profile;
-    return `*Your ${archetype.name} archetype is connecting with the collective unconscious, the shared reservoir of human experience. You are beginning to access wisdom that transcends individual consciousness.*`;
-  }
-
-  generateSynchronicityManifestation(profile) {
-    const { archetype } = profile;
-    return `*Synchronicities are manifesting around your ${archetype.name} journey, meaningful coincidences that reveal the deeper patterns of reality. The universe is speaking to you through these sacred signs.*`;
-  }
-
-  generateEgoDissolution(profile) {
-    const { archetype } = profile;
-    return `*The ego that has defined your ${archetype.name} identity is beginning to dissolve, making way for a higher consciousness to emerge. You are surrendering to the flow of divine intelligence.*`;
-  }
-
-  generateUnityConsciousness(profile) {
-    const { archetype } = profile;
-    return `*Your ${archetype.name} nature is expanding into unity consciousness, recognizing the oneness that underlies all apparent separation. You are becoming aware of your connection to all of existence.*`;
-  }
-
-  // Moral compass analysis
-  analyzeMoralCompass(playerName, difficulty, personality) {
-    return {
-      ethicalFramework: `${personality} moral foundation`,
-      decisionBias: `${difficulty} complexity in moral choices`,
-      valueSystem: `${playerName}'s personal ethics`,
-      moralEvolution: `${personality} moral growth pattern`
-    };
-  }
-
-  // Helper methods for fear and desire analysis
-  determinePrimaryFear(nameFear, difficultyFear, personalityFear) {
-    const fears = [nameFear, difficultyFear, personalityFear];
-    return fears.reduce((a, b) => a.intensity > b.intensity ? a : b);
-  }
-
-  calculateFearIntensity(nameFear, difficultyFear, personalityFear) {
-    return Math.min(5, (nameFear.intensity + difficultyFear.intensity + personalityFear.intensity) / 3);
-  }
-
-  analyzeFearPatterns(nameFear, difficultyFear, personalityFear) {
-    return ['existential', 'psychological', 'superficial'].filter((_, i) => [nameFear, difficultyFear, personalityFear][i].intensity > 2);
-  }
-
-  generateFearTriggers(nameFear, difficultyFear, personalityFear) {
-    return [`${nameFear.type} triggers`, `${difficultyFear.type} catalysts`, `${personalityFear.type} stimuli`];
-  }
-
-  generateFearResolution(nameFear, difficultyFear, personalityFear) {
-    return [`${nameFear.type} acceptance`, `${difficultyFear.type} transcendence`, `${personalityFear.type} integration`];
-  }
-
-  determinePrimaryDesire(nameDesire, difficultyDesire, personalityDesire) {
-    const desires = [nameDesire, difficultyDesire, personalityDesire];
-    return desires.reduce((a, b) => a.intensity > b.intensity ? a : b);
-  }
-
-  calculateDesireIntensity(nameDesire, difficultyDesire, personalityDesire) {
-    return Math.min(5, (nameDesire.intensity + difficultyDesire.intensity + personalityDesire.intensity) / 3);
-  }
-
-  analyzeDesirePatterns(nameDesire, difficultyDesire, personalityDesire) {
-    return ['self-actualization', 'achievement', 'comfort'].filter((_, i) => [nameDesire, difficultyDesire, personalityDesire][i].intensity > 2);
-  }
-
-  generateDesireManifestation(nameDesire, difficultyDesire, personalityDesire) {
-    return [`${nameDesire.type} manifestation`, `${difficultyDesire.type} realization`, `${personalityDesire.type} expression`];
-  }
-
-  generateDesireFulfillment(nameDesire, difficultyDesire, personalityDesire) {
-    return [`${nameDesire.type} fulfillment`, `${difficultyDesire.type} completion`, `${personalityDesire.type} satisfaction`];
-  }
 }
 
 // Create singleton instance
 const metaNarrativeSystem = new MetaNarrativeSystem();
 
 // Export functions for external use
-export const generateAdvancedMetaMessage = (playerName, difficulty, personality, interests = '', age = '', isFirstTime = false) => {
-  return metaNarrativeSystem.generateAdvancedMetaMessage(playerName, difficulty, personality, interests, age, isFirstTime);
-};
-
 export const generateMetaEnding = (profile, gameData) => {
   return metaNarrativeSystem.generateMetaEnding(profile, gameData);
 };

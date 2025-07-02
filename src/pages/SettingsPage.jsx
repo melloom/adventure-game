@@ -46,35 +46,29 @@ const SettingsPage = ({ onBack, onResetProfile }) => {
         <h2>Game Settings</h2>
         <div className="setting-item">
           <label className="setting-label">
-            <span>Sound Effects</span>
+            <span>Button Sounds</span>
             <input
               type="checkbox"
               checked={settings.soundEnabled}
               onChange={(e) => handleSettingChange('soundEnabled', e.target.checked)}
             />
           </label>
+          <small className="setting-description">
+            Play sound effects when clicking buttons and interacting with the game
+          </small>
         </div>
         <div className="setting-item">
           <label className="setting-label">
             <span>Background Music</span>
-            <button
-              className="music-toggle-btn"
-              onClick={() => handleSettingChange('soundEnabled', !settings.soundEnabled)}
-              style={{
-                background: settings.soundEnabled ? '#4CAF50' : '#f44336',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                padding: '8px 16px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'background-color 0.2s'
-              }}
-            >
-              {settings.soundEnabled ? '🔊 Playing' : '🔇 Muted'}
-            </button>
+            <input
+              type="checkbox"
+              checked={settings.musicEnabled}
+              onChange={(e) => handleSettingChange('musicEnabled', e.target.checked)}
+            />
           </label>
+          <small className="setting-description">
+            Play ambient horror music in the background
+          </small>
         </div>
         <div className="setting-item">
           <label className="setting-label">

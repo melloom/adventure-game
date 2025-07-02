@@ -5,7 +5,7 @@ import { useCampaign } from '../hooks/useCampaign';
 import AIPersonalityInterface from './AIPersonalityInterface';
 import aiPersonalitySystem from '../utils/aiPersonalitySystem';
 
-const Game = ({ selectedChapter, onGameEnd }) => {
+const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
   const [gameState, setGameState] = useState('loading'); // loading, playing, consequence, story, gameOver, cutscene
   const [currentRound, setCurrentRound] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState('');
@@ -785,8 +785,18 @@ const Game = ({ selectedChapter, onGameEnd }) => {
         </button>
         
         <h1 className="game-title">Would You Rather Survival</h1>
-        <div className="round-info">
-          Round {currentRound} of 10
+        <div className="round-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <div style={{ fontWeight: 'bold', color: '#e17055' }}>Danger Score: {dangerLevel * 10}/100</div>
+          <div>Round: {currentRound} / 10</div>
+          <div>Status: {survivalStatus.charAt(0).toUpperCase() + survivalStatus.slice(1)}</div>
+          {/* Back to Menu button */}
+          <button 
+            className="back-button"
+            style={{ marginTop: '10px' }}
+            onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+          >
+            ← Back to Menu
+          </button>
         </div>
         
         {/* Show AI taunt if available */}
@@ -842,6 +852,15 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <div className="round-info">
         Round {currentRound} of 10
       </div>
+      
+      {/* Back to Menu button */}
+      <button 
+        className="back-button"
+        style={{ margin: '16px auto 0', display: 'block' }}
+        onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+      >
+        ← Back to Menu
+      </button>
       
       <div className="question-container">
         <h2 className="question">{currentQuestion}</h2>
