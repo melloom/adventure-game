@@ -138,34 +138,6 @@ function App() {
           setShowProfileSetup(false);
         }
         
-        // Load saved game state if auto-save is enabled and there's a saved game
-        if (settings.autoSave && hasSavedGame()) {
-          const savedState = loadGameState();
-          if (savedState.gameStarted && !savedState.gameOver) {
-            console.log('🔄 Loading saved game state');
-            setGameStarted(savedState.gameStarted);
-            setCurrentRound(savedState.currentRound);
-            setScore(savedState.score);
-            setDangerScore(savedState.dangerScore);
-            setGameOver(savedState.gameOver);
-            setShowConsequence(savedState.showConsequence);
-            setConsequence(savedState.consequence);
-            setSelectedOption(savedState.selectedOption);
-            setSurvivalStatus(savedState.survivalStatus);
-            setSelectedChapter(savedState.selectedChapter);
-            setGameMode(savedState.gameMode);
-            setGameHistory(savedState.gameHistory);
-            setGameChoices(savedState.gameChoices);
-            setPoints(savedState.points);
-            setAchievements(savedState.achievements);
-            setBonuses(savedState.bonuses);
-            setStoryArc(savedState.storyArc);
-            setCurrentGameQuestion(savedState.currentGameQuestion);
-          }
-        } else {
-          setGameStarted(false);
-        }
-        
         // Load learning statistics
         const stats = getPlayerLearningData();
         setLearningStats(stats);
