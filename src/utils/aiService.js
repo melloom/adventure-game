@@ -601,6 +601,114 @@ export const determinePersonality = (learningData) => {
   return 'balanced';
 };
 
+// Helper function to calculate survival probability
+export const calculateSurvival = (dangerLevel, round) => {
+  const baseSurvivalRate = Math.max(0.1, 1 - (dangerLevel / 10));
+  const roundPenalty = Math.min(round * 0.05, 0.3); // Each round reduces survival by 5%, max 30%
+  const finalSurvivalRate = Math.max(0.05, baseSurvivalRate - roundPenalty);
+  return Math.random() < finalSurvivalRate;
+};
+
+// Helper function to test API status
+export const testApiStatus = async () => {
+  if (!OPENAI_API_KEY) {
+    return {
+      available: false,
+      reason: 'No API key',
+      message: 'OpenAI API key not configured',
+      service: 'openai'
+    };
+  }
+
+  try {
+    const response = await openaiClient.post('/chat/completions', {
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: 'user',
+          content: 'Test message'
+        }
+      ],
+      max_tokens: 10
+    });
+
+    return {
+      available: true,
+      reason: 'API working',
+      message: 'OpenAI API is available',
+      service: 'openai',
+      model: OPENAI_MODEL
+    };
+  } catch (error) {
+    return {
+      available: false,
+      reason: 'API error',
+      message: error.message,
+      service: 'openai'
+    };
+  }
+};
+
+// Personality system integration
+import aiPersonalitySystem from './aiPersonalitySystem';
+
+export const getAIPersonalityState = () => {
+  return aiPersonalitySystem.currentPersonality || 'neutral';
+};
+
+export const getCurrentAIPersonality = () => {
+  // Add trust, suspicion, aggression, manipulation for compatibility
+  const base = aiPersonalitySystem.getCurrentPersonality();
+  return {
+    ...base,
+    trust: typeof base.trust === 'number' ? base.trust : 0.5,
+    suspicion: typeof base.suspicion === 'number' ? base.suspicion : 0.5,
+    aggression: typeof base.aggression === 'number' ? base.aggression : 0.5,
+    manipulation: typeof base.manipulation === 'number' ? base.manipulation : 0.5
+  };
+};
+
+export const resetAIPersonality = () => {
+  aiPersonalitySystem.reset();
+};
+
+// Stubs for advanced/experimental systems
+export const getChoiceInterference = () => [];
+export const getAIBattles = () => [];
+export const getGaslightingSystem = () => [];
+export const getManipulationSystem = () => [];
+export const getTherapySessions = () => [];
+export const getSelfAwareness = () => ({ level: 0 });
+export const getRealityBlurring = () => ({ level: 0 });
+export const getProphecySystem = () => [];
+export const getTimeTravelSystem = () => [];
+export const getMultiverseSystem = () => [];
+
+export const trackPlayerEntry = (...args) => {
+  // Stub: could log or update analytics if needed
+  return null;
+};
+
+export const trackPlayerExit = (...args) => {
+  // Stub: could log or update analytics if needed
+  return null;
+};
+
+export const generateMetaMessage = (...args) => {
+  // Stub: implement meta-narrative messaging if needed
+  return '';
+};
+
+export const generateFirstTimeMetaMessage = (...args) => {
+  // Stub: implement first-time meta-narrative messaging if needed
+  return '';
+};
+
+export const updatePlayerLearning = (...args) => {
+  // Stub: implement player learning update if needed
+  return null;
+};
+
 // Export all functions
 export default {
   generateQuestion,
@@ -609,5 +717,9 @@ export default {
   trackChoice,
   calculateDynamicDifficulty,
   determinePersonality,
-  getPlayerLearningData
-}; 
+  getPlayerLearningData,
+  trackPlayerEntry,
+  trackPlayerExit
+};
+
+export { getPlayerLearningData }; 
