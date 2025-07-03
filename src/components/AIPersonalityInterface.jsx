@@ -198,12 +198,12 @@ const AIPersonalityInterface = ({
                 <div 
                   className="trait-fill"
                   style={{ 
-                    width: `${value * 100}%`,
+                    width: `${Number.isFinite(value) ? value * 100 : 0}%`,
                     backgroundColor: getPersonalityColor()
                   }}
                 />
               </div>
-              <span className="trait-value">{Math.round(value * 100)}%</span>
+              <span className="trait-value">{Number.isFinite(value) ? Math.round(value * 100) + '%' : '0%'}</span>
             </div>
           ))}
         </div>

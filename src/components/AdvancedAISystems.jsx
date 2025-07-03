@@ -187,7 +187,7 @@ const AdvancedAISystems = ({ playerName, isVisible = false }) => {
             </div>
             <div className="relationship-details">
               <span className="relationship-trust">
-                Trust: {aiData.memory?.trustHistory[aiData.memory.trustHistory.length - 1] || 50}/100
+                Trust: {aiData.memory?.trustHistory && aiData.memory.trustHistory.length > 0 ? aiData.memory.trustHistory[aiData.memory.trustHistory.length - 1] : 50}/100
               </span>
             </div>
           </div>

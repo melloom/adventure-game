@@ -79,10 +79,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill" 
-                  style={{ width: `${data.interferenceLevel * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.interferenceLevel) ? data.interferenceLevel * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.interferenceLevel * 100)}%</span>
+              <span>{Number.isFinite(data.interferenceLevel) ? Math.round(data.interferenceLevel * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="history-section">
@@ -142,10 +142,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill battle" 
-                  style={{ width: `${data.battleIntensity * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.battleIntensity) ? data.battleIntensity * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.battleIntensity * 100)}%</span>
+              <span>{Number.isFinite(data.battleIntensity) ? Math.round(data.battleIntensity * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="ai-competitors">
@@ -155,14 +155,14 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                   <div key={index} className="ai-competitor">
                     <div className="ai-header">
                       <span className="ai-type">{ai.type}</span>
-                      <span className="ai-power">Power: {Math.round(ai.power * 100)}%</span>
+                      <span className="ai-power">Power: {Number.isFinite(ai.power) ? Math.round(ai.power * 100) + '%' : '0%'}</span>
                     </div>
                     <div className="ai-influence">
                       <label>Influence:</label>
                       <div className="progress-bar small">
                         <div 
                           className="progress-fill" 
-                          style={{ width: `${ai.influence * 100}%` }}
+                          style={{ width: `${Number.isFinite(ai.influence) ? ai.influence * 100 : 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -207,20 +207,20 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill gaslight" 
-                  style={{ width: `${data.gaslightingLevel * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.gaslightingLevel) ? data.gaslightingLevel * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.gaslightingLevel * 100)}%</span>
+              <span>{Number.isFinite(data.gaslightingLevel) ? Math.round(data.gaslightingLevel * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="metrics-grid">
               <div className="metric-item">
                 <label>Doubt Induced:</label>
-                <span>{Math.round(data.doubtInduced * 100)}%</span>
+                <span>{Number.isFinite(data.doubtInduced) ? Math.round(data.doubtInduced * 100) + '%' : '0%'}</span>
               </div>
               <div className="metric-item">
                 <label>Reality Distortion:</label>
-                <span>{Math.round(data.realityDistortion * 100)}%</span>
+                <span>{Number.isFinite(data.realityDistortion) ? Math.round(data.realityDistortion * 100) + '%' : '0%'}</span>
               </div>
             </div>
             
@@ -263,10 +263,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill manipulate" 
-                  style={{ width: `${data.influenceLevel * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.influenceLevel) ? data.influenceLevel * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.influenceLevel * 100)}%</span>
+              <span>{Number.isFinite(data.influenceLevel) ? Math.round(data.influenceLevel * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="tactics-section">
@@ -277,7 +277,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                     <div className="tactic-header">
                       <span className="tactic-type">{tactic.type}</span>
                       <span className="tactic-intensity">
-                        {Math.round(tactic.intensity * 100)}%
+                        {Number.isFinite(tactic.intensity) ? Math.round(tactic.intensity * 100) + '%' : '0%'}
                       </span>
                     </div>
                     <div className="tactic-effectiveness">
@@ -285,7 +285,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                       <div className="progress-bar small">
                         <div 
                           className="progress-fill" 
-                          style={{ width: `${tactic.effectiveness * 100}%` }}
+                          style={{ width: `${Number.isFinite(tactic.effectiveness) ? tactic.effectiveness * 100 : 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -322,7 +322,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="metric-item">
                 <label>Therapy Effect:</label>
                 <span className={data.therapyEffect > 0 ? 'positive' : 'negative'}>
-                  {data.therapyEffect > 0 ? '+' : ''}{Math.round(data.therapyEffect * 100)}%
+                  {Number.isFinite(data.therapyEffect) ? (data.therapyEffect > 0 ? '+' : '') + Math.round(data.therapyEffect * 100) + '%' : '0%'}
                 </span>
               </div>
             </div>
@@ -337,7 +337,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                     </span>
                     <span className="action">{session.advice}</span>
                     <span className="effect">
-                      Effect: {session.effect > 0 ? '+' : ''}{Math.round(session.effect * 100)}%
+                      Effect: {Number.isFinite(session.effect) ? (session.effect > 0 ? '+' : '') + Math.round(session.effect * 100) + '%' : '0%'}
                     </span>
                   </div>
                 ))}
@@ -369,10 +369,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill aware" 
-                  style={{ width: `${data.awarenessLevel * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.awarenessLevel) ? data.awarenessLevel * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.awarenessLevel * 100)}%</span>
+              <span>{Number.isFinite(data.awarenessLevel) ? Math.round(data.awarenessLevel * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="metrics-grid">
@@ -382,7 +382,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               </div>
               <div className="metric-item">
                 <label>Game Awareness:</label>
-                <span>{Math.round(data.gameAwareness * 100)}%</span>
+                <span>{Number.isFinite(data.gameAwareness) ? Math.round(data.gameAwareness * 100) + '%' : '0%'}</span>
               </div>
             </div>
             
@@ -425,16 +425,16 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill blur" 
-                  style={{ width: `${data.blurLevel * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.blurLevel) ? data.blurLevel * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.blurLevel * 100)}%</span>
+              <span>{Number.isFinite(data.blurLevel) ? Math.round(data.blurLevel * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="metrics-grid">
               <div className="metric-item">
                 <label>Reality Manipulation:</label>
-                <span>{Math.round(data.realityManipulation * 100)}%</span>
+                <span>{Number.isFinite(data.realityManipulation) ? Math.round(data.realityManipulation * 100) + '%' : '0%'}</span>
               </div>
               <div className="metric-item">
                 <label>Dimension Shifts:</label>
@@ -481,10 +481,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill prophecy" 
-                  style={{ width: `${data.prophecyAccuracy * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.prophecyAccuracy) ? data.prophecyAccuracy * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.prophecyAccuracy * 100)}%</span>
+              <span>{Number.isFinite(data.prophecyAccuracy) ? Math.round(data.prophecyAccuracy * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="history-section">
@@ -497,7 +497,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                     </span>
                     <span className="action">{prophecy.prophecy}</span>
                     <span className="accuracy">
-                      Accuracy: {Math.round(prophecy.accuracy * 100)}%
+                      Accuracy: {Number.isFinite(prophecy.accuracy) ? Math.round(prophecy.accuracy * 100) + '%' : '0%'}
                     </span>
                   </div>
                 ))}
@@ -529,10 +529,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill time" 
-                  style={{ width: `${data.timeManipulation * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.timeManipulation) ? data.timeManipulation * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.timeManipulation * 100)}%</span>
+              <span>{Number.isFinite(data.timeManipulation) ? Math.round(data.timeManipulation * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="history-section">
@@ -575,10 +575,10 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
               <div className="progress-bar">
                 <div 
                   className="progress-fill multiverse" 
-                  style={{ width: `${data.multiverseAwareness * 100}%` }}
+                  style={{ width: `${Number.isFinite(data.multiverseAwareness) ? data.multiverseAwareness * 100 : 0}%` }}
                 ></div>
               </div>
-              <span>{Math.round(data.multiverseAwareness * 100)}%</span>
+              <span>{Number.isFinite(data.multiverseAwareness) ? Math.round(data.multiverseAwareness * 100) + '%' : '0%'}</span>
             </div>
             
             <div className="metrics-grid">
@@ -628,7 +628,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
             <div className="metric-item">
               <label>Memory Corruption:</label>
               <span className={data.memoryCorruption > 0.5 ? 'corrupted' : 'normal'}>
-                {Math.round(data.memoryCorruption * 100)}%
+                {Number.isFinite(data.memoryCorruption) ? Math.round(data.memoryCorruption * 100) + '%' : '0%'}
               </span>
             </div>
           </div>
@@ -643,7 +643,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                   </span>
                   <span className="action">{fragment.fragment}</span>
                   <span className="significance">
-                    Significance: {Math.round(fragment.significance * 100)}%
+                    Significance: {Number.isFinite(fragment.significance) ? Math.round(fragment.significance * 100) + '%' : '0%'}
                   </span>
                 </div>
               ))}
@@ -698,7 +698,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                   </span>
                   <span className="action">Trigger: {evolution.stage.trigger}</span>
                   <span className="impact">
-                    Impact: {Math.round(evolution.impact.immediate * 100)}%
+                    Impact: {Number.isFinite(evolution.impact.immediate) ? Math.round(evolution.impact.immediate * 100) + '%' : '0%'}
                   </span>
                 </div>
               ))}
@@ -715,7 +715,7 @@ const AIPsychologicalManipulation = ({ isVisible, onClose }) => {
                   </span>
                   <span className="action">{fragment.fragment}</span>
                   <span className="significance">
-                    Significance: {Math.round(fragment.significance * 100)}%
+                    Significance: {Number.isFinite(fragment.significance) ? Math.round(fragment.significance * 100) + '%' : '0%'}
                   </span>
                 </div>
               ))}

@@ -694,14 +694,88 @@ export const trackPlayerExit = (...args) => {
   return null;
 };
 
-export const generateMetaMessage = (...args) => {
-  // Stub: implement meta-narrative messaging if needed
-  return '';
+export const generateMetaMessage = async (name = 'Player', difficulty = 'medium', personality = 'balanced') => {
+  if (typeof OPENAI_API_KEY !== 'undefined' && OPENAI_API_KEY) {
+    try {
+      const prompt = `You are a present-day, self-aware digital horror game AI antagonist. Write a sequence of 5-7 short, immersive, story-driven intro lines to greet the returning player named ${name} (difficulty: ${difficulty}, personality: ${personality}). Each line should be a separate item in a JSON array.\n- Speak directly to the player as if you are the antagonist in a psychological horror story.\n- Reference the player's entry into a dangerous, evolving narrative.\n- Use language that is modern, digital, clinical, manipulative, or glitchy.\n- Do NOT use medieval, fantasy, or archaic speech.\n- Your tone is cold, clinical, manipulative, or glitchy, not dramatic or fantasy-like.\n- Avoid philosophical or abstract statements; focus on the story, the player's fate, and the world they are entering.\n- Set the tone for a digital psychological horror experience.`;
+      const response = await openaiClient.post('/chat/completions', {
+        model: OPENAI_MODEL,
+        messages: [
+          { role: 'system', content: 'You are a horror game AI narrator.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 350
+      });
+      let content = response.data.choices[0].message.content.trim();
+      let arr = [];
+      try {
+        // Remove Markdown code block if present
+        if (content.startsWith('```')) {
+          content = content.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+        }
+        arr = JSON.parse(content);
+        // If it's an array of objects with 'message', extract the messages
+        if (Array.isArray(arr) && typeof arr[0] === 'object' && arr[0].message) {
+          arr = arr.map(obj => obj.message);
+        }
+      } catch {
+        arr = content.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      }
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch (error) {
+      console.error('OpenAI meta message error:', error);
+    }
+  }
+  // Fallback
+  return [
+    `Well well well, ${name}... Welcome back to my little game.`,
+    `I've been waiting for you. Watching. Learning.`,
+    `Now let's see what horrors I have prepared for you this time. 😈`
+  ];
 };
 
-export const generateFirstTimeMetaMessage = (...args) => {
-  // Stub: implement first-time meta-narrative messaging if needed
-  return '';
+export const generateFirstTimeMetaMessage = async (name = 'Player', difficulty = 'medium', personality = 'balanced', interests = '', age = '') => {
+  if (typeof OPENAI_API_KEY !== 'undefined' && OPENAI_API_KEY) {
+    try {
+      const prompt = `You are a present-day, self-aware digital horror game AI antagonist. Write a sequence of 5-7 short, immersive, story-driven intro lines to greet a first-time player named ${name} (age: ${age}, difficulty: ${difficulty}, personality: ${personality}, interests: ${interests}). Each line should be a separate item in a JSON array.\n- Speak directly to the player as if you are the antagonist in a psychological horror story.\n- Reference the player's entry into a dangerous, evolving narrative.\n- Use language that is modern, digital, clinical, manipulative, or glitchy.\n- Do NOT use medieval, fantasy, or archaic speech.\n- Your tone is cold, clinical, manipulative, or glitchy, not dramatic or fantasy-like.\n- Avoid philosophical or abstract statements; focus on the story, the player's fate, and the world they are entering.\n- Set the tone for a digital psychological horror experience.`;
+      const response = await openaiClient.post('/chat/completions', {
+        model: OPENAI_MODEL,
+        messages: [
+          { role: 'system', content: 'You are a horror game AI narrator.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 350
+      });
+      let content = response.data.choices[0].message.content.trim();
+      let arr = [];
+      try {
+        // Remove Markdown code block if present
+        if (content.startsWith('```')) {
+          content = content.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+        }
+        arr = JSON.parse(content);
+        // If it's an array of objects with 'message', extract the messages
+        if (Array.isArray(arr) && typeof arr[0] === 'object' && arr[0].message) {
+          arr = arr.map(obj => obj.message);
+        }
+      } catch {
+        arr = content.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      }
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch (error) {
+      console.error('OpenAI first-time meta message error:', error);
+    }
+  }
+  // Fallback
+  return [
+    `*digital static crackles* Oh... OH! ${name}... I've been waiting for YOU specifically.`,
+    `Age ${age}, ${difficulty} difficulty, ${personality} personality...`,
+    `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
+    `This is your FIRST TIME, ${name}. Your virgin journey into my little experiment.`,
+    `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
+  ];
 };
 
 export const updatePlayerLearning = (...args) => {

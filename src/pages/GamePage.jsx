@@ -44,6 +44,8 @@ const GamePage = ({
   onBackToMenu,
   isLoading
 }) => {
+  // Debug log for troubleshooting
+  console.log('GamePage props:', { currentRound, currentGameQuestion });
 
   const { fetchQuestion, fetchConsequence } = useOpenAI();
   const { updateStats } = useGameStats();

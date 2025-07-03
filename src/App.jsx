@@ -442,33 +442,42 @@ function App() {
       );
       console.log('✅ AI question received:', aiQuestion);
       
-      // Parse the AI question string and create options
-      let questionText = aiQuestion;
+      // Handle the AI question response - it can be either a string or an object
+      let questionText = '';
       let optionA = '';
       let optionB = '';
       
-      // Extract options from "Would you rather [A] or [B]?" format
-      if (typeof aiQuestion === 'string' && aiQuestion.toLowerCase().includes('would you rather')) {
+      if (typeof aiQuestion === 'string') {
+        // If it's a string, try to parse it
         questionText = aiQuestion;
         
-        // Try to extract the two options
-        const match = aiQuestion.match(/Would you rather (.+?) or (.+?)\?/i);
-        if (match) {
-          optionA = match[1].trim();
-          optionB = match[2].trim();
-        } else {
-          // Fallback: split on "or" if regex doesn't work
-          const parts = aiQuestion.split(' or ');
-          if (parts.length >= 2) {
-            optionA = parts[0].replace(/Would you rather /i, '').trim();
-            optionB = parts[1].replace(/\?$/, '').trim();
+        // Extract options from "Would you rather [A] or [B]?" format
+        if (aiQuestion.toLowerCase().includes('would you rather')) {
+          const match = aiQuestion.match(/Would you rather (.+?) or (.+?)\?/i);
+          if (match) {
+            optionA = match[1].trim();
+            optionB = match[2].trim();
+          } else {
+            // Fallback: split on "or" if regex doesn't work
+            const parts = aiQuestion.split(' or ');
+            if (parts.length >= 2) {
+              optionA = parts[0].replace(/Would you rather /i, '').trim();
+              optionB = parts[1].replace(/\?$/, '').trim();
+            }
           }
+        }
+      } else if (aiQuestion && typeof aiQuestion === 'object') {
+        // If it's an object with question and options
+        questionText = aiQuestion.question || "Loading question...";
+        if (aiQuestion.options && Array.isArray(aiQuestion.options)) {
+          optionA = aiQuestion.options[0] || "Option A";
+          optionB = aiQuestion.options[1] || "Option B";
         }
       }
       
       // Create a question object with AI-generated content
       const questionObj = {
-        question: questionText,
+        question: questionText || "Loading your challenge...",
         optionA: optionA || "Option A",
         optionB: optionB || "Option B",
         consequences: {
@@ -537,10 +546,15 @@ function App() {
           userProfile.age || ''
         );
       }
+      console.log('AI meta message sequence:', messageSequence);
       
-      setMetaMessageSequence(messageSequence);
+      setMetaMessageSequence(messageSequence && messageSequence.length > 0 ? messageSequence : [
+        "Welcome to the game. The AI is ready to challenge you!"
+      ]);
       setMetaMessageIndex(0);
-      setMetaMessage(messageSequence[0]);
+      setMetaMessage((messageSequence && messageSequence.length > 0 ? messageSequence : [
+        "Welcome to the game. The AI is ready to challenge you!"
+      ])[0]);
     } catch (error) {
       console.error('Error generating meta message:', error);
       const fallbackSequence = hasPlayedBefore ? [
@@ -1483,7 +1497,7 @@ function App() {
                   <div className="meta-message-body">
                     <p className="meta-text">{metaMessage}</p>
                     <div className="meta-progress">
-                      {metaMessageIndex + 1} / {metaMessageSequence.length}
+                      <span>{metaMessageIndex + 1} / {Math.max(metaMessageSequence.length, 1)}</span>
                     </div>
                     <button 
                       className="meta-acknowledge-button"
