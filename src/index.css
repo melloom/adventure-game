@@ -681,9 +681,17 @@ body::before {
   }
 
   .consequence {
-    padding: 20px;
-    font-size: 1rem;
-  }
+  padding: 30px;
+  font-size: 1.2rem;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  margin: 20px 0;
+  backdrop-filter: blur(10px);
+  animation: consequenceSlideIn 0.5s ease-out;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
 
   .consequence h3 {
     font-size: 1.2rem;
@@ -3449,6 +3457,8 @@ body {
   line-height: 1.6;
   margin-bottom: 15px;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  font-weight: 500;
 }
 
 /* Enhanced danger update display */
@@ -6486,4 +6496,82 @@ body {
   .psychological-settings .setting-description {
     font-size: 0.8rem;
   }
+}
+
+.recap-container {
+  background: rgba(20, 20, 30, 0.97);
+  color: #f8f8f8;
+  max-width: 600px;
+  margin: 40px auto;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  padding: 32px 24px 24px 24px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+.recap-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.recap-header h2 {
+  font-size: 2.2rem;
+  margin-bottom: 0.2em;
+}
+.recap-danger {
+  color: #ff4d4f;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+.recap-summary {
+  background: #23233a;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.recap-breakdown {
+  margin-bottom: 24px;
+}
+.recap-breakdown h3 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  color: #a0a0ff;
+}
+.recap-round {
+  background: #181828;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+  font-size: 0.98em;
+}
+.recap-question {
+  color: #ffd966;
+}
+.recap-choice {
+  color: #a0e7e5;
+}
+.recap-consequence {
+  color: #ffb3b3;
+}
+.recap-dlevel {
+  color: #ff4d4f;
+  font-size: 0.95em;
+}
+.recap-menu-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 12px 32px;
+  background: #23233a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.recap-menu-btn:hover {
+  background: #3a3a5a;
 }

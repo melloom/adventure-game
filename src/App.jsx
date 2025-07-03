@@ -18,6 +18,7 @@ import ProfileSetup from './components/ProfileSetup';
 import { getUserProfile } from './utils/userProfile';
 import horrorSystem from './utils/horrorSystem';
 import soundManager, { setSoundEnabled } from './utils/soundManager';
+import GameRecap from './components/GameRecap';
 
 import './index.css';
 
@@ -43,6 +44,7 @@ function App() {
   const [metaMessageSequence, setMetaMessageSequence] = useState([]);
   const [metaEnding, setMetaEnding] = useState(null);
   const [showMetaEnding, setShowMetaEnding] = useState(false);
+  const [showRecap, setShowRecap] = useState(false);
 
   // Campaign state
   const [gameMode, setGameMode] = useState('classic'); // 'classic' or 'campaign'
@@ -82,7 +84,7 @@ function App() {
 
   // Enhanced storage hooks
   const { profile: userProfile, updateProfile, isValidProfile, resetProfile } = useUserProfile();
-  const { settings } = useGameSettings();
+  const { settings, updateSetting } = useGameSettings();
   const { gameState, saveGameState, loadGameState, clearGameState, hasSavedGame } = useGameState();
   
   // Sync sound manager with settings
@@ -253,11 +255,11 @@ function App() {
 
   // Update survival status based on danger score
   useEffect(() => {
-    if (dangerScore <= 30) {
+    if (dangerScore <= 20) {  // Lowered from 30
       setSurvivalStatus('safe');
-    } else if (dangerScore <= 60) {
+    } else if (dangerScore <= 45) {  // Lowered from 60
       setSurvivalStatus('warning');
-    } else if (dangerScore <= 80) {
+    } else if (dangerScore <= 65) {  // Lowered from 80
       setSurvivalStatus('danger');
     } else {
       setSurvivalStatus('critical');
@@ -291,91 +293,91 @@ function App() {
   const getFallbackQuestion = () => {
     const easyQuestions = [
       {
-        question: "Would you rather have unlimited pizza or unlimited ice cream?",
-        optionA: "🍕 Unlimited Pizza",
-        optionB: "🍦 Unlimited Ice Cream",
+        question: "Would you rather watch your childhood home burn to the ground or watch your childhood memories be erased from your mind forever?",
+        optionA: "🔥 Watch Home Burn",
+        optionB: "🧠 Lose All Memories",
         consequences: {
-          A: "You become the Pizza King/Queen! But now you're allergic to cheese...",
-          B: "You become the Ice Cream Master! But now you're lactose intolerant..."
+          A: "You watch helplessly as everything you grew up with turns to ash. The smell of burning wood and memories haunts you for the rest of your life. You can never go home again, and the emptiness inside you grows with each passing day.",
+          B: "Your mind becomes a blank slate where your childhood should be. You remember nothing of who you were, who you loved, or what made you who you are. You're left with a hollow feeling that nothing can fill."
         },
-        dangerLevels: { A: 1, B: 2 }
+        dangerLevels: { A: 6, B: 7 }
       },
       {
-        question: "Would you rather be able to fly or be invisible?",
-        optionA: "🦅 Fly like a superhero",
-        optionB: "👻 Be invisible",
+        question: "Would you rather be responsible for the death of your best friend or be responsible for the death of a stranger who could cure cancer?",
+        optionA: "💔 Kill Best Friend",
+        optionB: "🔬 Kill Cancer Researcher",
         consequences: {
-          A: "You can soar through the skies! But you're afraid of heights...",
-          B: "You can sneak anywhere! But you keep forgetting you're invisible..."
+          A: "Your best friend dies because of your choice. The guilt consumes you completely. You see their face in your dreams, asking why you chose to let them die. Your friendship becomes a memory that tortures you forever.",
+          B: "A brilliant scientist who could have saved millions dies because of your decision. You become responsible for countless deaths that could have been prevented. The weight of this knowledge crushes your soul."
         },
-        dangerLevels: { A: 2, B: 3 }
+        dangerLevels: { A: 8, B: 9 }
       }
     ];
 
     const mediumQuestions = [
       {
-        question: "Would you rather fight 100 duck-sized horses or 1 horse-sized duck?",
-        optionA: "🐴 100 Duck-sized Horses",
-        optionB: "🦆 1 Horse-sized Duck",
+        question: "Would you rather be tortured for 24 hours or watch your entire family be tortured for 1 hour?",
+        optionA: "⏰ 24 Hours of Torture",
+        optionB: "👨‍👩‍👧‍👦 Family Tortured",
         consequences: {
-          A: "You valiantly defeat the tiny horses! But now you have 100 tiny horse friends following you everywhere...",
-          B: "You bravely face the giant duck! But now you're terrified of all birds..."
+          A: "You endure 24 hours of unimaginable pain and suffering. Every second feels like an eternity. The psychological damage is permanent - you'll never be the same person again. The memories of your torture haunt your every waking moment.",
+          B: "You watch helplessly as the people you love most suffer unimaginable pain. Their screams echo in your mind forever. You're forced to live with the knowledge that you chose to let them suffer instead of taking their place."
         },
-        dangerLevels: { A: 4, B: 5 }
+        dangerLevels: { A: 9, B: 10 }
       },
       {
-        question: "Would you rather have a pet dragon or a pet unicorn?",
-        optionA: "🐉 Pet Dragon",
-        optionB: "🦄 Pet Unicorn",
+        question: "Would you rather know the exact date and time of your death or know that you will die in a way that causes maximum suffering to your loved ones?",
+        optionA: "⏰ Know Death Date",
+        optionB: "💀 Painful Death for Loved Ones",
         consequences: {
-          A: "You have a fire-breathing dragon! But it keeps burning your furniture...",
-          B: "You have a magical unicorn! But it only eats rainbow-colored food..."
+          A: "Every day becomes a countdown to your inevitable end. You can't enjoy life knowing exactly when it will end. The knowledge drives you to madness as you watch the clock tick down to your final moment.",
+          B: "You know that your death will be so horrific and traumatic that it will destroy the lives of everyone who loves you. The guilt of knowing what your death will do to them is worse than any physical pain."
         },
-        dangerLevels: { A: 5, B: 4 }
+        dangerLevels: { A: 8, B: 10 }
       }
     ];
 
     const hardQuestions = [
       {
-        question: "Would you rather save 100 strangers or 1 loved one?",
-        optionA: "👥 Save 100 Strangers",
-        optionB: "❤️ Save 1 Loved One",
+        question: "Would you rather be responsible for the extinction of humanity or be the only human left alive in a world of monsters?",
+        optionA: "🌍 End Humanity",
+        optionB: "👹 Last Human Alive",
         consequences: {
-          A: "You save many lives but lose someone precious. The guilt haunts you forever...",
-          B: "You save your loved one but 100 people die. Their families will never forgive you..."
+          A: "You become the architect of humanity's complete annihilation. Billions of lives end because of your choice. You're responsible for the greatest crime in history - the destruction of an entire species. The guilt is infinite.",
+          B: "You're the last human in a world filled with creatures that want to torture and kill you. Every moment is a fight for survival. The loneliness and constant fear drive you to the brink of insanity. You wish you were dead."
         },
-        dangerLevels: { A: 7, B: 8 }
+        dangerLevels: { A: 10, B: 10 }
       },
       {
-        question: "Would you rather know when you'll die or how you'll die?",
-        optionA: "⏰ Know When",
-        optionB: "💀 Know How",
+        question: "Would you rather be forced to kill your own child to save 1000 strangers or let 1000 strangers die to save your child?",
+        optionA: "🔪 Kill Your Child",
+        optionB: "💔 Let 1000 Die",
         consequences: {
-          A: "You know your exact death date. Every day becomes a countdown to the inevitable...",
-          B: "You know your death method. You become obsessed with avoiding that specific fate..."
+          A: "You murder your own child with your bare hands. The act destroys your soul completely. You become a monster who killed their own flesh and blood. The guilt and self-loathing will never leave you. You deserve to die.",
+          B: "You let 1000 innocent people die to save your child. You're responsible for the worst mass murder in history. Your child grows up knowing their life cost 1000 others. The guilt destroys your family and your sanity."
         },
-        dangerLevels: { A: 8, B: 7 }
+        dangerLevels: { A: 10, B: 10 }
       }
     ];
 
     const nightmareQuestions = [
       {
-        question: "Would you rather torture an innocent person to save 1000 lives or let 1000 people die to save one innocent?",
-        optionA: "🔪 Torture Innocent to Save 1000",
-        optionB: "💔 Let 1000 Die to Save Innocent",
+        question: "Would you rather be responsible for the creation of a new species that will torture and enslave humanity for eternity, or be responsible for the destruction of all life in the universe?",
+        optionA: "👾 Create Eternal Torturers",
+        optionB: "💥 Destroy All Life",
         consequences: {
-          A: "You become a monster to save others. The innocent person's screams haunt your dreams forever...",
-          B: "You let 1000 people die. You're responsible for the worst tragedy in human history..."
+          A: "You create a race of beings so cruel and powerful that they will torture humanity forever. You're responsible for infinite suffering across all time. Every scream of pain from every human who will ever live is your fault. You've damned your species to eternal torment.",
+          B: "You become responsible for the complete annihilation of all life in the universe. Every planet, every species, every consciousness is destroyed because of your choice. You've committed the greatest crime possible - the destruction of existence itself."
         },
         dangerLevels: { A: 10, B: 10 }
       },
       {
-        question: "Would you rather be responsible for the death of your entire family or the death of an entire city?",
-        optionA: "👨‍👩‍👧‍👦 Kill Your Family",
-        optionB: "🏙️ Kill Entire City",
+        question: "Would you rather be forced to watch your loved ones be tortured for eternity while you live forever, or be tortured for eternity while your loved ones live forever in blissful ignorance of your suffering?",
+        optionA: "👁️ Watch Eternal Torture",
+        optionB: "💀 Eternal Torture Alone",
         consequences: {
-          A: "You've destroyed everything you love. You're completely alone in the world...",
-          B: "You've committed genocide. You're the most hated person in history..."
+          A: "You're immortal and forced to watch the people you love suffer unimaginable pain forever. Their screams never stop. You can never help them, never save them, never escape. You're trapped in an eternal nightmare of helplessness and guilt.",
+          B: "You endure infinite torture while your loved ones live perfect lives, never knowing what you sacrificed for them. The pain never ends, never lessens. You suffer alone in darkness while they live in light, completely unaware of your eternal agony."
         },
         dangerLevels: { A: 10, B: 10 }
       }
@@ -432,14 +434,43 @@ function App() {
       console.log('📝 Story context:', storyContext);
       console.log('👤 User profile:', userProfile);
       
-      const aiQuestion = await fetchQuestion(userProfile.difficulty, userProfile.personality, storyContext);
+      const aiQuestion = await fetchQuestion(
+        userProfile.difficulty,
+        userProfile.personality,
+        currentRound,
+        gameChoices
+      );
       console.log('✅ AI question received:', aiQuestion);
+      
+      // Parse the AI question string and create options
+      let questionText = aiQuestion;
+      let optionA = '';
+      let optionB = '';
+      
+      // Extract options from "Would you rather [A] or [B]?" format
+      if (typeof aiQuestion === 'string' && aiQuestion.toLowerCase().includes('would you rather')) {
+        questionText = aiQuestion;
+        
+        // Try to extract the two options
+        const match = aiQuestion.match(/Would you rather (.+?) or (.+?)\?/i);
+        if (match) {
+          optionA = match[1].trim();
+          optionB = match[2].trim();
+        } else {
+          // Fallback: split on "or" if regex doesn't work
+          const parts = aiQuestion.split(' or ');
+          if (parts.length >= 2) {
+            optionA = parts[0].replace(/Would you rather /i, '').trim();
+            optionB = parts[1].replace(/\?$/, '').trim();
+          }
+        }
+      }
       
       // Create a question object with AI-generated content
       const questionObj = {
-        question: aiQuestion.question,
-        optionA: aiQuestion.options[0],
-        optionB: aiQuestion.options[1],
+        question: questionText,
+        optionA: optionA || "Option A",
+        optionB: optionB || "Option B",
         consequences: {
           A: "ENTITY_ORACLE_7X is calculating your fate...",
           B: "ENTITY_ORACLE_7X is calculating your fate..."
@@ -564,6 +595,7 @@ function App() {
       setLastGameResult(result); // Store result for later use
       
       // Wait for player to acknowledge meta ending before proceeding
+      setShowRecap(true); // Show recap after game ends
       return; // Don't proceed with normal game end handling yet
     } catch (error) {
       console.error('Error generating meta ending:', error);
@@ -615,6 +647,7 @@ function App() {
     });
     setSelectedChapter(null);
     setGameMode('classic');
+    setShowRecap(true); // Show recap after game ends
   };
 
   const handleMetaMessageAcknowledge = () => {
@@ -779,7 +812,7 @@ function App() {
     try {
       if (aiAvailable) {
         const storyContext = storyArc.narrative ? storyArc.narrative.join(' ') : '';
-        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty, userProfile.personality, currentRound, storyContext);
+        const aiConsequence = await fetchConsequence(choice, userProfile.difficulty, userProfile.personality, currentRound, gameChoices);
         consequenceText = aiConsequence.consequence;
         dangerLevel = aiConsequence.dangerLevel;
         storyUpdate = aiConsequence.storyUpdate || "The story continues with your choice.";
@@ -857,15 +890,15 @@ function App() {
   };
 
   const handleNextRound = async () => {
-    // Check if game is over (either reached 10 rounds or danger score exceeded 100)
-    if (currentRound >= 10 || dangerScore > 100) {
+    // Check if game is over (either reached 10 rounds or danger score exceeded 70)
+    if (currentRound >= 10 || dangerScore > 70) {
       console.log('🎮 Game over! Final score:', score, 'Danger score:', dangerScore, 'Rounds survived:', currentRound);
       
       // Game over - update ORACLE_7X learning system
       const gameData = {
         roundsPlayed: currentRound,
         finalDangerScore: dangerScore,
-        survived: dangerScore <= 100,
+        survived: dangerScore <= 70,
         difficulty: userProfile.difficulty,
         choices: gameChoices,
         personality: userProfile.personality
@@ -877,14 +910,14 @@ function App() {
       
       // Call handleGameEnd with the game result
       handleGameEnd({
-        won: dangerScore <= 100,
+        won: dangerScore <= 70,
         score: score,
         roundsSurvived: currentRound,
         chapter: selectedChapter?.id || 'classic'
       });
       
       // Trigger game over effect
-      if (dangerScore <= 100) {
+      if (dangerScore <= 70) {
         handleGameEvent('victory', { 
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
         });
@@ -895,6 +928,7 @@ function App() {
       }
       
       setGameOver(true);
+      setShowRecap(true);
     } else {
       // Trigger round completed effect
       handleGameEvent('round_completed', { 
@@ -964,17 +998,17 @@ function App() {
     newPoints.survival += 10;
     
     // Bravery points for high danger choices
-    if (dangerLevel >= 7) {
+    if (dangerLevel >= 5) {  // Lowered from 7
       newPoints.bravery += dangerLevel * 2;
     }
     
     // Wisdom points for low danger outcomes
-    if (dangerLevel <= 3) {
+    if (dangerLevel <= 2) {  // Lowered from 3
       newPoints.wisdom += 15;
     }
     
     // Chaos points for high danger outcomes
-    if (dangerLevel >= 8) {
+    if (dangerLevel >= 6) {  // Lowered from 8
       newPoints.chaos += dangerLevel;
     }
     
@@ -990,7 +1024,7 @@ function App() {
     }
     
     // Luck points for low danger outcomes
-    if (dangerLevel <= 2) {
+    if (dangerLevel <= 1) {  // Lowered from 2
       newPoints.luck += 10;
     }
     
@@ -1013,37 +1047,37 @@ function App() {
     const newAchievements = [...achievements];
     
     // Survival achievements
-    if (roundNumber === 10 && dangerScore <= 50) {
+    if (roundNumber === 10 && dangerScore <= 35) {  // Lowered from 50
       newAchievements.push({ name: "Survivor", description: "Completed the game with low danger", points: 100 });
     }
     
-    if (roundNumber === 10 && dangerScore <= 30) {
+    if (roundNumber === 10 && dangerScore <= 20) {  // Lowered from 30
       newAchievements.push({ name: "Master Survivor", description: "Completed the game with very low danger", points: 200 });
     }
     
     // Bravery achievements
-    if (newPoints.bravery >= 100) {
-      newAchievements.push({ name: "Brave Heart", description: "Accumulated 100+ bravery points", points: 50 });
+    if (newPoints.bravery >= 80) {  // Lowered from 100
+      newAchievements.push({ name: "Brave Heart", description: "Accumulated 80+ bravery points", points: 50 });
     }
     
     // Chaos achievements
-    if (newPoints.chaos >= 80) {
-      newAchievements.push({ name: "Chaos Lord", description: "Accumulated 80+ chaos points", points: 75 });
+    if (newPoints.chaos >= 60) {  // Lowered from 80
+      newAchievements.push({ name: "Chaos Lord", description: "Accumulated 60+ chaos points", points: 75 });
     }
     
     // Heroism achievements
-    if (newPoints.heroism >= 100) {
-      newAchievements.push({ name: "Hero", description: "Accumulated 100+ heroism points", points: 100 });
+    if (newPoints.heroism >= 80) {  // Lowered from 100
+      newAchievements.push({ name: "Hero", description: "Accumulated 80+ heroism points", points: 100 });
     }
     
     // Villainy achievements
-    if (newPoints.villainy >= 100) {
-      newAchievements.push({ name: "Villain", description: "Accumulated 100+ villainy points", points: 100 });
+    if (newPoints.villainy >= 80) {  // Lowered from 100
+      newAchievements.push({ name: "Villain", description: "Accumulated 80+ villainy points", points: 100 });
     }
     
     // Skill achievements
-    if (newPoints.skill >= 150) {
-      newAchievements.push({ name: "Skilled Player", description: "Accumulated 150+ skill points", points: 75 });
+    if (newPoints.skill >= 120) {  // Lowered from 150
+      newAchievements.push({ name: "Skilled Player", description: "Accumulated 120+ skill points", points: 75 });
     }
     
     return newAchievements;
@@ -1063,24 +1097,24 @@ function App() {
     }
     
     // Danger score bonuses
-    if (dangerScore <= 30) {
+    if (dangerScore <= 20) {  // Lowered from 30
       bonuses.push({ name: "Safe Player", points: 100 });
     }
     
-    if (dangerScore >= 80) {
+    if (dangerScore >= 60) {  // Lowered from 80
       bonuses.push({ name: "Danger Seeker", points: 150 });
     }
     
     // Point category bonuses
-    if (points.bravery >= 50) {
+    if (points.bravery >= 40) {  // Lowered from 50
       bonuses.push({ name: "Bravery Bonus", points: 25 });
     }
     
-    if (points.heroism >= 50) {
+    if (points.heroism >= 40) {  // Lowered from 50
       bonuses.push({ name: "Heroism Bonus", points: 25 });
     }
     
-    if (points.villainy >= 50) {
+    if (points.villainy >= 40) {  // Lowered from 50
       bonuses.push({ name: "Villainy Bonus", points: 25 });
     }
     
@@ -1122,8 +1156,8 @@ function App() {
       };
     }
     
-    // Ultra-low danger (0-15): Legendary survival
-    if (dangerScore <= 15) {
+    // Ultra-low danger (0-10): Legendary survival
+    if (dangerScore <= 10) {
       const legendaryEndings = [
         {
           title: "🌟 LEGENDARY SURVIVOR",
@@ -1147,8 +1181,8 @@ function App() {
       };
     }
     
-    // Low danger (16-30): Skilled survivor
-    else if (dangerScore <= 30) {
+    // Low danger (11-25): Skilled survivor
+    else if (dangerScore <= 25) {
       const skilledEndings = [
         {
           title: "🎯 THE SHARPSHOOTER",
@@ -1172,8 +1206,8 @@ function App() {
       };
     }
     
-    // Medium danger (31-50): Competent survivor
-    else if (dangerScore <= 50) {
+    // Medium danger (26-40): Competent survivor
+    else if (dangerScore <= 40) {
       const competentEndings = [
         {
           title: "💪 THE RESILIENT",
@@ -1197,8 +1231,8 @@ function App() {
       };
     }
     
-    // High danger (51-70): Lucky survivor
-    else if (dangerScore <= 70) {
+    // High danger (41-55): Lucky survivor
+    else if (dangerScore <= 55) {
       const luckyEndings = [
         {
           title: "🍀 THE LUCKY CHARM",
@@ -1222,8 +1256,8 @@ function App() {
       };
     }
     
-    // Very high danger (71-85): Barely survived
-    else if (dangerScore <= 85) {
+    // Very high danger (56-70): Barely survived
+    else if (dangerScore <= 70) {
       const barelyEndings = [
         {
           title: "😵‍💫 THE ZOMBIE",
@@ -1247,8 +1281,8 @@ function App() {
       };
     }
     
-    // Extreme danger (86-95): Miracle survival
-    else if (dangerScore <= 95) {
+    // Extreme danger (71-85): Miracle survival
+    else if (dangerScore <= 85) {
       const miracleEndings = [
         {
           title: "🙏 THE MIRACLE",
@@ -1613,6 +1647,78 @@ function App() {
             }}
           />
         </div>
+      </>
+    );
+  }
+
+  // Show recap screen if needed
+  if (showRecap) {
+    return (
+      <>
+        {/* Global Background Music - Single instance */}
+        <audio
+          ref={audioRef}
+          src={"/30 Minutes of Creepy, Scary, Horror Ambient Music _ Happy Halloween 2022! _ Élise in the Clouds.mp3"}
+          autoPlay
+          loop
+          muted={!settings.soundEnabled}
+          style={{ display: 'none' }}
+          onError={handleAudioError}
+          onLoadedData={handleAudioLoad}
+        />
+        {/* Global Mute/Unmute Button */}
+        <button
+          className={`music-mute-btn ${!settings.soundEnabled ? 'muted' : ''}`}
+          onClick={() => {
+            updateSetting('soundEnabled', !settings.soundEnabled);
+          }}
+          aria-label={!settings.soundEnabled ? 'Unmute music' : 'Mute music'}
+        >
+          {!settings.soundEnabled ? '🔇' : '🔊'}
+        </button>
+        <GameRecap
+          gameHistory={gameHistory}
+          survived={dangerScore <= 70 && currentRound >= 10}
+          dangerScore={dangerScore}
+          onBackToMenu={() => {
+            setShowRecap(false);
+            setGameStarted(false);
+            setCurrentPage('home');
+            setGameOver(false);
+            setShowConsequence(false);
+            setConsequence('');
+            setSelectedOption(null);
+            setGameHistory([]);
+            setGameChoices([]);
+            setSurvivalStatus('safe');
+            setShowHistory(false);
+            setPoints({
+              survival: 0,
+              bravery: 0,
+              wisdom: 0,
+              chaos: 0,
+              heroism: 0,
+              villainy: 0,
+              luck: 0,
+              skill: 0,
+              total: 0
+            });
+            setAchievements([]);
+            setBonuses([]);
+            setStoryArc({
+              protagonist: '',
+              setting: '',
+              currentSituation: '',
+              allies: [],
+              enemies: [],
+              powers: [],
+              weaknesses: [],
+              worldState: '',
+              narrative: []
+            });
+            setCurrentGameQuestion(getFallbackQuestion());
+          }}
+        />
       </>
     );
   }

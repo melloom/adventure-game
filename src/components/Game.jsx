@@ -346,6 +346,7 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
         );
       }
       
+      console.log('🎭 Setting consequence:', consequenceData.consequence);
       setConsequence(consequenceData.consequence);
       setDangerLevel(consequenceData.dangerLevel || Math.floor(Math.random() * 10) + 1);
       setSurvived(consequenceData.survived !== undefined ? consequenceData.survived : Math.random() > 0.5);
@@ -358,6 +359,7 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
       updateRelationship(personality, choice, consequenceData.survived);
       rememberChoice(personality, choice, consequenceData);
       
+      console.log('🎭 Setting game state to consequence');
       setGameState('consequence');
     } catch (error) {
       console.error('Error generating consequence:', error);
@@ -832,6 +834,8 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
     );
   }
 
+  console.log('🎭 Current game state:', gameState, 'Consequence:', consequence);
+  
   if (gameState === 'consequence') {
     return (
       <div className="game-container">
@@ -923,12 +927,64 @@ const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
         {/* Show AI taunt if available */}
         <AIPersonalityInterface showTaunt={showTaunt} />
         
-        <div className="consequence">
-          <div className="danger-level">
-            Danger Level: {dangerLevel}/10
+        <div className="consequence" style={{
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            height: '3px',
+            background: 'linear-gradient(90deg, #ff6b6b, #ffa500, #ff6b6b)',
+            animation: 'shimmer 2s infinite'
+          }}></div>
+          <div style={{
+            fontSize: '1.4rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            marginBottom: '20px',
+            textAlign: 'center',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+          }}>
+            🎭 THE CONSEQUENCE
           </div>
-          <p>{consequence}</p>
-          {!survived && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
+          <div className="danger-level" style={{
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            color: '#ff6b6b',
+            marginBottom: '15px',
+            padding: '10px',
+            background: 'rgba(255, 107, 107, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 107, 107, 0.3)'
+          }}>
+            ⚠️ Danger Level: {dangerLevel}/10
+          </div>
+          <div className="consequence-text" style={{
+            fontSize: '1.3rem',
+            lineHeight: '1.6',
+            color: '#ffffff',
+            fontWeight: '500',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+            marginBottom: '20px'
+          }}>
+            {consequence}
+          </div>
+          {!survived && (
+            <div style={{
+              fontWeight: 'bold',
+              marginTop: '15px',
+              padding: '10px',
+              background: 'rgba(255, 0, 0, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 0, 0, 0.3)',
+              color: '#ff4444'
+            }}>
+              💀 You didn't survive this round!
+            </div>
+          )}
         </div>
         
         <button className="next-button" onClick={handleNext}>
