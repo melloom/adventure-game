@@ -76,7 +76,7 @@ const GamePage = ({
     if (showConsequence && dangerScore <= 100 && currentRound < 10) {
       const timer = setTimeout(() => {
         if (onNextRound) onNextRound();
-      }, 2000);
+      }, 8000); // Increased from 2000ms to 8000ms (8 seconds) for better reading time
       return () => clearTimeout(timer);
     }
   }, [showConsequence, dangerScore, currentRound, onNextRound]);
