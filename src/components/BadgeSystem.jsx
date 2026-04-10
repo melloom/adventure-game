@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useGameStats } from '../hooks/useLocalStorage';
 
 const BadgeSystem = () => {
   const { stats } = useGameStats();
   const [showBadges, setShowBadges] = useState(false);
+  const overlayRef = useRef(null);
 
   // Define the 10 badge levels
   const badgeLevels = [
@@ -92,6 +93,16 @@ const BadgeSystem = () => {
   const currentLevel = Math.min(stats.gamesWon, 10);
   const progress = (stats.gamesWon / 10) * 100;
 
+  // Scroll to overlay when it opens
+  useEffect(() => {
+    if (showBadges && overlayRef.current) {
+      overlayRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, [showBadges]);
+
   return (
     <div className="badge-system">
       <button 
@@ -111,7 +122,7 @@ const BadgeSystem = () => {
       </button>
 
       {showBadges && (
-        <div className="badge-overlay">
+        <div className="badge-overlay" ref={overlayRef}>
           <div className="badge-content">
             <div className="badge-header">
               <h2>🏆 SURVIVAL BADGE SYSTEM</h2>

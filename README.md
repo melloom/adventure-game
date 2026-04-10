@@ -87,6 +87,27 @@ npm run dev
 # Open your browser to http://localhost:5173
 ```
 
+### AI Configuration
+The game uses an advanced AI system that can work in two modes:
+
+#### Fallback Mode (Default)
+- Uses pre-written, highly engaging AI responses
+- No API keys required
+- Features dynamic personality changes and personalized messages
+- Includes time-based randomization for unique experiences
+
+#### OpenAI Mode (Optional)
+- Requires OpenAI API key for enhanced AI responses
+- More dynamic and personalized interactions
+- Set up by creating a `.env` file with:
+```
+VITE_AI_SERVICE=openai
+VITE_OPENAI_API_KEY=your_openai_api_key_here
+VITE_OPENAI_MODEL=gpt-3.5-turbo
+```
+
+**Note**: The fallback mode provides an excellent experience with no setup required!
+
 ### Building for Production
 ```bash
 # Build the project

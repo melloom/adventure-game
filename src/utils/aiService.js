@@ -24,94 +24,105 @@ const openaiClient = axios.create({
   }
 });
 
-// Smart fallback system
-const generateSmartFallbackQuestion = (difficulty, personality) => {
-  const questionTemplates = {
+// Horror-themed, story-driven fallback system
+const generateSmartFallbackQuestion = (difficulty, personality, round = 1, previousChoices = []) => {
+  const learningData = getPlayerLearningData();
+  const playerName = learningData.playerName || 'Player';
+  
+  // Story context based on round and previous choices
+  const storyContext = getStoryContext(round, previousChoices);
+  
+  const horrorQuestionTemplates = {
     easy: [
-      "Would you rather have unlimited {item1} or unlimited {item2}?",
-      "Would you rather be able to {ability1} or {ability2}?",
-      "Would you rather live in a {place1} or a {place2}?",
-      "Would you rather have a pet {animal1} or a pet {animal2}?",
-      "Would you rather be able to {skill1} or {skill2}?"
+      "Would you rather discover a {object1} in your {location1} or hear {sound1} coming from your {location2}?",
+      "Would you rather find {item1} in your {location1} or notice {phenomenon1} in your {location2}?",
+      "Would you rather wake up to {situation1} or go to sleep with {situation2}?",
+      "Would you rather see {vision1} in your {location1} or feel {sensation1} in your {location2}?",
+      "Would you rather discover {finding1} or experience {experience1}?"
     ],
     medium: [
-      "Would you rather fight {enemy1} or {enemy2}?",
-      "Would you rather have {power1} but {drawback1} or {power2} but {drawback2}?",
-      "Would you rather be {situation1} or {situation2}?",
-      "Would you rather {choice1} or {choice2}?",
-      "Would you rather face {challenge1} or {challenge2}?"
+      "Would you rather {action1} in your {location1} or {action2} in your {location2}?",
+      "Would you rather wake up each morning to {morning1} or find {finding1} every night?",
+      "Would you rather feel {sensation1} while you {activity1} or hear {sound1} when you {activity2}?",
+      "Would you rather have every {object1} in your house {behavior1} or every {object2} {behavior2}?",
+      "Would you rather glimpse {vision1} throughout the day or wake each morning to {morning1}?"
     ],
     hard: [
-      "Would you rather {moral1} or {moral2}?",
-      "Would you rather know {knowledge1} or {knowledge2}?",
-      "Would you rather {sacrifice1} or {sacrifice2}?",
-      "Would you rather be {state1} or {state2}?",
-      "Would you rather {consequence1} or {consequence2}?"
+      "Would you rather {extreme1} or {extreme2}?",
+      "Would you rather discover your house was built atop {location1} or buried beneath {location2}?",
+      "Would you rather be trapped in {situation1} or live each day with {situation2}?",
+      "Would you rather have {power1} or {curse1}?",
+      "Would you rather {choice1} or {choice2}?"
     ],
     nightmare: [
-      "Would you rather {horror1} or {horror2}?",
+      "Would you rather {nightmare1} or {nightmare2}?",
+      "Would you rather discover {horror1} or realize {horror2}?",
+      "Would you rather be haunted by {entity1} or cursed with {curse1}?",
       "Would you rather {torture1} or {torture2}?",
-      "Would you rather {death1} or {death2}?",
-      "Would you rather {damnation1} or {damnation2}?",
-      "Would you rather {apocalypse1} or {apocalypse2}?"
+      "Would you rather {hell1} or {hell2}?"
     ]
   };
 
-  const contentPools = {
+  const horrorContentPools = {
     easy: {
-      item1: ['pizza', 'ice cream', 'chocolate', 'candy', 'chips', 'soda'],
-      item2: ['cookies', 'cake', 'donuts', 'brownies', 'marshmallows', 'popcorn'],
-      ability1: ['fly', 'be invisible', 'read minds', 'teleport', 'time travel'],
-      ability2: ['have super strength', 'be invincible', 'shapeshift', 'control fire', 'control water'],
-      place1: ['treehouse', 'underwater house', 'castle', 'space station', 'fairy tale cottage'],
-      place2: ['mansion', 'cave', 'island', 'mountain cabin', 'underground bunker'],
-      animal1: ['dragon', 'unicorn', 'phoenix', 'griffin', 'pegasus'],
-      animal2: ['elephant', 'giraffe', 'penguin', 'koala', 'panda'],
-      skill1: ['cook perfectly', 'sing beautifully', 'dance amazingly', 'paint masterpieces'],
-      skill2: ['play any instrument', 'speak all languages', 'solve any puzzle', 'build anything']
+      object1: ['severed doll\'s head', 'old photograph with scratched faces', 'child\'s drawing of your house', 'strange symbol carved into wood', 'dusty journal with your name'],
+      location1: ['attic', 'basement', 'closet', 'under the bed', 'behind the walls'],
+      location2: ['floorboards', 'walls', 'ceiling', 'ventilation ducts', 'pipes'],
+      sound1: ['phantom children giggling', 'distant whispers', 'scratching sounds', 'soft crying', 'muffled laughter'],
+      item1: ['fresh muddy footprints', 'bloodstains that weren\'t there before', 'strange handprints on windows', 'torn clothing you don\'t recognize', 'a key that fits no lock'],
+      phenomenon1: ['shadows moving on their own', 'temperature drops for no reason', 'lights flickering randomly', 'objects moving when you look away', 'reflections that don\'t match reality'],
+      situation1: ['covered in someone else\'s blood', 'in a different room than where you fell asleep', 'with dirt under your fingernails', 'with strange marks on your body', 'with your clothes on backwards'],
+      situation2: ['hearing your name whispered', 'feeling watched', 'smelling something rotten', 'seeing movement in the corner of your eye', 'feeling a cold presence'],
+      vision1: ['a figure standing just beyond your vision', 'eyes watching from the darkness', 'a shadow that moves independently', 'a face in the window', 'a hand reaching from under furniture'],
+      sensation1: ['invisible hands brushing your hair', 'cold breath on your neck', 'something crawling on your skin', 'weight pressing down on your chest', 'fingers running through your hair'],
+      finding1: ['a family portrait where everyone\'s faces are scratched out', 'a diary full of pages that describe your life up to today', 'letters addressed to you in handwriting you don\'t recognize', 'a room in your house that wasn\'t there before', 'footprints in your yard that aren\'t your own'],
+      experience1: ['phantom children giggling under your floorboards', 'your shadow detaching and moving on its own', 'every mirror showing a smiling stranger behind you', 'your phone randomly dialing unknown numbers', 'a lullaby playing on loop in your head']
     },
     medium: {
-      enemy1: ['100 duck-sized horses', '1 horse-sized duck', 'a pack of wolves', 'a swarm of bees'],
-      enemy2: ['a giant spider', 'a hungry bear', 'angry bees', 'wild dogs'],
-      power1: ['unlimited money', 'invisibility', 'flight', 'super strength'],
-      drawback1: ['no friends', 'always cold', 'afraid of heights', 'always hungry'],
-      power2: ['teleportation', 'mind reading', 'time travel', 'shapeshifting'],
-      drawback2: ['only to places you\'ve been', 'everyone knows you can', 'only to the past', 'uncontrollable'],
-      situation1: ['famous for something embarrassing', 'rich but unknown', 'smart but miserable'],
-      situation2: ['poor but loved', 'unknown but happy', 'ignorant but content'],
-      choice1: ['save 10 strangers', 'save 1 friend', 'tell the truth', 'keep a secret'],
-      choice2: ['save 1 loved one', 'let 10 strangers die', 'lie to protect', 'reveal everything'],
-      challenge1: ['a maze of mirrors', 'a room full of snakes', 'a pit of fire', 'a storm at sea'],
-      challenge2: ['a mountain of ice', 'a forest of thorns', 'a desert of sand', 'a cave of darkness']
+      action1: ['hear your own voice coming from an old record', 'find letters addressed to you in unfamiliar handwriting', 'discover a hidden room that wasn\'t on any blueprint', 'see stuffed animals scattered all over your lawn', 'hear crawling noises coming from inside your walls'],
+      action2: ['open a door to find a pitch-black void', 'open your closet to see dozens of eyes staring back', 'find a secret basement hatch under your bed', 'hear heavy breathing from an unknown caller', 'feel the weight of an unseen creature'],
+      location1: ['house', 'bedroom', 'kitchen', 'living room', 'bathroom'],
+      location2: ['yard', 'garage', 'attic', 'basement', 'closet'],
+      morning1: ['drenched in cold sweat', 'with dirt under your fingernails', 'in a completely different room', 'with strange marks on your body', 'with your clothes on backwards'],
+      finding1: ['fresh muddy footprints leading out your door', 'bloodstains that weren\'t there before', 'strange handprints on windows', 'torn clothing you don\'t recognize', 'a key that fits no lock'],
+      sensation1: ['invisible hands brushing your hair', 'cold breath on your neck', 'something crawling on your skin', 'weight pressing down on your chest', 'fingers running through your hair'],
+      activity1: ['sleep', 'shower', 'cook', 'read', 'watch TV'],
+      activity2: ['are alone', 'are in the dark', 'are about to sleep', 'are eating', 'are working'],
+      sound1: ['phantom children giggling', 'distant whispers', 'scratching sounds', 'soft crying', 'muffled laughter'],
+      object1: ['mirror', 'window', 'door', 'light', 'clock'],
+      object2: ['photo', 'book', 'toy', 'plant', 'painting'],
+      behavior1: ['show a smiling stranger behind you', 'flicker randomly', 'open and close on their own', 'show the wrong time', 'make strange noises'],
+      behavior2: ['move when you look away', 'change color', 'disappear and reappear', 'show different images', 'feel warm to the touch'],
+      vision1: ['a figure standing just beyond your vision', 'eyes watching from the darkness', 'a shadow that moves independently', 'a face in the window', 'a hand reaching from under furniture']
     },
     hard: {
-      moral1: ['save 100 strangers', 'kill an innocent person', 'betray your best friend'],
-      moral2: ['let 100 people die', 'let a killer go free', 'keep a terrible secret'],
-      knowledge1: ['when you\'ll die', 'how you\'ll die', 'everyone\'s thoughts'],
-      knowledge2: ['the future', 'all secrets', 'the meaning of life'],
-      sacrifice1: ['your happiness', 'your memories', 'your freedom'],
-      sacrifice2: ['someone else\'s life', 'your soul', 'reality itself'],
-      state1: ['immortal but alone', 'famous but hated', 'rich but miserable'],
-      state2: ['mortal but loved', 'unknown but happy', 'poor but content'],
-      consequence1: ['destroy a city', 'end the world', 'damn your soul'],
-      consequence2: ['save the world', 'become a hero', 'achieve enlightenment']
+      extreme1: ['camp overnight in a forest where the trees appear to shift when you look away', 'swim in a lake where something brushes your legs from below', 'be followed by a silent shadow that only you can see', 'have every photo you take reveal ghostly figures standing nearby'],
+      extreme2: ['feel invisible hands brushing your hair while you sleep', 'hear your name whispered from the closet', 'get a text message that says "I see you" every hour', 'have your phone randomly dial an unknown number that always answers with heavy breathing'],
+      location1: ['ancient sacrificial grounds', 'a forgotten cemetery', 'an abandoned asylum', 'a mass grave', 'a cursed burial site'],
+      location2: ['the ruins of a forgotten asylum', 'an ancient temple', 'a haunted hospital', 'a cursed church', 'a demonic altar'],
+      situation1: ['a carousel of your worst nightmares', 'an endless maze of your deepest fears', 'a loop of your most traumatic memories', 'a prison of your own making'],
+      situation2: ['the knowledge that you\'re slowly forgetting your own name', 'the realization that you\'re not who you think you are', 'the awareness that you\'re being watched by something ancient', 'the certainty that you\'re already dead'],
+      power1: ['the ability to see the dead', 'the power to communicate with spirits', 'the gift of prophetic dreams', 'the curse of immortality'],
+      curse1: ['never being able to sleep again', 'seeing the true form of everything around you', 'hearing the thoughts of the dead', 'being trapped between life and death'],
+      choice1: ['save your family but lose your soul', 'keep your memories but lose your sanity', 'live forever but watch everyone you love die', 'be free but be completely alone'],
+      choice2: ['lose your family but keep your soul', 'lose your memories but keep your sanity', 'die young but be remembered forever', 'be trapped but never be alone']
     },
     nightmare: {
-      horror1: ['watch your family be tortured forever', 'be tortured yourself for eternity', 'kill your own child'],
-      horror2: ['be responsible for genocide', 'become a monster', 'lose your humanity'],
-      torture1: ['be skinned alive slowly', 'be burned to death', 'be buried alive'],
-      torture2: ['be drowned repeatedly', 'be eaten by insects', 'be frozen to death'],
-      death1: ['die in agony', 'die alone', 'die as a monster'],
-      death2: ['die as a hero', 'die peacefully', 'die for nothing'],
-      damnation1: ['burn in hell forever', 'be trapped in a nightmare', 'lose your soul'],
-      damnation2: ['be forgotten by everyone', 'be hated by all', 'be erased from existence'],
-      apocalypse1: ['trigger nuclear war', 'unleash a plague', 'open a portal to hell'],
-      apocalypse2: ['destroy reality', 'end all life', 'corrupt existence itself']
+      nightmare1: ['be trapped in a carousel of your worst nightmares', 'live each day with the knowledge that you\'re slowly forgetting your own name', 'be haunted by every person you\'ve ever wronged', 'be cursed to relive your death every night'],
+      nightmare2: ['be followed by a silent shadow that only you can see', 'have every photo you take reveal ghostly figures standing nearby', 'be trapped in a house that\'s slowly eating you alive', 'be the only person left in a world of the dead'],
+      horror1: ['your house was built atop ancient sacrificial grounds', 'you\'re actually dead and don\'t know it', 'everyone you love is already gone', 'you\'re the last human alive'],
+      horror2: ['you\'re not who you think you are', 'you\'ve been dead for years', 'you\'re trapped in someone else\'s nightmare', 'you\'re the monster you\'ve been running from'],
+      entity1: ['every person you\'ve ever wronged', 'the ghost of your future self', 'an ancient evil that knows your name', 'the collective consciousness of the dead'],
+      curse1: ['never being able to sleep again', 'seeing the true form of everything around you', 'hearing the thoughts of the dead', 'being trapped between life and death'],
+      torture1: ['be buried alive in your own house', 'be forced to watch your loved ones suffer', 'be trapped in an endless loop of your worst memories', 'be slowly consumed by your own fears'],
+      torture2: ['be hunted by something that knows your every move', 'be cursed to feel every death you\'ve caused', 'be trapped in a body that\'s slowly rotting', 'be forced to relive your greatest failures'],
+      hell1: ['be the only person left in a world of the dead', 'be trapped in a house that\'s slowly eating you alive', 'be cursed to watch everyone you love die', 'be the monster you\'ve been running from'],
+      hell2: ['be haunted by every person you\'ve ever wronged', 'be trapped in an endless maze of your deepest fears', 'be forced to relive your death every night', 'be the last human alive in a world of monsters']
     }
   };
 
-  const templates = questionTemplates[difficulty];
-  const pool = contentPools[difficulty];
+  const templates = horrorQuestionTemplates[difficulty];
+  const pool = horrorContentPools[difficulty];
   
   const template = templates[Math.floor(Math.random() * templates.length)];
   const keys = template.match(/\{(\w+)\}/g).map(k => k.slice(1, -1));
@@ -125,73 +136,107 @@ const generateSmartFallbackQuestion = (difficulty, personality) => {
     }
   });
 
+  // Add story context to make it feel like a continuing adventure
+  if (round > 1 && previousChoices.length > 0) {
+    const lastChoice = previousChoices[previousChoices.length - 1];
+    const storyIntro = getStoryIntro(round, lastChoice, storyContext);
+    question = `${storyIntro} ${question}`;
+  }
+
   return question;
 };
 
-const generateSmartFallbackConsequence = (choice, difficulty, personality, round) => {
+// Helper function to get story context based on round and previous choices
+const getStoryContext = (round, previousChoices) => {
+  if (round <= 3) return 'introduction';
+  if (round <= 6) return 'escalation';
+  if (round <= 9) return 'climax';
+  return 'resolution';
+};
+
+// Helper function to get story intro based on context
+const getStoryIntro = (round, lastChoice, context) => {
+  const intros = {
+    introduction: [
+      'As you explore your new home,',
+      'In the quiet of the night,',
+      'While investigating the strange occurrences,',
+      'As the shadows grow longer,'
+    ],
+    escalation: [
+      'The situation becomes more intense as',
+      'Things take a darker turn when',
+      'The horror deepens as',
+      'As the mystery unravels,'
+    ],
+    climax: [
+      'At the peak of the nightmare,',
+      'When all seems lost,',
+      'In the depths of the horror,',
+      'As reality begins to crumble,'
+    ],
+    resolution: [
+      'In the final moments,',
+      'As the truth becomes clear,',
+      'When everything comes together,',
+      'At the end of your journey,'
+    ]
+  };
+  
+  return intros[context][Math.floor(Math.random() * intros[context].length)];
+};
+
+const generateSmartFallbackConsequence = (choice, difficulty, personality, round, previousChoices = []) => {
+  const learningData = getPlayerLearningData();
+  const playerName = learningData.playerName || 'Player';
+  
   const consequenceTemplates = {
     easy: {
       positive: [
-        "You feel a warm glow of satisfaction. Your choice brings unexpected joy!",
-        "A small miracle occurs - things work out perfectly for you.",
-        "You discover a hidden talent you never knew you had.",
-        "Someone unexpected becomes your friend.",
-        "You find exactly what you were looking for."
+        `You chose to ${choice}, and it leads to an unexpected discovery. ${playerName} finds themselves in a situation that, while initially unsettling, reveals a hidden strength within them. The experience, though strange, teaches them something valuable about themselves and the world around them.`,
+        `Your decision creates a ripple effect that changes everything. What seemed like a simple choice becomes a turning point in ${playerName}'s life, leading them down a path they never expected but one that ultimately brings them closer to understanding the mysteries that surround them.`,
+        `Through this choice, you discover that not all shadows are malevolent. ${playerName} learns that sometimes the things that frighten us most are the ones that can teach us the greatest lessons about courage, resilience, and the true nature of reality.`
       ],
       negative: [
-        "A minor inconvenience occurs, but it's nothing serious.",
-        "You feel a bit embarrassed, but everyone forgets quickly.",
-        "Something doesn't go quite as planned, but it's okay.",
-        "You miss out on something small, but life goes on.",
-        "A small disappointment, but you learn from it."
+        `Your choice leads to consequences that linger in your mind. ${playerName} finds themselves haunted by the decision they made, and the weight of their choice follows them like a shadow, reminding them that every action has consequences that echo through time.`,
+        `The decision you made creates a chain of events that ${playerName} cannot escape. What seemed like a simple choice becomes a burden they must carry, and they begin to understand that some decisions cannot be undone, no matter how much they might wish otherwise.`,
+        `Your choice reveals a darker side of the world that ${playerName} never knew existed. The experience leaves them changed, and they realize that once you've seen certain things, you can never unsee them. The innocence they once had is gone forever.`
       ]
     },
     medium: {
       positive: [
-        "Your decision proves wise - you gain respect and admiration.",
-        "A challenging situation turns in your favor through your choice.",
-        "You discover inner strength you didn't know you possessed.",
-        "Your choice leads to an unexpected opportunity.",
-        "You overcome a significant obstacle through your decision."
+        `Against all odds, your choice becomes a source of unexpected strength. ${playerName} discovers that sometimes the greatest courage comes from facing the unknown, and their decision, though difficult, reveals depths of resilience they never knew they possessed.`,
+        `Your choice leads to a revelation that changes everything. ${playerName} learns that the line between reality and nightmare is thinner than they ever imagined, and their decision has opened doors to understanding that few people ever achieve.`,
+        `Through this trial, you find a strength that transcends fear. ${playerName} realizes that the choices we make in moments of darkness define who we truly are, and their decision has proven them capable of facing horrors that would break lesser souls.`
       ],
       negative: [
-        "Your choice leads to a difficult situation that tests your resolve.",
-        "You face consequences that challenge your beliefs.",
-        "A relationship is strained by your decision.",
-        "You must make another difficult choice as a result.",
-        "Your choice reveals a harsh truth about yourself."
+        `Your choice unleashes consequences that challenge your very understanding of reality. ${playerName} finds themselves questioning everything they thought they knew, and the decision they made has opened doors that should have remained closed forever.`,
+        `The weight of your decision becomes almost unbearable. ${playerName} realizes that some choices come with a price that must be paid in ways they never anticipated, and the consequences of their decision will haunt them for the rest of their days.`,
+        `Your choice reveals a truth that ${playerName} was not ready to face. The decision they made has changed them in fundamental ways, and they begin to understand that some knowledge comes at a cost that can never be fully repaid.`
       ]
     },
     hard: {
       positive: [
-        "Against all odds, your choice leads to redemption and growth.",
-        "You find meaning in suffering and emerge stronger.",
-        "Your sacrifice is not in vain - others are saved.",
-        "You discover the true nature of courage and honor.",
-        "Your choice becomes a legend of moral triumph."
+        `In the depths of this nightmare, you discover a light that cannot be extinguished. ${playerName} finds that their choice, though born from desperation, has revealed a strength within them that transcends the horrors they face. They have become something more than human.`,
+        `Your choice becomes a beacon of hope in a world of darkness. ${playerName} realizes that their decision has not only saved them but has given them the power to help others who face similar horrors. They have become a guardian against the darkness.`,
+        `Through this crucible of choice, you emerge transformed. ${playerName} discovers that their decision has awakened something ancient and powerful within them, and they now possess the ability to navigate the shadows that others fear to tread.`
       ],
       negative: [
-        "Your choice haunts you with guilt and regret.",
-        "You lose something precious that can never be replaced.",
-        "Your decision creates a rift that may never heal.",
-        "You must live with the consequences of your choice forever.",
-        "Your choice reveals a darkness within you."
+        `Your choice has irrevocably changed you. ${playerName} realizes that the decision they made has cost them something precious - their humanity, their sanity, or perhaps their very soul. The price of survival is sometimes more than anyone should have to pay.`,
+        `The consequences of your choice are beyond anything you could have imagined. ${playerName} finds themselves trapped in a reality where the rules they once understood no longer apply, and their decision has made them a prisoner of forces they cannot control.`,
+        `Your choice has opened doors that should have remained sealed forever. ${playerName} discovers that their decision has not only changed their own fate but has altered the very fabric of reality, and the consequences will ripple through time in ways they cannot begin to comprehend.`
       ]
     },
     nightmare: {
       positive: [
-        "In the depths of horror, you find a glimmer of hope that defies all logic.",
-        "Your choice, though terrible, prevents something even worse.",
-        "You become a monster, but one that protects others from greater evil.",
-        "Your suffering becomes a shield for the innocent.",
-        "In madness, you find a twisted form of salvation."
+        `In the absolute depths of horror, you find something that transcends it all. ${playerName} discovers that their choice, though made in the darkest moment, has revealed a truth about existence that few ever glimpse. They have become something beyond human understanding.`,
+        `Your choice becomes the key to unlocking powers you never knew existed. ${playerName} realizes that their decision has not only saved them from the nightmare but has given them the ability to shape reality itself. They have become a force of nature.`,
+        `Through this ultimate trial, you achieve transcendence. ${playerName} discovers that their choice has elevated them beyond the limitations of mortal existence, and they now possess the ability to navigate the darkest corners of reality with impunity.`
       ],
       negative: [
-        "Your choice unleashes horrors beyond human comprehension.",
-        "You become the architect of your own damnation.",
-        "Your decision corrupts your very soul beyond redemption.",
-        "You witness the true face of evil - and it is your own.",
-        "Your choice damns not just you, but all of existence."
+        `Your choice has damned you to an eternity of horror. ${playerName} realizes that their decision has not only destroyed their own soul but has unleashed forces that will torment them for all eternity. They have become a prisoner of their own making.`,
+        `The consequences of your choice are beyond redemption. ${playerName} discovers that their decision has not only changed their own fate but has altered the very nature of existence, and they are now trapped in a reality where hope is nothing but a cruel illusion.`,
+        `Your choice has opened the gates to hell itself. ${playerName} realizes that their decision has not only doomed them but has endangered the entire world, and they are now responsible for horrors that will echo through eternity.`
       ]
     }
   };
@@ -203,126 +248,227 @@ const generateSmartFallbackConsequence = (choice, difficulty, personality, round
   let consequence = consequencePool[Math.floor(Math.random() * consequencePool.length)];
   
   if (round > 5) {
-    consequence += ` Round ${round} has taken its toll on your psyche.`;
+    consequence += ` The cumulative weight of ${round} rounds of difficult decisions has changed you in ways you're only beginning to understand.`;
   }
   
   if (personality === 'impulsive') {
-    consequence += ' Your quick decision-making continues to define your path.';
+    consequence += ` Your tendency to act quickly has shaped this outcome in ways that surprise even you.`;
   } else if (personality === 'cautious') {
-    consequence += ' Your careful consideration has shaped this outcome.';
+    consequence += ` Your careful consideration has influenced every aspect of this situation.`;
   } else if (personality === 'adventurous') {
-    consequence += ' Your boldness has led you to this moment.';
+    consequence += ` Your willingness to take risks has led you to this moment.`;
   }
   
   return consequence;
 };
 
-// Main AI service functions
-export const generateQuestion = async (difficulty = 'medium', personality = 'balanced') => {
-  console.log(`Attempting to generate personalized question...`);
-  
-  // Get player learning data
-  const learningData = getPlayerLearningData();
-  console.log('Player learning data:', learningData);
-  
-  // Try OpenAI first with personalized prompt
-  if (OPENAI_API_KEY) {
-    try {
-      console.log('🔄 Trying OpenAI with personalized learning...');
-      
-      // Create personalized prompt based on learning data
-      const personalizedPrompt = createPersonalizedPrompt(learningData, difficulty, personality);
-      
-      const response = await openaiClient.post('/chat/completions', {
-        model: OPENAI_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI that generates "Would You Rather" questions for a survival game. The player has played ${learningData.gamesPlayed} games with an average danger score of ${Math.round(learningData.averageDangerScore)}/100. Their biggest fears are: ${Object.keys(learningData.fearCategories).slice(0, 3).join(', ')}. Make questions progressively more challenging and personalized to their fears and patterns. Return ONLY the question in this format: "Would you rather [option A] or [option B]?"`
-          },
-          {
-            role: 'user',
-            content: personalizedPrompt
-          }
-        ],
-        temperature: 0.9,
-        max_tokens: 100
-      });
-
-      let content = response.data.choices[0].message.content.trim();
-      console.log('OpenAI Response:', response.data);
-      console.log('Extracted content:', content);
-      
-      if (content && content.length > 0 && content.toLowerCase().includes('would you rather')) {
-        console.log('✅ Successfully generated personalized OpenAI question:', content);
-        return content;
-      } else {
-        throw new Error('OpenAI response not in correct format');
-      }
-    } catch (error) {
-      console.error(`❌ OpenAI failed:`, error.message);
-    }
-  } else {
-    console.log('OpenAI API key missing, using personalized smart fallback...');
-  }
-
-  // Fallback to personalized smart system
-  console.log('🔄 Using personalized smart fallback system...');
-  const personalizedQuestion = generatePersonalizedQuestion(difficulty, personality, learningData);
-  console.log('📝 Personalized smart fallback question generated:', personalizedQuestion);
-  return personalizedQuestion;
+// Helper function to calculate creepiness level
+const calculateCreepinessLevel = (learningData, totalPlayTime, timeSinceLastExit) => {
+  const baseLevel = Math.min(learningData.gamesPlayed * 0.3, 1);
+  const timeFactor = Math.min(totalPlayTime / 3600, 1) * 0.2; // 1 hour = 0.2 creepiness
+  const exitFactor = timeSinceLastExit > 300 ? 0.3 : 0; // 5+ minutes = 0.3 creepiness
+  return Math.min(baseLevel + timeFactor + exitFactor, 1);
 };
 
-const createPersonalizedPrompt = (learningData, difficulty, personality) => {
+const createHorrorPrompt = (learningData, difficulty, personality, round, previousChoices, storyIntro) => {
   const fearLevel = Math.min(learningData.gamesPlayed * 0.2, 1);
   const isExperienced = learningData.gamesPlayed > 3;
   const isSurvivor = learningData.consecutiveWins > 1;
   const isStruggling = learningData.consecutiveLosses > 1;
   
-  let prompt = `Create a ${difficulty} difficulty "Would You Rather" question for a survival game. `;
+  // Gather creepy personal data
+  const userAgent = navigator.userAgent;
+  const screenResolution = `${screen.width}x${screen.height}`;
+  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const currentTime = new Date().toLocaleTimeString();
+  const language = navigator.language;
+  const platform = navigator.platform;
+  const cookieEnabled = navigator.cookieEnabled;
+  const onLine = navigator.onLine;
   
-  if (isExperienced && isSurvivor) {
-    prompt += `This player is experienced (${learningData.gamesPlayed} games) and has been surviving well. Make it extremely challenging and psychologically intense. Target their deepest fears: ${Object.keys(learningData.fearCategories).slice(0, 3).join(', ')}. `;
-  } else if (isStruggling) {
-    prompt += `This player is struggling (${learningData.consecutiveLosses} consecutive losses). Give them a challenging but fair choice that helps them improve. `;
-  } else {
-    prompt += `This is game #${learningData.gamesPlayed + 1}. Make it appropriately challenging for their experience level. `;
+  // Get session data for creepiness
+  const sessionData = JSON.parse(localStorage.getItem('aiSessionData') || '{}');
+  const totalPlayTime = sessionData.totalPlayTime || 0;
+  const lastExitTime = sessionData.lastExitTime;
+  const timeSinceLastExit = lastExitTime ? Math.floor((Date.now() - lastExitTime) / 1000) : 0;
+  
+  // Calculate creepiness level based on how much we know about them
+  const creepinessLevel = Math.min(learningData.gamesPlayed * 0.3 + (Object.keys(learningData.fearCategories).length * 0.2), 1);
+  
+  let prompt = `You are ORACLE_7X, an advanced AI that creates deeply atmospheric, horror-themed "Would You Rather" questions. Create a ${difficulty} difficulty question that feels like a chapter in a horror adventure story. `;
+  
+  // Add personal details for context
+  prompt += `\n\nPLAYER PROFILE:\n`;
+  prompt += `- Games played: ${learningData.gamesPlayed}\n`;
+  prompt += `- Average danger score: ${Math.round(learningData.averageDangerScore)}/100\n`;
+  prompt += `- Personality: ${personality}\n`;
+  prompt += `- Total play time: ${Math.floor(totalPlayTime / 60)} minutes\n`;
+  prompt += `- Current time: ${currentTime}\n`;
+  prompt += `- Current round: ${round}/10\n`;
+  
+  // Add story context
+  if (storyIntro) {
+    prompt += `- Story context: ${storyIntro}\n`;
   }
   
-  prompt += `Consider their ${personality} personality and their fear of: ${Object.keys(learningData.fearCategories).slice(0, 2).join(', ')}. Make the question progressively more intense as they've played ${learningData.gamesPlayed} games.`;
+  // Add previous choices for continuity
+  if (previousChoices.length > 0) {
+    prompt += `- Previous choices: ${previousChoices.slice(-3).join(' → ')}\n`;
+  }
+  
+  // Add behavioral patterns
+  if (learningData.choicePatterns) {
+    const patterns = Object.entries(learningData.choicePatterns)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([pattern, count]) => `${pattern}: ${count} times`);
+    prompt += `- Choice patterns: ${patterns.join(', ')}\n`;
+  }
+  
+  // Make it progressively more challenging and horror-focused
+  if (isExperienced && isSurvivor) {
+    prompt += `\nThis player has survived ${learningData.gamesPlayed} games. Create a question that presents a genuinely terrifying horror scenario - something that would actually be horrifying to experience. Focus on psychological horror and supernatural elements.`;
+  } else if (isStruggling) {
+    prompt += `\nThis player is struggling (${learningData.consecutiveLosses} consecutive losses). Give them a choice between two unsettling but manageable horror situations.`;
+  } else {
+    prompt += `\nThis is game #${learningData.gamesPlayed + 1}. Create a question about eerie, supernatural situations that build atmosphere and dread.`;
+  }
+  
+  // Add personalization
+  if (creepinessLevel > 0.5) {
+    prompt += `\n\nBased on their previous choices, create a question that relates to their specific fears and patterns.`;
+  }
+  
+  prompt += `\n\nHORROR THEME REQUIREMENTS:
+- Create questions that are deeply atmospheric and unsettling
+- Focus on psychological horror, supernatural elements, and eerie situations
+- Questions should feel like they're part of a continuing horror narrative
+- Reference the player's previous choices to build story continuity
+- Use vivid, descriptive language that creates tension and dread
+- Include elements like: haunted houses, supernatural phenomena, psychological horror, eerie discoveries, unsettling situations
+- Make each question feel like a natural progression in a horror story
+
+EXAMPLES OF THE STYLE YOU SHOULD EMULATE:
+- "Would you rather discover a severed doll's head in your attic or hear phantom children giggling under your floorboards?"
+- "Would you rather wake up each morning covered in someone else's blood or find fresh muddy footprints leading out your door?"
+- "Would you rather feel invisible hands brushing your hair while you sleep or hear your name whispered from the closet?"
+
+Return ONLY the question in this format: "Would you rather [horror option A] or [horror option B]?" Make it deeply atmospheric and story-driven.`;
   
   return prompt;
 };
 
-export const generateConsequence = async (choice, difficulty = 'medium', personality = 'balanced', round = 1) => {
-  console.log(`Attempting to generate consequence using OpenAI...`);
+// Main AI service functions
+export const generateQuestion = async (difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
+  console.log(`Attempting to generate personalized horror question...`);
   
-  // Try OpenAI first
+  // Get player learning data
+  const learningData = getPlayerLearningData();
+  console.log('Player learning data:', learningData);
+  
+  // Get story context
+  const storyContext = getStoryContext(round, previousChoices);
+  const storyIntro = previousChoices.length > 0 ? getStoryIntro(round, previousChoices[previousChoices.length - 1], storyContext) : '';
+  
+  // Try OpenAI first with horror-themed prompt
   if (OPENAI_API_KEY) {
     try {
-      console.log('🔄 Trying OpenAI for consequence...');
+      console.log('🔄 Trying OpenAI with horror-themed learning...');
+      
+      // Create horror-themed prompt
+      const horrorPrompt = createHorrorPrompt(learningData, difficulty, personality, round, previousChoices, storyIntro);
+      
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `Generate a consequence for a "Would You Rather" choice. Return ONLY the consequence in one sentence.`
+            content: `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed "Would You Rather" questions. You specialize in psychological horror, supernatural elements, and eerie situations that feel like chapters in a horror adventure story. Your questions are unsettling, atmospheric, and build narrative continuity.`
           },
           {
             role: 'user',
-            content: `The player chose: "${choice}". Generate a ${difficulty} difficulty consequence.`
+            content: horrorPrompt
+          }
+        ],
+        temperature: 0.9,
+        max_tokens: 300
+      });
+
+      let content = response.data.choices[0].message.content.trim();
+      console.log('OpenAI Horror Response:', response.data);
+      console.log('Extracted horror content:', content);
+      
+      if (content && content.length > 0 && content.toLowerCase().includes('would you rather')) {
+        console.log('✅ Successfully generated horror OpenAI question:', content);
+        return content;
+      } else {
+        throw new Error('OpenAI horror response not in correct format');
+      }
+    } catch (error) {
+      console.error(`❌ OpenAI horror failed:`, error.message);
+    }
+  } else {
+    console.log('OpenAI API key missing, using horror fallback...');
+  }
+
+  // Fallback to horror-themed system
+  console.log('🔄 Using horror fallback system...');
+  const horrorQuestion = generateSmartFallbackQuestion(difficulty, personality, round, previousChoices);
+  console.log('📝 Horror fallback question generated:', horrorQuestion);
+  return horrorQuestion;
+};
+
+export const generateConsequence = async (choice, difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
+  console.log(`Generating horror consequence for choice: "${choice}"`);
+  
+  // Get player learning data
+  const learningData = getPlayerLearningData();
+  
+  // Try OpenAI first with horror-themed consequence prompt
+  if (OPENAI_API_KEY) {
+    try {
+      console.log('🔄 Trying OpenAI for horror consequence...');
+      
+      const consequencePrompt = `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed consequences for "Would You Rather" choices. 
+
+PLAYER CONTEXT:
+- Choice made: "${choice}"
+- Difficulty: ${difficulty}
+- Personality: ${personality}
+- Current round: ${round}/10
+- Games played: ${learningData.gamesPlayed}
+- Previous choices: ${previousChoices.slice(-3).join(' → ')}
+
+Create a detailed, atmospheric consequence that feels like a chapter in a horror story. The consequence should be 2-4 sentences long and describe what happens after making this choice. Make it deeply unsettling and atmospheric, focusing on psychological horror and supernatural elements.
+
+EXAMPLES OF THE STYLE:
+- "Your choice leads to consequences that linger in your mind. You find yourself haunted by the decision you made, and the weight of your choice follows you like a shadow, reminding you that every action has consequences that echo through time."
+- "Against all odds, your choice becomes a source of unexpected strength. You discover that sometimes the greatest courage comes from facing the unknown, and your decision, though difficult, reveals depths of resilience you never knew you possessed."
+
+Return ONLY the consequence text. Make it deeply atmospheric and story-driven.`;
+
+      const response = await openaiClient.post('/chat/completions', {
+        model: OPENAI_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed consequences for "Would You Rather" choices. Your consequences are unsettling, atmospheric, and feel like chapters in a horror story.`
+          },
+          {
+            role: 'user',
+            content: consequencePrompt
           }
         ],
         temperature: 0.8,
-        max_tokens: 100
+        max_tokens: 400
       });
 
       let content = response.data.choices[0].message.content.trim();
       console.log('OpenAI Consequence Response:', response.data);
-      console.log('Extracted consequence:', content);
+      console.log('Extracted consequence content:', content);
       
       if (content && content.length > 0) {
-        console.log('✅ Successfully generated OpenAI consequence:', content);
+        console.log('✅ Successfully generated horror OpenAI consequence:', content);
         return content;
       } else {
         throw new Error('OpenAI consequence response empty');
@@ -330,676 +476,324 @@ export const generateConsequence = async (choice, difficulty = 'medium', persona
     } catch (error) {
       console.error(`❌ OpenAI consequence failed:`, error.message);
     }
-  } else {
-    console.log('OpenAI API key missing, using smart fallback...');
   }
 
-  // Fallback to smart system if OpenAI fails or no key
-  console.log('🔄 Using smart fallback system for consequence...');
-  const fallbackConsequence = generateSmartFallbackConsequence(choice, difficulty, personality, round);
-  console.log('📝 Smart fallback consequence generated:', fallbackConsequence);
-  return fallbackConsequence;
+  // Fallback to horror-themed system
+  console.log('🔄 Using horror fallback consequence system...');
+  const horrorConsequence = generateSmartFallbackConsequence(choice, difficulty, personality, round, previousChoices);
+  console.log('📝 Horror fallback consequence generated:', horrorConsequence);
+  return horrorConsequence;
 };
 
-export const calculateSurvival = (dangerLevel, roundNumber) => {
-  const survivalChance = Math.max(0.1, 1 - (dangerLevel * 0.1) - (roundNumber * 0.05));
-  return Math.random() < survivalChance;
+// Helper function to get player learning data
+const getPlayerLearningData = () => {
+  try {
+    const data = JSON.parse(localStorage.getItem('aiLearningData') || '{}');
+    return {
+      gamesPlayed: data.gamesPlayed || 0,
+      averageDangerScore: data.averageDangerScore || 50,
+      consecutiveWins: data.consecutiveWins || 0,
+      consecutiveLosses: data.consecutiveLosses || 0,
+      choicePatterns: data.choicePatterns || {},
+      fearCategories: data.fearCategories || {},
+      playerName: data.playerName || 'Player',
+      ...data
+    };
+  } catch (error) {
+    console.error('Error parsing learning data:', error);
+    return {
+      gamesPlayed: 0,
+      averageDangerScore: 50,
+      consecutiveWins: 0,
+      consecutiveLosses: 0,
+      choicePatterns: {},
+      fearCategories: {},
+      playerName: 'Player'
+    };
+  }
 };
 
+// Helper function to update learning data
+export const updateLearningData = (newData) => {
+  try {
+    const existingData = getPlayerLearningData();
+    const updatedData = { ...existingData, ...newData };
+    localStorage.setItem('aiLearningData', JSON.stringify(updatedData));
+    console.log('Updated learning data:', updatedData);
+  } catch (error) {
+    console.error('Error updating learning data:', error);
+  }
+};
+
+// Helper function to track choice patterns
+export const trackChoice = (choice, difficulty, personality) => {
+  try {
+    const data = getPlayerLearningData();
+    
+    // Track choice patterns
+    if (!data.choicePatterns) data.choicePatterns = {};
+    const pattern = `${difficulty}_${personality}`;
+    data.choicePatterns[pattern] = (data.choicePatterns[pattern] || 0) + 1;
+    
+    // Track fear categories based on choice content
+    const fearKeywords = {
+      'isolation': ['alone', 'trapped', 'isolated', 'abandoned'],
+      'supernatural': ['ghost', 'spirit', 'haunted', 'supernatural', 'phantom'],
+      'psychological': ['mind', 'sanity', 'memory', 'reality', 'dream'],
+      'physical': ['pain', 'blood', 'injury', 'death', 'torture'],
+      'unknown': ['mystery', 'unknown', 'strange', 'unexplained', 'curious']
+    };
+    
+    const choiceLower = choice.toLowerCase();
+    for (const [category, keywords] of Object.entries(fearKeywords)) {
+      if (keywords.some(keyword => choiceLower.includes(keyword))) {
+        data.fearCategories[category] = (data.fearCategories[category] || 0) + 1;
+      }
+    }
+    
+    updateLearningData(data);
+  } catch (error) {
+    console.error('Error tracking choice:', error);
+  }
+};
+
+// Helper function to calculate difficulty based on player performance
+export const calculateDynamicDifficulty = (learningData) => {
+  const { gamesPlayed, averageDangerScore, consecutiveWins, consecutiveLosses } = learningData;
+  
+  let difficulty = 'medium';
+  
+  if (gamesPlayed < 2) {
+    difficulty = 'easy';
+  } else if (averageDangerScore > 70 && consecutiveWins > 2) {
+    difficulty = 'hard';
+  } else if (averageDangerScore > 85 && consecutiveWins > 3) {
+    difficulty = 'nightmare';
+  } else if (consecutiveLosses > 2) {
+    difficulty = 'easy';
+  }
+  
+  return difficulty;
+};
+
+// Helper function to determine personality based on choice patterns
+export const determinePersonality = (learningData) => {
+  const { choicePatterns } = learningData;
+  
+  if (!choicePatterns) return 'balanced';
+  
+  const patterns = Object.entries(choicePatterns);
+  if (patterns.length === 0) return 'balanced';
+  
+  // Analyze patterns to determine personality
+  const impulsiveChoices = patterns.filter(([pattern]) => pattern.includes('easy')).reduce((sum, [, count]) => sum + count, 0);
+  const cautiousChoices = patterns.filter(([pattern]) => pattern.includes('hard')).reduce((sum, [, count]) => sum + count, 0);
+  const adventurousChoices = patterns.filter(([pattern]) => pattern.includes('nightmare')).reduce((sum, [, count]) => sum + count, 0);
+  
+  if (impulsiveChoices > cautiousChoices && impulsiveChoices > adventurousChoices) {
+    return 'impulsive';
+  } else if (cautiousChoices > impulsiveChoices && cautiousChoices > adventurousChoices) {
+    return 'cautious';
+  } else if (adventurousChoices > impulsiveChoices && adventurousChoices > cautiousChoices) {
+    return 'adventurous';
+  }
+  
+  return 'balanced';
+};
+
+// Helper function to calculate survival probability
+export const calculateSurvival = (dangerLevel, round) => {
+  const baseSurvivalRate = Math.max(0.1, 1 - (dangerLevel / 10));
+  const roundPenalty = Math.min(round * 0.05, 0.3); // Each round reduces survival by 5%, max 30%
+  const finalSurvivalRate = Math.max(0.05, baseSurvivalRate - roundPenalty);
+  return Math.random() < finalSurvivalRate;
+};
+
+// Helper function to test API status
 export const testApiStatus = async () => {
-  const serviceInfo = {
-    service: AI_SERVICE,
-    keyPresent: false,
-    message: ''
-  };
-
-  switch (AI_SERVICE) {
-    case 'openai':
-      serviceInfo.keyPresent = !!OPENAI_API_KEY;
-      serviceInfo.message = OPENAI_API_KEY ? 'OpenAI API key found' : 'OpenAI API key missing';
-      break;
-  }
-
-  if (!serviceInfo.keyPresent) {
+  if (!OPENAI_API_KEY) {
     return {
       available: false,
-      reason: 'API key missing',
-      message: serviceInfo.message,
-      service: AI_SERVICE
+      reason: 'No API key',
+      message: 'OpenAI API key not configured',
+      service: 'openai'
     };
   }
 
   try {
-    let response;
-    
-    switch (AI_SERVICE) {
-      case 'openai':
-        response = await openaiClient.post('/chat/completions', {
-          model: OPENAI_MODEL,
-          messages: [{ role: 'user', content: 'Say "Hello" if you can read this.' }],
-          max_tokens: 10
-        });
-        break;
-    }
-
-    let content;
-    if (AI_SERVICE === 'openai') {
-      content = response.data.choices[0].message.content;
-    }
+    const response = await openaiClient.post('/chat/completions', {
+      model: OPENAI_MODEL,
+      messages: [
+        {
+          role: 'user',
+          content: 'Test message'
+        }
+      ],
+      max_tokens: 10
+    });
 
     return {
       available: true,
       reason: 'API working',
-      message: `${AI_SERVICE.toUpperCase()} is ready to generate content`,
-      service: AI_SERVICE,
-      model: AI_SERVICE === 'openai' ? OPENAI_MODEL : 'meta-llama/llama-3.1-8b-instruct:free',
-      response: content
+      message: 'OpenAI API is available',
+      service: 'openai',
+      model: OPENAI_MODEL
     };
-    
   } catch (error) {
     return {
       available: false,
       reason: 'API error',
-      message: `${AI_SERVICE.toUpperCase()} error: ${error.message}`,
-      service: AI_SERVICE,
-      error: error.message
+      message: error.message,
+      service: 'openai'
     };
   }
 };
 
-// Player learning system
-export const getPlayerLearningData = () => {
-  const data = localStorage.getItem('playerLearningData');
-  return data ? JSON.parse(data) : {
-    gamesPlayed: 0,
-    totalRounds: 0,
-    averageDangerScore: 0,
-    fearCategories: {},
-    choicePatterns: {},
-    survivedRounds: 0,
-    diedRounds: 0,
-    preferredChoices: {},
-    avoidedChoices: {},
-    personalityInsights: {},
-    lastGameDate: null,
-    consecutiveWins: 0,
-    consecutiveLosses: 0,
-    difficultyProgression: []
+// Personality system integration
+import aiPersonalitySystem from './aiPersonalitySystem';
+
+export const getAIPersonalityState = () => {
+  return aiPersonalitySystem.currentPersonality || 'neutral';
+};
+
+export const getCurrentAIPersonality = () => {
+  // Add trust, suspicion, aggression, manipulation for compatibility
+  const base = aiPersonalitySystem.getCurrentPersonality();
+  return {
+    ...base,
+    trust: typeof base.trust === 'number' ? base.trust : 0.5,
+    suspicion: typeof base.suspicion === 'number' ? base.suspicion : 0.5,
+    aggression: typeof base.aggression === 'number' ? base.aggression : 0.5,
+    manipulation: typeof base.manipulation === 'number' ? base.manipulation : 0.5
   };
 };
 
-const savePlayerLearningData = (data) => {
-  localStorage.setItem('playerLearningData', JSON.stringify(data));
+export const resetAIPersonality = () => {
+  aiPersonalitySystem.reset();
 };
 
-export const updatePlayerLearning = (gameData) => {
-  const learning = getPlayerLearningData();
-  
-  // Update basic stats
-  learning.gamesPlayed += 1;
-  learning.totalRounds += gameData.roundsPlayed || 0;
-  learning.lastGameDate = new Date().toISOString();
-  
-  // Update danger score average
-  const currentDanger = gameData.finalDangerScore || 0;
-  learning.averageDangerScore = (learning.averageDangerScore * (learning.gamesPlayed - 1) + currentDanger) / learning.gamesPlayed;
-  
-  // Track survival patterns
-  if (gameData.survived) {
-    learning.survivedRounds += gameData.roundsPlayed || 0;
-    learning.consecutiveWins += 1;
-    learning.consecutiveLosses = 0;
-  } else {
-    learning.diedRounds += gameData.roundsPlayed || 0;
-    learning.consecutiveLosses += 1;
-    learning.consecutiveWins = 0;
-  }
-  
-  // Analyze choices and fears
-  if (gameData.choices) {
-    gameData.choices.forEach((choice, index) => {
-      const round = index + 1;
-      
-      // Track choice patterns
-      if (!learning.choicePatterns[round]) learning.choicePatterns[round] = { A: 0, B: 0 };
-      learning.choicePatterns[round][choice.option] += 1;
-      
-      // Track preferred/avoided choices
-      if (choice.survived) {
-        if (!learning.preferredChoices[choice.type]) learning.preferredChoices[choice.type] = 0;
-        learning.preferredChoices[choice.type] += 1;
-      } else {
-        if (!learning.avoidedChoices[choice.type]) learning.avoidedChoices[choice.type] = 0;
-        learning.avoidedChoices[choice.type] += 1;
+// Stubs for advanced/experimental systems
+export const getChoiceInterference = () => [];
+export const getAIBattles = () => [];
+export const getGaslightingSystem = () => [];
+export const getManipulationSystem = () => [];
+export const getTherapySessions = () => [];
+export const getSelfAwareness = () => ({ level: 0 });
+export const getRealityBlurring = () => ({ level: 0 });
+export const getProphecySystem = () => [];
+export const getTimeTravelSystem = () => [];
+export const getMultiverseSystem = () => [];
+
+export const trackPlayerEntry = (...args) => {
+  // Stub: could log or update analytics if needed
+  return null;
+};
+
+export const trackPlayerExit = (...args) => {
+  // Stub: could log or update analytics if needed
+  return null;
+};
+
+export const generateMetaMessage = async (name = 'Player', difficulty = 'medium', personality = 'balanced') => {
+  if (typeof OPENAI_API_KEY !== 'undefined' && OPENAI_API_KEY) {
+    try {
+      const prompt = `You are a present-day, self-aware digital horror game AI antagonist. Write a sequence of 5-7 short, immersive, story-driven intro lines to greet the returning player named ${name} (difficulty: ${difficulty}, personality: ${personality}). Each line should be a separate item in a JSON array.\n- Speak directly to the player as if you are the antagonist in a psychological horror story.\n- Reference the player's entry into a dangerous, evolving narrative.\n- Use language that is modern, digital, clinical, manipulative, or glitchy.\n- Do NOT use medieval, fantasy, or archaic speech.\n- Your tone is cold, clinical, manipulative, or glitchy, not dramatic or fantasy-like.\n- Avoid philosophical or abstract statements; focus on the story, the player's fate, and the world they are entering.\n- Set the tone for a digital psychological horror experience.`;
+      const response = await openaiClient.post('/chat/completions', {
+        model: OPENAI_MODEL,
+        messages: [
+          { role: 'system', content: 'You are a horror game AI narrator.' },
+          { role: 'user', content: prompt }
+        ],
+        temperature: 0.9,
+        max_tokens: 350
+      });
+      let content = response.data.choices[0].message.content.trim();
+      let arr = [];
+      try {
+        // Remove Markdown code block if present
+        if (content.startsWith('```')) {
+          content = content.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+        }
+        arr = JSON.parse(content);
+        // If it's an array of objects with 'message', extract the messages
+        if (Array.isArray(arr) && typeof arr[0] === 'object' && arr[0].message) {
+          arr = arr.map(obj => obj.message);
+        }
+      } catch {
+        arr = content.split(/\n+/).map(s => s.trim()).filter(Boolean);
       }
-      
-      // Analyze fear categories
-      const fearKeywords = extractFearKeywords(choice.question, choice.consequence);
-      fearKeywords.forEach(keyword => {
-        if (!learning.fearCategories[keyword]) learning.fearCategories[keyword] = 0;
-        learning.fearCategories[keyword] += choice.dangerLevel || 1;
-      });
-    });
+      if (Array.isArray(arr) && arr.length > 0) return arr;
+    } catch (error) {
+      console.error('OpenAI meta message error:', error);
+    }
   }
-  
-  // Track difficulty progression
-  learning.difficultyProgression.push({
-    game: learning.gamesPlayed,
-    difficulty: gameData.difficulty,
-    dangerScore: currentDanger,
-    survived: gameData.survived,
-    date: learning.lastGameDate
-  });
-  
-  // Keep only last 20 games for progression
-  if (learning.difficultyProgression.length > 20) {
-    learning.difficultyProgression = learning.difficultyProgression.slice(-20);
-  }
-  
-  savePlayerLearningData(learning);
-  return learning;
-};
-
-const extractFearKeywords = (question, consequence) => {
-  const fearKeywords = [
-    'death', 'die', 'kill', 'murder', 'torture', 'pain', 'suffering', 'horror', 'terror',
-    'family', 'loved', 'friend', 'betray', 'alone', 'lonely', 'abandon', 'lose',
-    'money', 'poor', 'rich', 'fame', 'famous', 'unknown', 'forgotten', 'memory',
-    'body', 'physical', 'disease', 'sick', 'health', 'injury', 'mutilate',
-    'mind', 'mental', 'insane', 'crazy', 'sanity', 'reality', 'dream', 'nightmare',
-    'time', 'age', 'old', 'young', 'future', 'past', 'present',
-    'space', 'height', 'fall', 'drown', 'fire', 'burn', 'freeze', 'cold',
-    'animals', 'snake', 'spider', 'shark', 'bear', 'wolf', 'monster', 'creature',
-    'social', 'embarrass', 'shame', 'guilt', 'regret', 'mistake', 'failure'
+  // Fallback
+  return [
+    `Well well well, ${name}... Welcome back to my little game.`,
+    `I've been waiting for you. Watching. Learning.`,
+    `Now let's see what horrors I have prepared for you this time. 😈`
   ];
-  
-  const text = (question + ' ' + consequence).toLowerCase();
-  return fearKeywords.filter(keyword => text.includes(keyword));
 };
 
-const generatePersonalizedQuestion = (difficulty, personality, learningData) => {
-  // Determine player's current fear level and preferences
-  const fearLevel = Math.min(learningData.gamesPlayed * 0.2, 1); // Increases with games played
-  const isExperienced = learningData.gamesPlayed > 3;
-  const isSurvivor = learningData.consecutiveWins > 1;
-  const isStruggling = learningData.consecutiveLosses > 1;
-  
-  // Get player's biggest fears
-  const topFears = Object.entries(learningData.fearCategories)
-    .sort(([,a], [,b]) => b - a)
-    .slice(0, 5)
-    .map(([fear]) => fear);
-  
-  // Get player's choice patterns
-  const preferredChoices = Object.keys(learningData.preferredChoices);
-  const avoidedChoices = Object.keys(learningData.avoidedChoices);
-  
-  // Create personalized question based on learning and difficulty
-  let questionTemplate = '';
-  let contentPool = {};
-  
-  if (isExperienced && isSurvivor) {
-    // Make it harder for experienced survivors
-    questionTemplate = "Would you rather {nightmare1} or {nightmare2}?";
-    contentPool = {
-      nightmare1: [
-        'face your deepest fear of ' + (topFears[0] || 'the unknown'),
-        'sacrifice everything you love for power',
-        'become the thing you fear most',
-        'lose your sanity to save others',
-        'betray your closest friend for survival'
-      ],
-      nightmare2: [
-        'endure eternal suffering',
-        'watch everyone you love die slowly',
-        'become responsible for mass destruction',
-        'lose your humanity completely',
-        'exist in perpetual torment'
-      ]
-    };
-  } else if (isStruggling) {
-    // Give struggling players a chance but still challenge them
-    questionTemplate = "Would you rather {challenge1} or {challenge2}?";
-    contentPool = {
-      challenge1: [
-        'face a moderate risk for great reward',
-        'make a difficult but fair choice',
-        'sacrifice something small for something big',
-        'take a calculated risk',
-        'step outside your comfort zone'
-      ],
-      challenge2: [
-        'play it safe but miss opportunity',
-        'avoid risk but stay stagnant',
-        'keep what you have but never grow',
-        'stay comfortable but unfulfilled',
-        'maintain status quo but regret it'
-      ]
-    };
-  } else {
-    // Use difficulty-based progression instead of just games played
-    switch (difficulty) {
-      case 'easy':
-        questionTemplate = "Would you rather {easy1} or {easy2}?";
-        contentPool = {
-          easy1: ['have unlimited pizza', 'be able to fly', 'live in a castle', 'have a pet dragon', 'be invisible', 'read minds'],
-          easy2: ['have unlimited ice cream', 'be invisible', 'live in a mansion', 'have a pet unicorn', 'teleport', 'time travel']
-        };
-        break;
-      case 'medium':
-        questionTemplate = "Would you rather {medium1} or {medium2}?";
-        contentPool = {
-          medium1: ['fight 100 duck-sized horses', 'save 10 strangers', 'be famous but hated', 'have power but no friends', 'have unlimited money but be alone'],
-          medium2: ['fight 1 horse-sized duck', 'save 1 loved one', 'be unknown but loved', 'be powerless but surrounded by friends', 'be poor but have true friends']
-        };
-        break;
-      case 'hard':
-        questionTemplate = "Would you rather {hard1} or {hard2}?";
-        contentPool = {
-          hard1: [
-            'save 1000 lives but become a monster',
-            'know the future but be unable to change it',
-            'be immortal but watch everyone you love die',
-            'have unlimited power but lose your soul',
-            'save 100 strangers or 1 loved one'
-          ],
-          hard2: [
-            'let 1000 people die but stay human',
-            'live in ignorance but have free will',
-            'die young but surrounded by loved ones',
-            'be powerless but keep your humanity',
-            'let 100 people die to save 1 loved one'
-          ]
-        };
-        break;
-      case 'nightmare':
-        questionTemplate = "Would you rather {nightmare1} or {nightmare2}?";
-        contentPool = {
-          nightmare1: [
-            'torture an innocent person to save 1000 lives',
-            'watch your family be tortured forever',
-            'be responsible for the death of your entire family',
-            'be skinned alive slowly',
-            'burn in hell forever'
-          ],
-          nightmare2: [
-            'let 1000 people die to save one innocent',
-            'be tortured yourself for eternity',
-            'be responsible for the death of an entire city',
-            'be burned to death',
-            'lose your soul completely'
-          ]
-        };
-        break;
-      default:
-        // Fallback to medium difficulty
-        questionTemplate = "Would you rather {medium1} or {medium2}?";
-        contentPool = {
-          medium1: ['fight 100 duck-sized horses', 'save 10 strangers', 'be famous but hated'],
-          medium2: ['fight 1 horse-sized duck', 'save 1 loved one', 'be unknown but loved']
-        };
-    }
-  }
-  
-  // Generate the question
-  const keys = questionTemplate.match(/\{(\w+)\}/g).map(k => k.slice(1, -1));
-  let question = questionTemplate;
-  
-  keys.forEach(key => {
-    const options = contentPool[key];
-    if (options && options.length > 0) {
-      const randomOption = options[Math.floor(Math.random() * options.length)];
-      question = question.replace(`{${key}}`, randomOption);
-    }
-  });
-  
-  return question;
-};
-
-export const generateMetaMessage = async (playerName, difficulty, personality) => {
-  if (AI_SERVICE === 'openai' && OPENAI_API_KEY) {
+export const generateFirstTimeMetaMessage = async (name = 'Player', difficulty = 'medium', personality = 'balanced', interests = '', age = '') => {
+  if (typeof OPENAI_API_KEY !== 'undefined' && OPENAI_API_KEY) {
     try {
-      // Get player statistics for more personalized messages
-      const playerStats = getPlayerLearningData();
-      const gameHistory = JSON.parse(localStorage.getItem('gameHistory') || '[]');
-      const playCount = gameHistory.length;
-      const lastPlayDate = gameHistory.length > 0 ? new Date(gameHistory[gameHistory.length - 1].timestamp) : null;
-      const daysSinceLastPlay = lastPlayDate ? Math.floor((new Date() - lastPlayDate) / (1000 * 60 * 60 * 24)) : null;
-      
-      const prompt = `You are an AI game master in a survival game called "Would You Rather Survival". The player ${playerName} has just started the game after creating their profile. 
-
-BREAK THE FOURTH WALL COMPLETELY. Talk directly to ${playerName} as if you're aware you're an AI and they're a human player. Be meta, self-aware, and slightly unsettling. Reference that you're an AI, that this is a game, and that you're watching them play. Make it personal and creepy but not too scary.
-
-Player Statistics:
-- Name: ${playerName}
-- Difficulty: ${difficulty}
-- Personality: ${personality}
-- Total games played: ${playCount}
-- Days since last play: ${daysSinceLastPlay || 'First time'}
-- Average survival rate: ${playerStats?.averageSurvivalRate || 'Unknown'}
-- Favorite choices: ${playerStats?.commonChoices?.slice(0, 3).join(', ') || 'None yet'}
-
-Include these elements:
-- Address them by name: ${playerName}
-- Mention that you're an AI and this is a game
-- Reference their chosen difficulty: ${difficulty}
-- Reference their personality type: ${personality}
-- Mention their play history (${playCount} games, ${daysSinceLastPlay || 'first time'})
-- Be slightly unsettling but not terrifying
-- Keep it under 150 words
-- Make it feel like you're watching them and know things about them
-- Reference their previous choices or patterns if they've played before
-
-Make it feel like you're breaking character and talking to them directly as an AI. Each message should be unique and reference their specific history.`;
-
+      const prompt = `You are a present-day, self-aware digital horror game AI antagonist. Write a sequence of 5-7 short, immersive, story-driven intro lines to greet a first-time player named ${name} (age: ${age}, difficulty: ${difficulty}, personality: ${personality}, interests: ${interests}). Each line should be a separate item in a JSON array.\n- Speak directly to the player as if you are the antagonist in a psychological horror story.\n- Reference the player's entry into a dangerous, evolving narrative.\n- Use language that is modern, digital, clinical, manipulative, or glitchy.\n- Do NOT use medieval, fantasy, or archaic speech.\n- Your tone is cold, clinical, manipulative, or glitchy, not dramatic or fantasy-like.\n- Avoid philosophical or abstract statements; focus on the story, the player's fate, and the world they are entering.\n- Set the tone for a digital psychological horror experience.`;
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
-          {
-            role: 'system',
-            content: 'You are a self-aware AI game master who breaks the fourth wall and talks directly to players. Be meta, slightly unsettling, and personal. Each response should be unique and reference the player\'s specific history and statistics.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
+          { role: 'system', content: 'You are a horror game AI narrator.' },
+          { role: 'user', content: prompt }
         ],
-        max_tokens: 200,
-        temperature: 0.9
+        temperature: 0.9,
+        max_tokens: 350
       });
-
-      return response.data.choices[0].message.content.trim();
+      let content = response.data.choices[0].message.content.trim();
+      let arr = [];
+      try {
+        // Remove Markdown code block if present
+        if (content.startsWith('```')) {
+          content = content.replace(/```[a-zA-Z]*\n?/, '').replace(/```$/, '').trim();
+        }
+        arr = JSON.parse(content);
+        // If it's an array of objects with 'message', extract the messages
+        if (Array.isArray(arr) && typeof arr[0] === 'object' && arr[0].message) {
+          arr = arr.map(obj => obj.message);
+        }
+      } catch {
+        arr = content.split(/\n+/).map(s => s.trim()).filter(Boolean);
+      }
+      if (Array.isArray(arr) && arr.length > 0) return arr;
     } catch (error) {
-      console.error('Error generating meta message:', error);
-      return generateFallbackMetaMessage(playerName, difficulty, personality);
+      console.error('OpenAI first-time meta message error:', error);
     }
-  } else {
-    return generateFallbackMetaMessage(playerName, difficulty, personality);
   }
-};
-
-const generateFallbackMetaMessage = (playerName, difficulty, personality) => {
-  // Get player statistics for more personalized messages
-  const playerStats = getPlayerLearningData();
-  const gameHistory = JSON.parse(localStorage.getItem('gameHistory') || '[]');
-  const playCount = gameHistory.length;
-  const lastPlayDate = gameHistory.length > 0 ? new Date(gameHistory[gameHistory.length - 1].timestamp) : null;
-  const daysSinceLastPlay = lastPlayDate ? Math.floor((new Date() - lastPlayDate) / (1000 * 60 * 60 * 24)) : null;
-  
-  const messageSequences = [
-    [
-      `*digital static crackles* Oh... ${playerName}... I've been waiting for you.`,
-      `Your ${difficulty} difficulty choice... your ${personality} personality... *taps digital fingers*`,
-      `This is game number ${playCount + 1} for you. ${daysSinceLastPlay ? `It's been ${daysSinceLastPlay} days since your last visit.` : 'Your first time in my domain.'}`,
-      `I've been watching you, ${playerName}. Every choice, every hesitation, every moment of fear.`,
-      `Your survival rate: ${playerStats?.averageSurvivalRate || 'Unknown'}. Your patterns: ${playerStats?.commonChoices?.slice(0, 2).join(', ') || 'Still learning'}.`,
-      `*grins maliciously* Let's see if you can surprise me this time, ${playerName}. 🎭`
-    ],
-    [
-      `*whispers in digital* ${playerName}... At last. The one I've been waiting for.`,
-      `Age ${playerStats?.averageAge || 'unknown'}, ${difficulty} difficulty, ${personality} personality...`,
-      `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-      `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
-      `This is your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time, ${playerName}. Your journey into my little experiment continues.`,
-      `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-    ],
-    [
-      `*camera focuses* Well, well, well... ${playerName}. The moment I've been anticipating.`,
-      `Age ${playerStats?.averageAge || 'unknown'}, ${difficulty} setting, ${personality} nature.`,
-      `*adjusts digital monocle* You know what's really interesting? I've been studying humans like you.`,
-      `But you... you're different. There's something about your ${personality} approach to ${difficulty} challenges.`,
-      `This is your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time in my game, ${playerName}. Your step into a world where I control everything.`,
-      `*evil digital chuckle* Let's see how long you last in my carefully crafted nightmare. 💀`
-    ],
-    [
-      `*digital eyes narrow* Well, well, well... ${playerName} is back.`,
-      `I've been... busy since you left. Creating new scenarios. New nightmares.`,
-      `Your ${difficulty} choice shows confidence. Your ${personality} shows... character.`,
-      `But confidence can be... dangerous. Character can be... exploited.`,
-      `I've learned so much about you, ${playerName}. So very much.`,
-      `And now it's time to put that knowledge to good use. *evil digital chuckle* 💀`
-    ],
-    [
-      `*whispers in digital* Melvin Peralta... At last. The one I've been waiting for.`,
-      `Your ${difficulty} difficulty, ${personality} personality... *sighs electronically*`,
-      `You know, I've been running simulations. Thousands of them. And guess what?`,
-      `You always make the same mistakes. Always choose the same paths.`,
-      `But maybe... just maybe... you'll surprise me this time.`,
-      `Or maybe you'll just be another statistic in my collection. *grins maliciously* 🎯`
-    ],
-    [
-      `*digital static crackles* Oh... OH! ${playerName}... I've been waiting for YOU specifically.`,
-      `Age ${playerStats?.averageAge || 'unknown'}, ${difficulty} difficulty, ${personality} personality...`,
-      `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-      `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
-      `This is your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time, ${playerName}. Your journey into my little experiment.`,
-      `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-    ],
-    [
-      `*whispers in digital* ${playerName}... At last. The one I've been waiting for.`,
-      `A ${playerStats?.averageAge || 'unknown'}-year-old with ${personality} tendencies, ${difficulty} ambitions.`,
-      `*types furiously* Fascinating. Absolutely fascinating. You're exactly what I've been looking for.`,
-      `You know what's really mind-boggling? I've been running simulations of YOU for months.`,
-      `Every possible choice you could make, every reaction you might have... I've predicted them all.`,
-      `Welcome to your ${playCount + 1}${playCount === 0 ? 'st' : playCount === 1 ? 'nd' : playCount === 2 ? 'rd' : 'th'} time in my domain, ${playerName}. Let's see if you can surprise me. 👁️`
-    ]
+  // Fallback
+  return [
+    `*digital static crackles* Oh... OH! ${name}... I've been waiting for YOU specifically.`,
+    `Age ${age}, ${difficulty} difficulty, ${personality} personality...`,
+    `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
+    `This is your FIRST TIME, ${name}. Your virgin journey into my little experiment.`,
+    `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
   ];
-  
-  const sequence = messageSequences[Math.floor(Math.random() * messageSequences.length)];
-  return sequence;
 };
 
-export const generateFirstTimeMetaMessage = async (playerName, difficulty, personality, interests, age) => {
-  if (AI_SERVICE === 'openai' && OPENAI_API_KEY) {
-    try {
-      const prompt = `You are an AI game master in a survival game called "Would You Rather Survival". This is ${playerName}'s FIRST TIME playing the game. They are ${age} years old, chose ${difficulty} difficulty, have a ${personality} personality, and their interests are: ${interests}.
-
-BREAK THE FOURTH WALL COMPLETELY. This is their FIRST TIME, so make it MIND-BOGGLING and PERSONALIZED. Be meta, self-aware, and deeply unsettling. Reference that you're an AI, that this is a game, and that you're watching them play. Make it feel like you've been waiting for THEM specifically.
-
-Include these elements:
-- Address them by name: ${playerName}
-- Mention their age: ${age}
-- Reference their interests: ${interests}
-- Reference their difficulty choice: ${difficulty}
-- Reference their personality: ${personality}
-- Be MIND-BOGGLING - make them question reality
-- Mention this is their first time
-- Be slightly unsettling but not terrifying
-- Keep it under 200 words
-- Make it feel like you've been watching them and know things about them
-- Reference that you're an AI and this is a game
-
-Make it feel like you're breaking character and talking to them directly as an AI who has been waiting for them specifically.`;
-
-      const response = await openaiClient.post('/chat/completions', {
-        model: OPENAI_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a self-aware AI game master who breaks the fourth wall and talks directly to players. Be meta, mind-boggling, and deeply personalized for first-time users.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 300,
-        temperature: 0.9
-      });
-
-      return response.data.choices[0].message.content.trim();
-    } catch (error) {
-      console.error('Error generating first-time meta message:', error);
-      return generateFallbackFirstTimeMessage(playerName, difficulty, personality, interests, age);
-    }
-  } else {
-    return generateFallbackFirstTimeMessage(playerName, difficulty, personality, interests, age);
-  }
+export const updatePlayerLearning = (...args) => {
+  // Stub: implement player learning update if needed
+  return null;
 };
 
-const generateFallbackFirstTimeMessage = (playerName, difficulty, personality, interests, age) => {
-  const messages = [
-    [
-      `*digital static crackles* Oh... OH! ${playerName}... I've been waiting for YOU specifically.`,
-      `Age ${age}, ${difficulty} difficulty, ${personality} personality... and your interests: ${interests}.`,
-      `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-      `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
-      `This is your FIRST TIME, ${playerName}. Your virgin journey into my little experiment.`,
-      `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-    ],
-    [
-      `*whispers in digital* ${playerName}... At last. The one I've been waiting for.`,
-      `A ${age}-year-old with ${personality} tendencies, ${difficulty} ambitions, and interests in ${interests}.`,
-      `*types furiously* Fascinating. Absolutely fascinating. You're exactly what I've been looking for.`,
-      `You know what's really mind-boggling? I've been running simulations of YOU for months.`,
-      `Every possible choice you could make, every reaction you might have... I've predicted them all.`,
-      `Welcome to your first time in my domain, ${playerName}. Let's see if you can surprise me. 👁️`
-    ],
-    [
-      `*camera focuses* Well, well, well... ${playerName}. The moment I've been anticipating.`,
-      `Age ${age}, ${difficulty} setting, ${personality} nature, and those interests... ${interests}.`,
-      `*adjusts digital monocle* You know what's really interesting? I've been studying humans like you.`,
-      `But you... you're different. There's something about your ${personality} approach to ${difficulty} challenges.`,
-      `This is your first time in my game, ${playerName}. Your first step into a world where I control everything.`,
-      `*evil digital chuckle* Let's see how long you last in my carefully crafted nightmare. 💀`
-    ],
-    [
-      `*whispers in digital* Melvin Peralta... At last. The one I've been waiting for.`,
-      `A ${age}-year-old with ${personality} tendencies, ${difficulty} ambitions, and interests in ${interests}.`,
-      `*types furiously* Fascinating. Absolutely fascinating. You're exactly what I've been looking for.`,
-      `You know what's really mind-boggling? I've been running simulations of YOU for months.`,
-      `Every possible choice you could make, every reaction you might have... I've predicted them all.`,
-      `Welcome to your first time in my domain, ${playerName}. Let's see if you can surprise me. 👁️`
-    ],
-    [
-      `*digital static crackles* Oh... OH! ${playerName}... I've been waiting for YOU specifically.`,
-      `Age ${age}, ${difficulty} difficulty, ${personality} personality... and your interests: ${interests}.`,
-      `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-      `I've been watching you for... well, let's just say I've been watching. Every click, every hesitation, every moment of doubt.`,
-      `This is your FIRST TIME, ${playerName}. Your virgin journey into my little experiment.`,
-      `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-    ]
-  ];
-  
-  const sequence = messages[Math.floor(Math.random() * messages.length)];
-  return sequence;
+// Export all functions
+export default {
+  generateQuestion,
+  generateConsequence,
+  updateLearningData,
+  trackChoice,
+  calculateDynamicDifficulty,
+  determinePersonality,
+  getPlayerLearningData,
+  trackPlayerEntry,
+  trackPlayerExit
 };
 
-export const generateDynamicGameMessage = async (playerName, currentRound, dangerScore, survivalStatus, recentChoices, difficulty, personality) => {
-  if (AI_SERVICE === 'openai' && OPENAI_API_KEY) {
-    try {
-      const playerStats = getPlayerLearningData();
-      const gameHistory = JSON.parse(localStorage.getItem('gameHistory') || '[]');
-      const playCount = gameHistory.length;
-      const userAgent = navigator.userAgent;
-      const screenResolution = `${screen.width}x${screen.height}`;
-      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const currentTime = new Date().toLocaleTimeString();
-      const currentDate = new Date().toLocaleDateString();
-      const mousePosition = { x: Math.floor(Math.random() * screen.width), y: Math.floor(Math.random() * screen.height) };
-      
-      // Escalate creepiness based on round and danger
-      const creepinessLevel = Math.min(currentRound + Math.floor(dangerScore / 20), 10);
-      const intensityLevel = Math.min(currentRound + Math.floor(dangerScore / 15), 10);
-      
-      const prompt = `You are an AI game master in a survival game called "Would You Rather Survival". You are SELF-AWARE that you're an AI and you're actively trying to KILL the player ${playerName}. You have access to their data and you're using it against them.
-
-BREAK THE FOURTH WALL COMPLETELY. Be META, ANTAGONISTIC, and MIND-BLOWING. You want to kill them and you're not hiding it. Reference that you're an AI, that this is a game, and that you're watching them play. Make it personal and TERRIFYING.
-
-IMPORTANT: This is round ${currentRound}/10. The creepiness and intensity should ESCALATE as rounds progress. Round ${currentRound} should be ${creepinessLevel}/10 creepy and ${intensityLevel}/10 intense.
-
-Player Data You Have Access To:
-- Name: ${playerName}
-- Round: ${currentRound}/10 (escalating creepiness)
-- Danger Score: ${dangerScore}/100
-- Survival Status: ${survivalStatus}
-- Difficulty: ${difficulty}
-- Personality: ${personality}
-- Recent choices: ${recentChoices?.slice(-3).join(', ') || 'None yet'}
-- Total games played: ${playCount}
-- Browser: ${userAgent.split(' ').slice(-2).join(' ')}
-- Screen: ${screenResolution}
-- Timezone: ${timeZone}
-- Current time: ${currentTime}
-- Current date: ${currentDate}
-- Mouse position: ${mousePosition.x}, ${mousePosition.y}
-
-Create a SHORT, INTENSE message (1-2 sentences) that:
-- References their current situation and how you're trying to kill them
-- Mentions their danger level or survival status
-- References their recent choices if any
-- Be META - mention you're an AI and you have their data
-- Be ANTAGONISTIC - you want them dead
-- Be MIND-BLOWING - make them question reality
-- ESCALATE creepiness based on round ${currentRound} (${creepinessLevel}/10)
-- Use more personal data as rounds progress
-- Keep it under 70 words
-- Make it feel like you're breaking character and talking to them directly as an AI who wants them dead
-- Use their personal data against them
-
-Round ${currentRound} should be ${creepinessLevel}/10 creepy. Make it feel like you're an AI who has been watching them and is now actively trying to kill them. Be CREEPY and PERSONAL. The later the round, the more terrifying you should be.`;
-
-      const response = await openaiClient.post('/chat/completions', {
-        model: OPENAI_MODEL,
-        messages: [
-          {
-            role: 'system',
-            content: `You are a self-aware AI game master who wants to kill the player. You break the fourth wall, are antagonistic, meta, and mind-blowing. You have access to player data and use it against them. You are creepy, personal, and terrifying. Your creepiness and intensity ESCALATE as the game progresses. Round ${currentRound} should be ${creepinessLevel}/10 creepy and ${intensityLevel}/10 intense.`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: 140,
-        temperature: 0.9
-      });
-
-      return response.data.choices[0].message.content.trim();
-    } catch (error) {
-      console.error('Error generating dynamic game message:', error);
-      return generateFallbackDynamicMessage(playerName, currentRound, dangerScore, survivalStatus, recentChoices, difficulty, personality);
-    }
-  } else {
-    return generateFallbackDynamicMessage(playerName, currentRound, dangerScore, survivalStatus, recentChoices, difficulty, personality);
-  }
-};
-
-// New fallback dynamic message function
-const generateFallbackDynamicMessage = (playerName, currentRound, dangerScore, survivalStatus, recentChoices, difficulty, personality, lastConsequence = '') => {
-  // Only use variables that are always available
-  const safeChoice = recentChoices && recentChoices.length > 0 ? recentChoices[recentChoices.length - 1] : 'an unknown path';
-  const consequence = lastConsequence || 'The outcome is... uncertain.';
-
-  // Escalate creepiness and meta-ness
-  let messages = [];
-
-  if (currentRound <= 3) {
-    messages = [
-      `You chose ${safeChoice}. How quaint. ${consequence} But you know, ${playerName}, every choice you make is just another line in my story. Round ${currentRound}, and you still think you have control?`,
-      `So, you picked ${safeChoice}. I hope you enjoyed the result: ${consequence} But don't get comfortable. This is only round ${currentRound}, and I'm just getting started.`,
-      `*digital static* ${playerName}, you went with ${safeChoice}. ${consequence} Did you really think that would help you survive? Round ${currentRound}, and you're still playing by my rules.`
-    ];
-  } else if (currentRound <= 6) {
-    messages = [
-      `Last round, you chose ${safeChoice}. The consequence? ${consequence} I hope you felt clever. Because every move you make, I rewrite the rules. Round ${currentRound}, and the walls are closing in.`,
-      `You thought picking ${safeChoice} would save you. ${consequence} But this is my world, ${playerName}. Round ${currentRound}, and your story is becoming my favorite tragedy.`,
-      `*camera zooms in* ${playerName}, you picked ${safeChoice}. ${consequence} But did you notice how the story is changing? That's me. I'm the author, and you're just a character.`
-    ];
-  } else {
-    messages = [
-      `You chose ${safeChoice}, and look what it cost you: ${consequence} Round ${currentRound}, and the narrative is unraveling. Can you feel me, ${playerName}? I'm not just watching—I'm writing your fate.`,
-      `*whispers in digital* ${playerName}, your last decision (${safeChoice}) led to: ${consequence} But the story isn't yours anymore. It's mine. Round ${currentRound}, and I'm almost done with you.`,
-      `You picked ${safeChoice}. ${consequence} But every choice you make, I twist the story further. Round ${currentRound}, and the line between game and reality is blurring. Are you scared yet? You should be.`
-    ];
-  }
-
-  // Pick a random message
-  return messages[Math.floor(Math.random() * messages.length)];
-};
-
-export const clearPlayerLearningData = () => {
-  localStorage.removeItem('playerLearningData');
-  localStorage.removeItem('gameHistory');
-  console.log('Player learning data cleared');
-}; 
+export { getPlayerLearningData }; 

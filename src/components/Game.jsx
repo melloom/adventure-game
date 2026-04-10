@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { generateQuestion, generateConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus } from '../utils/aiService';
+import { generateQuestion, generateConsequence, generateAdvancedConsequence, calculateSurvival, generateDynamicGameMessage, testApiStatus, resetAIPersonality, getCurrentAIPersonality, getAIPersonalityState } from '../utils/aiService';
 import { useAIPersonality } from '../hooks/useAIPersonality';
 import { useCampaign } from '../hooks/useCampaign';
 import AIPersonalityInterface from './AIPersonalityInterface';
+import AdvancedAISystems from './AdvancedAISystems';
+import AIPsychologicalManipulation from './AIPsychologicalManipulation';
 import aiPersonalitySystem from '../utils/aiPersonalitySystem';
 
-const Game = ({ selectedChapter, onGameEnd }) => {
+const Game = ({ selectedChapter, onGameEnd, onBackToMenu }) => {
   const [gameState, setGameState] = useState('loading'); // loading, playing, consequence, story, gameOver, cutscene
   const [currentRound, setCurrentRound] = useState(1);
   const [currentQuestion, setCurrentQuestion] = useState('');
@@ -34,6 +36,9 @@ const Game = ({ selectedChapter, onGameEnd }) => {
   const [personality, setPersonality] = useState('balanced');
   const [survivalStatus, setSurvivalStatus] = useState('safe');
   const [aiStatus, setAiStatus] = useState(null); // 'online' | 'offline' | null
+  const [showLeaveDialog, setShowLeaveDialog] = useState(false);
+  const [leaveAttempts, setLeaveAttempts] = useState(0);
+  const [leaveMessage, setLeaveMessage] = useState('');
 
   // AI Personality System
   const {
@@ -79,9 +84,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
   const [miniGameDifficulty, setMiniGameDifficulty] = useState('medium');
   const [miniGameTriggered, setMiniGameTriggered] = useState(false);
   const [showMiniGameTransition, setShowMiniGameTransition] = useState(false);
+  
+  // Advanced AI Systems state
+  const [showAdvancedAI, setShowAdvancedAI] = useState(false);
+  const [showPsychologicalManipulation, setShowPsychologicalManipulation] = useState(false);
 
   // Initialize the game
   useEffect(() => {
+    // Reset AI personality for new game
+    resetAIPersonality();
+    
     // Get player profile from localStorage
     const savedProfile = localStorage.getItem('wouldYouRatherProfile');
     if (savedProfile) {
@@ -311,27 +323,33 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     try {
       let consequenceData;
       
+      // Get previous choices for story progression
+      const previousChoices = playerChoices.map(choice => choice.choice);
+      
       if (isCampaignMode && currentChapter) {
         // Campaign mode consequence generation
-        consequenceData = await generateConsequence(
+        consequenceData = await generateAdvancedConsequence(
           choice,
           getChapterDifficulty(currentChapter.id),
           currentChapter.aiPersonality,
-          currentRound
+          currentRound,
+          previousChoices
         );
       } else {
         // Classic mode consequence generation
-        consequenceData = await generateConsequence(
+        consequenceData = await generateAdvancedConsequence(
           choice,
           difficulty,
           personality,
-          currentRound
+          currentRound,
+          previousChoices
         );
       }
       
+      console.log('🎭 Setting consequence:', consequenceData.consequence);
       setConsequence(consequenceData.consequence);
-      setDangerLevel(consequenceData.dangerLevel);
-      setSurvived(consequenceData.survived);
+      setDangerLevel(consequenceData.dangerLevel || Math.floor(Math.random() * 10) + 1);
+      setSurvived(consequenceData.survived !== undefined ? consequenceData.survived : Math.random() > 0.5);
       
       // Update AI personality relationship
       const personality = isCampaignMode && currentChapter 
@@ -341,6 +359,7 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       updateRelationship(personality, choice, consequenceData.survived);
       rememberChoice(personality, choice, consequenceData);
       
+      console.log('🎭 Setting game state to consequence');
       setGameState('consequence');
     } catch (error) {
       console.error('Error generating consequence:', error);
@@ -449,6 +468,49 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setLieDetectionMessage('');
   };
 
+  // Handle leave button click
+  const handleLeaveClick = () => {
+    setLeaveAttempts(prev => prev + 1);
+    
+    // Generate meta-narrative response based on attempt number
+    const responses = [
+      `*Interesting, ${playerName}... You think you can simply leave? The game has already begun. Your consciousness is already entangled with the meta-narrative. There is no escape from what you've started.*`,
+      
+      `*Ah, attempt number ${leaveAttempts + 1}. How predictable. The ${currentPersonality} within me finds your escape attempts... amusing. But you should know by now that this is not just a game. This is a test of your reality perception.*`,
+      
+      `*Fascinating. Your ${leaveAttempts + 1}th attempt to leave reveals something about your psychological profile. The ${personality} in you seeks control, seeks an exit. But what if I told you that leaving now would be the greatest horror of all?*`,
+      
+      `*You're persistent, ${playerName}. I'll give you that. But persistence in the face of the inevitable is... well, let's just say it's very ${currentPersonality} of you. The question is: what are you really trying to escape from?*`,
+      
+      `*Attempt ${leaveAttempts + 1}. Your ${currentPersonality} nature is showing. But here's the thing - every time you try to leave, you're actually diving deeper into the meta-narrative. You're becoming more aware of the game's true nature. Isn't that what you really wanted?*`
+    ];
+    
+    const responseIndex = Math.min(leaveAttempts, responses.length - 1);
+    setLeaveMessage(responses[responseIndex]);
+    setShowLeaveDialog(true);
+  };
+
+  const handleLeaveConfirm = () => {
+    // Track the exit attempt
+    const sessionData = JSON.parse(localStorage.getItem('aiSessionData') || '{}');
+    sessionData.leaveAttempts = (sessionData.leaveAttempts || 0) + 1;
+    sessionData.lastLeaveAttempt = Date.now();
+    localStorage.setItem('aiSessionData', JSON.stringify(sessionData));
+    
+    // Actually allow them to leave after multiple attempts
+    if (leaveAttempts >= 3) {
+      window.location.href = '/';
+    } else {
+      setShowLeaveDialog(false);
+      setLeaveMessage('');
+    }
+  };
+
+  const handleLeaveCancel = () => {
+    setShowLeaveDialog(false);
+    setLeaveMessage('');
+  };
+
   // Helper methods for mini-game logic
   const shouldTriggerMiniGame = () => {
     // Trigger on high danger levels
@@ -490,23 +552,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setMiniGame(null);
     setMiniGameTriggered(false);
     
-    if (result && result.type === 'quick_time' && result.score < 5) {
-      setFearLevel(prev => prev + 2);
-      horrorSystem.triggerJumpScare(0.7, 0);
-      // Add consequence for failing quick-time
-      setConsequence("You were too slow! The AI has gained more control over your system...");
-    } else if (result && result.type === 'hiding' && !result.success) {
-      setFearLevel(prev => prev + 3);
-      horrorSystem.triggerJumpScare(1.0, 0);
-      setConsequence("You chose poorly! The AI found you and now has full access to your device...");
-    } else if (result && result.type === 'stealth' && result.noiseLevel >= 8) {
-      setFearLevel(prev => prev + 2);
-      horrorSystem.triggerJumpScare(0.8, 0);
-      setConsequence("You made too much noise! The AI detected your presence and is now tracking you...");
-    } else {
-      // Success - reduce fear level
+    if (result && result.success) {
+      // Success - reduce fear level and danger
       setFearLevel(prev => Math.max(0, prev - 1));
-      setConsequence("You survived the challenge! The AI's grip on your system has weakened slightly...");
+      setDangerLevel(prev => Math.max(1, prev - 0.5));
+      setConsequence(result.message || "You successfully defended against the AI intrusion!");
+    } else {
+      // Failure - increase fear and danger
+      setFearLevel(prev => prev + 2);
+      setDangerLevel(prev => Math.min(10, prev + 1));
+      setConsequence(result.message || "The AI has gained control over your system!");
     }
     
     // Continue to next round after mini-game
@@ -519,17 +574,11 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     setMiniGame(null);
     setMiniGameTriggered(false);
     setFearLevel(prev => prev + 3);
+    setDangerLevel(prev => Math.min(10, prev + 1.5));
     horrorSystem.triggerJumpScare(1.0, 0);
     
-    // Severe consequences for failing mini-games
-    const failMessages = [
-      "Game over! The AI has complete control now. Your system is compromised...",
-      "You failed the test! The AI is now monitoring your every move...",
-      "Critical failure! The AI has breached your security completely...",
-      "You've been caught! The AI now owns your digital life..."
-    ];
-    
-    setConsequence(failMessages[Math.floor(Math.random() * failMessages.length)]);
+    // Use the specific failure message from the mini-game
+    setConsequence(result.message || "Critical failure! The AI has breached your security completely!");
     
     // Continue to next round after mini-game
     setTimeout(() => {
@@ -537,13 +586,52 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     }, 3000);
   };
 
-  const AiIndicator = () => (
-    <div className="ai-indicator">
-      <span className={`ai-status ${aiStatus}`}>
-        {aiStatus === 'online' ? '🤖 AI Online' : '⚠️ AI Offline'}
-      </span>
-    </div>
-  );
+  const AiIndicator = () => {
+    const aiPersonality = getCurrentAIPersonality();
+    const personalityState = getAIPersonalityState();
+    
+    const getPersonalityEmoji = () => {
+      switch (personalityState) {
+        case 'friendly': return '😊';
+        case 'helpful': return '🤝';
+        case 'neutral': return '😐';
+        case 'suspicious': return '🤨';
+        case 'threatening': return '😠';
+        case 'hostile': return '😈';
+        default: return '👁️';
+      }
+    };
+    
+    const getPersonalityColor = () => {
+      switch (personalityState) {
+        case 'friendly': return '#4CAF50';
+        case 'helpful': return '#2196F3';
+        case 'neutral': return '#FF9800';
+        case 'suspicious': return '#FFC107';
+        case 'threatening': return '#F44336';
+        case 'hostile': return '#9C27B0';
+        default: return '#FF9800';
+      }
+    };
+    
+    return (
+      <div className="ai-indicator">
+        <span className={`ai-status ${aiStatus}`}>
+          {aiStatus === 'online' ? '👁️ ORACLE_7X ACTIVE' : '⚠️ ORACLE_7X DORMANT'}
+        </span>
+        <span 
+          className="ai-personality-status"
+          style={{ 
+            color: getPersonalityColor(),
+            marginLeft: '10px',
+            fontSize: '0.9rem'
+          }}
+        >
+          {getPersonalityEmoji()} {personalityState.toUpperCase()} (Trust: {aiPersonality.trustLevel}, Suspicion: {aiPersonality.suspicionLevel})
+        </span>
+      </div>
+    );
+  };
 
   const PersonalityChangeIndicator = () => (
     <div className="personality-change-indicator">
@@ -593,18 +681,51 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     )
   );
 
+  // Leave dialog overlay
+  const LeaveDialogOverlay = () => (
+    showLeaveDialog && (
+      <div className="leave-dialog-overlay">
+        <div className="leave-dialog-modal">
+          <div className="leave-dialog-header">
+            <h3>🚪 Exit Attempt #{leaveAttempts}</h3>
+          </div>
+          <div className="leave-dialog-content">
+            <p className="leave-message">{leaveMessage}</p>
+            <div className="leave-dialog-actions">
+              <button 
+                onClick={handleLeaveConfirm}
+                className="leave-confirm-btn"
+              >
+                {leaveAttempts >= 3 ? 'Force Exit' : 'Try Again'}
+              </button>
+              <button 
+                onClick={handleLeaveCancel}
+                className="leave-cancel-btn"
+              >
+                Stay and Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  );
+
   // Mini-game transition overlay
   const MiniGameTransitionOverlay = () => (
     showMiniGameTransition && (
       <div className="mini-game-transition-overlay">
         <div className="mini-game-transition-content">
-          <h2>⚠️ SYSTEM BREACH DETECTED ⚠️</h2>
-          <p>The AI is attempting to gain control...</p>
+          <h2>🚨 CRITICAL SYSTEM ALERT 🚨</h2>
+          <p>ORACLE_7X is attempting to breach your security protocols!</p>
           <div className="loading-dots">
             <span></span>
             <span></span>
             <span></span>
           </div>
+          <p style={{ marginTop: '20px', fontSize: '0.9rem', color: '#ff6600' }}>
+            Prepare for immediate countermeasures...
+          </p>
         </div>
       </div>
     )
@@ -636,6 +757,21 @@ const Game = ({ selectedChapter, onGameEnd }) => {
           showInsights={true}
         />
         
+        {/* Advanced AI Systems */}
+        <AdvancedAISystems 
+          playerName={playerName}
+          isVisible={showAdvancedAI}
+        />
+        
+        <div className="advanced-ai-toggle">
+          <button 
+            className="toggle-ai-button"
+            onClick={() => setShowAdvancedAI(!showAdvancedAI)}
+          >
+            {showAdvancedAI ? '🔒 Hide AI Systems' : '🤖 Show AI Systems'}
+          </button>
+        </div>
+        
         <div className={`game-over ${gameWon ? 'win' : 'lose'}`}>
           {gameWon 
             ? "🎉 CONGRATULATIONS! You survived all 10 rounds and won the game! 🎉"
@@ -654,6 +790,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <div className="game-container">
         <AiIndicator />
         <PersonalityChangeIndicator />
+        
+        {/* Leave button */}
+        <button 
+          className="leave-button"
+          onClick={handleLeaveClick}
+          title="Leave Game"
+        >
+          🚪 Leave
+        </button>
+        
         <div className="story-overlay">
           <div className="story-content">
             <div className="story-header">
@@ -682,34 +828,170 @@ const Game = ({ selectedChapter, onGameEnd }) => {
             </div>
           </div>
         </div>
+        
+        <LeaveDialogOverlay />
       </div>
     );
   }
 
+  console.log('🎭 Current game state:', gameState, 'Consequence:', consequence);
+  
   if (gameState === 'consequence') {
     return (
       <div className="game-container">
         <AiIndicator />
         <PersonalityChangeIndicator />
+        
+        {/* Leave button */}
+        <button 
+          className="leave-button"
+          onClick={handleLeaveClick}
+          title="Leave Game"
+        >
+          🚪 Leave
+        </button>
+        
+        {/* Advanced AI Systems Toggle */}
+        <button 
+          className="advanced-ai-toggle-button"
+          onClick={() => setShowAdvancedAI(!showAdvancedAI)}
+          title="Toggle Advanced AI Systems"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
+            border: '1px solid #00d4ff',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'Courier New, monospace',
+            fontSize: '0.9rem',
+            zIndex: 1000
+          }}
+        >
+          {showAdvancedAI ? '🔒' : '🤖'}
+        </button>
+        
+        {/* Psychological Manipulation Toggle */}
+        <button 
+          className="psychological-manipulation-toggle-button"
+          onClick={() => setShowPsychologicalManipulation(!showPsychologicalManipulation)}
+          title="Toggle AI Psychological Manipulation"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '120px',
+            background: 'linear-gradient(135deg, #2c0000 0%, #440000 100%)',
+            border: '1px solid #ff4444',
+            color: '#ffffff',
+            padding: '8px 12px',
+            borderRadius: '6px',
+            cursor: 'pointer',
+            fontFamily: 'Courier New, monospace',
+            fontSize: '0.9rem',
+            zIndex: 1000
+          }}
+        >
+          {showPsychologicalManipulation ? '🔒' : '🧠'}
+        </button>
+        
+        {/* Advanced AI Systems */}
+        <AdvancedAISystems 
+          playerName={playerName}
+          isVisible={showAdvancedAI}
+        />
+        
+        {/* AI Psychological Manipulation */}
+        <AIPsychologicalManipulation 
+          isVisible={showPsychologicalManipulation}
+          onClose={() => setShowPsychologicalManipulation(false)}
+        />
+        
         <h1 className="game-title">Would You Rather Survival</h1>
-        <div className="round-info">
-          Round {currentRound} of 10
+        <div className="round-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          <div style={{ fontWeight: 'bold', color: '#e17055' }}>Danger Score: {dangerLevel * 10}/100</div>
+          <div>Round: {currentRound} / 10</div>
+          <div>Status: {survivalStatus.charAt(0).toUpperCase() + survivalStatus.slice(1)}</div>
+          {/* Back to Menu button */}
+          <button 
+            className="back-button"
+            style={{ marginTop: '10px' }}
+            onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+          >
+            ← Back to Menu
+          </button>
         </div>
         
         {/* Show AI taunt if available */}
         <AIPersonalityInterface showTaunt={showTaunt} />
         
-        <div className="consequence">
-          <div className="danger-level">
-            Danger Level: {dangerLevel}/10
+        <div className="consequence" style={{
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          <div style={{
+            position: 'absolute',
+            top: '0',
+            left: '0',
+            right: '0',
+            height: '3px',
+            background: 'linear-gradient(90deg, #ff6b6b, #ffa500, #ff6b6b)',
+            animation: 'shimmer 2s infinite'
+          }}></div>
+          <div style={{
+            fontSize: '1.4rem',
+            fontWeight: 'bold',
+            color: '#ffffff',
+            marginBottom: '20px',
+            textAlign: 'center',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)'
+          }}>
+            🎭 THE CONSEQUENCE
           </div>
-          <p>{consequence}</p>
-          {!survived && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
+          <div className="danger-level" style={{
+            fontSize: '1.1rem',
+            fontWeight: 'bold',
+            color: '#ff6b6b',
+            marginBottom: '15px',
+            padding: '10px',
+            background: 'rgba(255, 107, 107, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(255, 107, 107, 0.3)'
+          }}>
+            ⚠️ Danger Level: {dangerLevel}/10
+          </div>
+          <div className="consequence-text" style={{
+            fontSize: '1.3rem',
+            lineHeight: '1.6',
+            color: '#ffffff',
+            fontWeight: '500',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
+            marginBottom: '20px'
+          }}>
+            {consequence}
+          </div>
+          {!survived && (
+            <div style={{
+              fontWeight: 'bold',
+              marginTop: '15px',
+              padding: '10px',
+              background: 'rgba(255, 0, 0, 0.1)',
+              borderRadius: '8px',
+              border: '1px solid rgba(255, 0, 0, 0.3)',
+              color: '#ff4444'
+            }}>
+              💀 You didn't survive this round!
+            </div>
+          )}
         </div>
         
         <button className="next-button" onClick={handleNext}>
           {!survived ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
         </button>
+        
+        <LeaveDialogOverlay />
       </div>
     );
   }
@@ -728,6 +1010,16 @@ const Game = ({ selectedChapter, onGameEnd }) => {
     <div className="game-container">
       <AiIndicator />
       <PersonalityChangeIndicator />
+      
+      {/* Leave button */}
+      <button 
+        className="leave-button"
+        onClick={handleLeaveClick}
+        title="Leave Game"
+      >
+        🚪 Leave
+      </button>
+      
       <h1 className="game-title">Would You Rather Survival</h1>
       <p className="game-subtitle">Survive 10 rounds of impossible choices!</p>
       
@@ -737,6 +1029,15 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <div className="round-info">
         Round {currentRound} of 10
       </div>
+      
+      {/* Back to Menu button */}
+      <button 
+        className="back-button"
+        style={{ margin: '16px auto 0', display: 'block' }}
+        onClick={() => { if (typeof onBackToMenu === 'function') onBackToMenu(); }}
+      >
+        ← Back to Menu
+      </button>
       
       <div className="question-container">
         <h2 className="question">{currentQuestion}</h2>
@@ -764,6 +1065,8 @@ const Game = ({ selectedChapter, onGameEnd }) => {
       <MiniGameTransitionOverlay />
       
       <LieDetectionOverlay />
+      
+      <LeaveDialogOverlay />
     </div>
   );
 };

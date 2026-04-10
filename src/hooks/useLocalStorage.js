@@ -197,6 +197,7 @@ export const useHighScores = () => {
 export const useGameSettings = () => {
   const [settings, setSettings] = useLocalStorage('gameSettings', {
     soundEnabled: true,
+    musicEnabled: true,
     difficulty: 'normal',
     autoSave: true,
     theme: 'default',
@@ -217,6 +218,7 @@ export const useGameSettings = () => {
   const resetSettings = useCallback(() => {
     setSettings({
       soundEnabled: true,
+      musicEnabled: true,
       difficulty: 'normal',
       autoSave: true,
       theme: 'default',
@@ -252,7 +254,27 @@ export const useUserProfile = () => {
   }, [setProfile]);
 
   const isValidProfile = useCallback(() => {
-    return profile.name && profile.name.trim() !== '' && profile.age;
+    // Check if name exists and is at least 2 characters
+    if (!profile.name || profile.name.trim().length < 2) {
+      return false;
+    }
+    
+    // Check if age exists and is a valid number between 13-100
+    if (!profile.age || profile.age.toString().trim() === '') {
+      return false;
+    }
+    
+    const age = parseInt(profile.age);
+    if (isNaN(age) || age < 13 || age > 100) {
+      return false;
+    }
+    
+    // Check if required fields are filled
+    if (!profile.difficulty || !profile.personality) {
+      return false;
+    }
+    
+    return true;
   }, [profile]);
 
   const resetProfile = useCallback(() => {
@@ -269,4 +291,121 @@ export const useUserProfile = () => {
   }, [setProfile]);
 
   return { profile, updateProfile, isValidProfile, resetProfile };
+};
+
+// New hook for auto-saving game state
+export const useGameState = () => {
+  const [gameState, setGameState] = useLocalStorage('currentGameState', {
+    gameStarted: false,
+    currentRound: 1,
+    score: 0,
+    dangerScore: 0,
+    gameOver: false,
+    showConsequence: false,
+    consequence: '',
+    selectedOption: null,
+    survivalStatus: 'safe',
+    selectedChapter: null,
+    gameMode: 'classic',
+    gameHistory: [],
+    gameChoices: [],
+    points: {
+      survival: 0,
+      bravery: 0,
+      wisdom: 0,
+      chaos: 0,
+      heroism: 0,
+      villainy: 0,
+      luck: 0,
+      skill: 0,
+      total: 0
+    },
+    achievements: [],
+    bonuses: [],
+    storyArc: {
+      protagonist: '',
+      setting: '',
+      currentSituation: '',
+      allies: [],
+      enemies: [],
+      powers: [],
+      weaknesses: [],
+      worldState: '',
+      narrative: []
+    },
+    currentGameQuestion: null,
+    lastSaved: null,
+    version: '1.0.0'
+  }, { debounce: true, validate: true });
+
+  const saveGameState = useCallback((newState, autoSave = true) => {
+    if (autoSave) {
+      setGameState(prev => ({
+        ...prev,
+        ...newState,
+        lastSaved: new Date().toISOString()
+      }));
+    }
+  }, [setGameState]);
+
+  const loadGameState = useCallback(() => {
+    return gameState;
+  }, [gameState]);
+
+  const clearGameState = useCallback(() => {
+    setGameState({
+      gameStarted: false,
+      currentRound: 1,
+      score: 0,
+      dangerScore: 0,
+      gameOver: false,
+      showConsequence: false,
+      consequence: '',
+      selectedOption: null,
+      survivalStatus: 'safe',
+      selectedChapter: null,
+      gameMode: 'classic',
+      gameHistory: [],
+      gameChoices: [],
+      points: {
+        survival: 0,
+        bravery: 0,
+        wisdom: 0,
+        chaos: 0,
+        heroism: 0,
+        villainy: 0,
+        luck: 0,
+        skill: 0,
+        total: 0
+      },
+      achievements: [],
+      bonuses: [],
+      storyArc: {
+        protagonist: '',
+        setting: '',
+        currentSituation: '',
+        allies: [],
+        enemies: [],
+        powers: [],
+        weaknesses: [],
+        worldState: '',
+        narrative: []
+      },
+      currentGameQuestion: null,
+      lastSaved: new Date().toISOString(),
+      version: '1.0.0'
+    });
+  }, [setGameState]);
+
+  const hasSavedGame = useCallback(() => {
+    return gameState.gameStarted && !gameState.gameOver && gameState.lastSaved;
+  }, [gameState]);
+
+  return { 
+    gameState, 
+    saveGameState, 
+    loadGameState, 
+    clearGameState, 
+    hasSavedGame 
+  };
 }; 

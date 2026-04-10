@@ -1,0 +1,464 @@
+.advanced-ai-systems {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  border: 2px solid #00d4ff;
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+  font-family: 'Courier New', monospace;
+  color: #ffffff;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ai-systems-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid #00d4ff;
+}
+
+.ai-systems-header h2 {
+  margin: 0;
+  color: #00d4ff;
+  font-size: 1.5rem;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+.ai-personality-indicator {
+  display: flex;
+  gap: 15px;
+  font-size: 0.9rem;
+}
+
+.ai-state {
+  color: #ff6b6b;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
+}
+
+.ai-trust {
+  color: #4CAF50;
+  text-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+}
+
+.ai-suspicion {
+  color: #FFC107;
+  text-shadow: 0 0 5px rgba(255, 193, 7, 0.5);
+}
+
+.ai-tabs {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.ai-tab {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border: 1px solid #00d4ff;
+  color: #ffffff;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  flex: 1;
+  min-width: 120px;
+}
+
+.ai-tab:hover {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
+  transform: translateY(-2px);
+}
+
+.ai-tab.active {
+  background: linear-gradient(135deg, #00d4ff 0%, #0099cc 100%);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.6);
+  transform: translateY(-2px);
+}
+
+.ai-content {
+  min-height: 300px;
+}
+
+.ai-tab-content {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.ai-tab-content h3 {
+  color: #00d4ff;
+  margin-bottom: 15px;
+  font-size: 1.2rem;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+}
+
+.ai-tab-content h4 {
+  color: #ff6b6b;
+  margin: 15px 0 10px 0;
+  font-size: 1rem;
+}
+
+/* Memory Tab Styles */
+.memory-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background: rgba(0, 212, 255, 0.1);
+  border: 1px solid rgba(0, 212, 255, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stat-label {
+  color: #bdc3c7;
+  font-size: 0.9rem;
+}
+
+.stat-value {
+  color: #00d4ff;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.secrets-section {
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.secrets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.secret-item {
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-radius: 6px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+}
+
+.secret-type {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.secret-time {
+  color: #bdc3c7;
+  font-size: 0.8rem;
+}
+
+.secret-used {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.secret-used.used {
+  background: rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.secret-used.unused {
+  background: rgba(76, 175, 80, 0.3);
+  color: #4CAF50;
+}
+
+/* Disorders Tab Styles */
+.disorders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.disorder-item {
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.disorder-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.disorder-type {
+  color: #ff6b6b;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.disorder-severity {
+  color: #00d4ff;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.disorder-progress {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  height: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.disorder-progress-bar {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.5s ease;
+}
+
+.disorder-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+
+.disorder-developed {
+  color: #bdc3c7;
+}
+
+.disorder-symptoms {
+  color: #ff6b6b;
+}
+
+/* Relationships Tab Styles */
+.relationships-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.relationship-item {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-left: 4px solid;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.relationship-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.relationship-player {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.relationship-type {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.relationship-details {
+  font-size: 0.85rem;
+  color: #bdc3c7;
+}
+
+/* Betrayal Tab Styles */
+.betrayal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.betrayal-item {
+  background: rgba(255, 107, 107, 0.05);
+  border: 1px solid rgba(255, 107, 107, 0.2);
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.betrayal-item.executed {
+  background: rgba(255, 107, 107, 0.1);
+  border-color: rgba(255, 107, 107, 0.4);
+}
+
+.betrayal-item.planned {
+  background: rgba(255, 193, 7, 0.05);
+  border-color: rgba(255, 193, 7, 0.3);
+}
+
+.betrayal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.betrayal-target {
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.betrayal-status {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.betrayal-status.executed {
+  background: rgba(255, 107, 107, 0.3);
+  color: #ff6b6b;
+}
+
+.betrayal-status.planned {
+  background: rgba(255, 193, 7, 0.3);
+  color: #FFC107;
+}
+
+.betrayal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 10px;
+  font-size: 0.85rem;
+}
+
+.betrayal-type {
+  color: #ff6b6b;
+  font-weight: bold;
+}
+
+.betrayal-time {
+  color: #bdc3c7;
+}
+
+.betrayal-consequences {
+  background: rgba(255, 107, 107, 0.1);
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.85rem;
+}
+
+.betrayal-success {
+  color: #ff6b6b;
+  font-weight: bold;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.betrayal-consequences-list {
+  color: #bdc3c7;
+}
+
+/* Evolution Tab Styles */
+.evolution-data {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.evolution-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.cross-game-data {
+  background: rgba(0, 212, 255, 0.05);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  border-radius: 8px;
+  padding: 15px;
+}
+
+.cross-game-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .advanced-ai-systems {
+    margin: 10px;
+    padding: 15px;
+  }
+  
+  .ai-systems-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .ai-personality-indicator {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .ai-tabs {
+    gap: 3px;
+  }
+  
+  .ai-tab {
+    min-width: 100px;
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .memory-stats,
+  .evolution-stats,
+  .cross-game-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-item {
+    flex-direction: column;
+    gap: 5px;
+    text-align: center;
+  }
+  
+  .secret-item,
+  .relationship-header,
+  .betrayal-header {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+  }
+} 

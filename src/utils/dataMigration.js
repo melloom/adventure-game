@@ -181,18 +181,16 @@ class DataMigrationManager {
         data: {}
       };
 
-      // Get all storage keys
-      const keys = Object.keys(localStorage);
+      // Get all storage keys using the storage manager
+      const keys = storageManager.getAllKeys();
       
       for (const key of keys) {
-        if (key.startsWith(storageManager.storagePrefix)) {
-          const shortKey = key.replace(storageManager.storagePrefix, '');
-          backup.data[shortKey] = storageManager.get(shortKey);
-        }
+        const shortKey = key.replace(storageManager.storagePrefix, '');
+        backup.data[shortKey] = storageManager.get(shortKey);
       }
 
       // Save backup to localStorage with a unique name
-      const backupKey = `backup_${Date.now()}`;
+      const backupKey = `wyr_backup_${Date.now()}`;
       localStorage.setItem(backupKey, JSON.stringify(backup));
       
       console.log(`Backup created: ${backupKey}`);
@@ -213,12 +211,10 @@ class DataMigrationManager {
 
       const backup = JSON.parse(backupData);
       
-      // Clear current data
-      const keys = Object.keys(localStorage);
+      // Clear current data using storage manager
+      const keys = storageManager.getAllKeys();
       for (const key of keys) {
-        if (key.startsWith(storageManager.storagePrefix)) {
-          localStorage.removeItem(key);
-        }
+        storageManager.remove(key.replace(storageManager.storagePrefix, ''));
       }
 
       // Restore backup data
@@ -280,6 +276,77 @@ class DataMigrationManager {
       
     } catch (error) {
       console.error('Data validation failed:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // List available backups
+  listBackups() {
+    try {
+      const backups = [];
+      const keys = Object.keys(localStorage);
+      
+      for (const key of keys) {
+        if (key.startsWith('wyr_backup_')) {
+          try {
+            const backupData = localStorage.getItem(key);
+            const backup = JSON.parse(backupData);
+            backups.push({
+              key,
+              timestamp: backup.timestamp,
+              version: backup.version,
+              dataKeys: Object.keys(backup.data).length
+            });
+          } catch (error) {
+            // Skip corrupted backups
+            console.warn(`Skipping corrupted backup: ${key}`);
+          }
+        }
+      }
+      
+      // Sort by timestamp (newest first)
+      backups.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      
+      return backups;
+    } catch (error) {
+      console.error('Error listing backups:', error);
+      return [];
+    }
+  }
+
+  // Delete backup
+  deleteBackup(backupKey) {
+    try {
+      if (localStorage.getItem(backupKey)) {
+        localStorage.removeItem(backupKey);
+        console.log(`Backup deleted: ${backupKey}`);
+        return { success: true };
+      } else {
+        return { success: false, error: 'Backup not found' };
+      }
+    } catch (error) {
+      console.error('Error deleting backup:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Clean up old backups
+  cleanupOldBackups(keepCount = 5) {
+    try {
+      const backups = this.listBackups();
+      let deletedCount = 0;
+      
+      if (backups.length > keepCount) {
+        const toDelete = backups.slice(keepCount);
+        for (const backup of toDelete) {
+          this.deleteBackup(backup.key);
+          deletedCount++;
+        }
+      }
+      
+      return { success: true, deletedCount };
+    } catch (error) {
+      console.error('Error cleaning up backups:', error);
       return { success: false, error: error.message };
     }
   }
