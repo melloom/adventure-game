@@ -1,4 +1,4 @@
-]633;E;head -n 214 src/utils/aiService.js;66c05fba-3b83-404b-969d-e97237f40480]633;Cimport axios from 'axios';
+import axios from 'axios';
 import { getRandomQuestion } from './questionBank';
 
 // Environment variables
@@ -258,12 +258,12 @@ export const updateLearningData = (newData) => {
 export const trackChoice = (choice, difficulty, personality) => {
   try {
     const data = getPlayerLearningData();
-    
+
     // Track choice patterns
     if (!data.choicePatterns) data.choicePatterns = {};
     const pattern = `${difficulty}_${personality}`;
     data.choicePatterns[pattern] = (data.choicePatterns[pattern] || 0) + 1;
-    
+
     // Track fear categories based on choice content
     const fearKeywords = {
       'isolation': ['alone', 'trapped', 'isolated', 'abandoned'],
@@ -272,14 +272,14 @@ export const trackChoice = (choice, difficulty, personality) => {
       'physical': ['pain', 'blood', 'injury', 'death', 'torture'],
       'unknown': ['mystery', 'unknown', 'strange', 'unexplained', 'curious']
     };
-    
+
     const choiceLower = choice.toLowerCase();
     for (const [category, keywords] of Object.entries(fearKeywords)) {
       if (keywords.some(keyword => choiceLower.includes(keyword))) {
         data.fearCategories[category] = (data.fearCategories[category] || 0) + 1;
       }
     }
-    
+
     updateLearningData(data);
   } catch (error) {
     console.error('Error tracking choice:', error);
@@ -289,9 +289,9 @@ export const trackChoice = (choice, difficulty, personality) => {
 // Helper function to calculate difficulty based on player performance
 export const calculateDynamicDifficulty = (learningData) => {
   const { gamesPlayed, averageDangerScore, consecutiveWins, consecutiveLosses } = learningData;
-  
+
   let difficulty = 'medium';
-  
+
   if (gamesPlayed < 2) {
     difficulty = 'easy';
   } else if (averageDangerScore > 70 && consecutiveWins > 2) {
@@ -301,24 +301,24 @@ export const calculateDynamicDifficulty = (learningData) => {
   } else if (consecutiveLosses > 2) {
     difficulty = 'easy';
   }
-  
+
   return difficulty;
 };
 
 // Helper function to determine personality based on choice patterns
 export const determinePersonality = (learningData) => {
   const { choicePatterns } = learningData;
-  
+
   if (!choicePatterns) return 'balanced';
-  
+
   const patterns = Object.entries(choicePatterns);
   if (patterns.length === 0) return 'balanced';
-  
+
   // Analyze patterns to determine personality
   const impulsiveChoices = patterns.filter(([pattern]) => pattern.includes('easy')).reduce((sum, [, count]) => sum + count, 0);
   const cautiousChoices = patterns.filter(([pattern]) => pattern.includes('hard')).reduce((sum, [, count]) => sum + count, 0);
   const adventurousChoices = patterns.filter(([pattern]) => pattern.includes('nightmare')).reduce((sum, [, count]) => sum + count, 0);
-  
+
   if (impulsiveChoices > cautiousChoices && impulsiveChoices > adventurousChoices) {
     return 'impulsive';
   } else if (cautiousChoices > impulsiveChoices && cautiousChoices > adventurousChoices) {
@@ -326,7 +326,7 @@ export const determinePersonality = (learningData) => {
   } else if (adventurousChoices > impulsiveChoices && adventurousChoices > cautiousChoices) {
     return 'adventurous';
   }
-  
+
   return 'balanced';
 };
 
@@ -525,4 +525,4 @@ export default {
   trackPlayerExit
 };
 
-export { getPlayerLearningData }; 
+export { getPlayerLearningData };
