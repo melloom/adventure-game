@@ -512,10 +512,36 @@ export const updatePlayerLearning = (...args) => {
   return null;
 };
 
+// Alias for Game.jsx compatibility — generateAdvancedConsequence delegates to generateConsequence
+export const generateAdvancedConsequence = async (choice, difficulty, personality, round, previousChoices) => {
+  const consequenceText = await generateConsequence(choice, difficulty, personality, round, previousChoices);
+  // Return in the shape Game.jsx expects
+  const baseDanger = { easy: 3, medium: 5, hard: 7, nightmare: 9 }[difficulty] || 5;
+  const dangerLevel = Math.min(baseDanger + Math.floor(round * 0.5), 10);
+  return {
+    consequence: consequenceText,
+    dangerLevel,
+    survived: calculateSurvival(dangerLevel, round)
+  };
+};
+
+// Stub for Game.jsx — generates a short story-beat message
+export const generateDynamicGameMessage = async (playerName, round, dangerPercent, survivalStatus, choices, difficulty, personality, consequenceText) => {
+  const messages = [
+    `Round ${round} is over, ${playerName}. The story deepens.`,
+    `${playerName}... ${survivalStatus === 'critical' ? 'you\'re running out of time.' : 'the next choice awaits.'}`,
+    `Danger at ${dangerPercent}%. ${round < 5 ? 'Still early.' : 'The pressure builds.'}`,
+    `Every choice you make tells me more about you, ${playerName}.`
+  ];
+  return messages[Math.floor(Math.random() * messages.length)];
+};
+
 // Export all functions
 export default {
   generateQuestion,
   generateConsequence,
+  generateAdvancedConsequence,
+  generateDynamicGameMessage,
   updateLearningData,
   trackChoice,
   calculateDynamicDifficulty,

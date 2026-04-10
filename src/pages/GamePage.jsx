@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useOpenAI } from '../hooks/useOpenAI';
 import { useGameStats, useHighScores } from '../hooks/useLocalStorage';
 import HorrorEffects from '../components/HorrorEffects';
 import MiniGames from '../components/MiniGames';
 import horrorSystem from '../utils/horrorSystem';
 import useClickSound from '../hooks/useClickSound';
+import { generateFourthWallComment, getCreepyTitle, getFakeScanMessage } from '../utils/aiMemory';
 
 // Floating stats badge component - defined outside to prevent recreation
 const FloatingStatsBadge = React.memo(({ dangerScore, currentRound }) => {
@@ -57,6 +58,77 @@ const GamePage = ({
   const [showEnvItems, setShowEnvItems] = useState(false);
   const [miniGame, setMiniGame] = useState(null);
   const [miniGameDifficulty, setMiniGameDifficulty] = useState('medium');
+
+  // 4th wall state
+  const [fourthWallComment, setFourthWallComment] = useState(null);
+  const [showFourthWall, setShowFourthWall] = useState(false);
+  const [scanMessage, setScanMessage] = useState('');
+  const [showScan, setShowScan] = useState(false);
+  const [aiTyping, setAiTyping] = useState(false);
+  const originalTitle = useRef(document.title);
+  
+  // Get player name from profile
+  const playerNameRef = useRef('Player');
+  useEffect(() => {
+    try {
+      const p = JSON.parse(localStorage.getItem('wouldYouRatherProfile') || '{}');
+      if (p.name) playerNameRef.current = p.name;
+    } catch { /* ignore */ }
+  }, []);
+
+  // Dynamic title bar — change during gameplay, revert on unmount
+  useEffect(() => {
+    if (!isLoading && !gameOver) {
+      const titleInterval = setInterval(() => {
+        document.title = getCreepyTitle(playerNameRef.current, currentRound);
+      }, 12000);
+      return () => {
+        clearInterval(titleInterval);
+        document.title = originalTitle.current;
+      };
+    } else if (gameOver) {
+      document.title = originalTitle.current;
+    }
+  }, [isLoading, gameOver, currentRound]);
+
+  // Fake scan notifications — appear periodically
+  useEffect(() => {
+    if (gameOver || isLoading) return;
+    const scanInterval = setInterval(() => {
+      setScanMessage(getFakeScanMessage());
+      setShowScan(true);
+      setTimeout(() => setShowScan(false), 4000);
+    }, 18000 + Math.random() * 12000); // every 18-30 seconds
+    return () => clearInterval(scanInterval);
+  }, [gameOver, isLoading]);
+
+  // 4th wall comment when consequence is shown (between rounds)
+  useEffect(() => {
+    if (showConsequence && !gameOver) {
+      const comment = generateFourthWallComment(currentRound, null, playerNameRef.current);
+      if (comment) {
+        // Delay slightly so player reads the consequence first
+        const t = setTimeout(() => {
+          setFourthWallComment(comment);
+          setShowFourthWall(true);
+        }, 2500);
+        return () => clearTimeout(t);
+      }
+    } else {
+      setShowFourthWall(false);
+      setFourthWallComment(null);
+    }
+  }, [showConsequence, currentRound, gameOver]);
+
+  // AI "typing" indicator before each question loads
+  useEffect(() => {
+    if (isLoading && !gameOver) {
+      setAiTyping(true);
+    } else {
+      const t = setTimeout(() => setAiTyping(false), 600);
+      return () => clearTimeout(t);
+    }
+  }, [isLoading, gameOver]);
 
   // Example: update horror system on game state changes
   useEffect(() => {
@@ -270,6 +342,12 @@ const GamePage = ({
   if (showConsequence) {
     return (
       <div className="game-centered-container">
+        {/* Fake scan notification bar */}
+        {showScan && (
+          <div className="ai-scan-bar">
+            <span className="scan-dot"></span> {scanMessage}
+          </div>
+        )}
         <FloatingStatsBadge dangerScore={dangerScore} currentRound={currentRound} />
         <h1 className="game-title">Would You Rather Survival</h1>
         <div className="horizontal-progress-bar">
@@ -281,6 +359,12 @@ const GamePage = ({
             Danger Score: {dangerScore}/100
           </div>
           <p className="consequence-text" style={{ marginBottom: '18px', textAlign: 'center' }}>{consequence}</p>
+          {/* 4th wall AI comment */}
+          {showFourthWall && fourthWallComment && (
+            <div className="fourth-wall-comment">
+              <span className="fw-icon">👁</span> {fourthWallComment}
+            </div>
+          )}
           {dangerScore > 100 && <p style={{fontWeight: 'bold', marginTop: '10px'}}>💀 You didn't survive this round!</p>}
           <button className="next-button" onClick={handleNext} style={{ marginTop: '18px' }}>
             {dangerScore > 100 ? 'See Results' : currentRound >= 10 ? 'Finish Game' : 'Continue'}
@@ -300,6 +384,12 @@ const GamePage = ({
 
   return (
     <div className="game-centered-container">
+      {/* Fake scan notification bar */}
+      {showScan && (
+        <div className="ai-scan-bar">
+          <span className="scan-dot"></span> {scanMessage}
+        </div>
+      )}
       <FloatingStatsBadge dangerScore={dangerScore} currentRound={currentRound} />
       <h1 className="game-title">Would You Rather Survival</h1>
       <p className="game-subtitle">Survive 10 rounds of impossible choices!</p>
@@ -307,6 +397,15 @@ const GamePage = ({
         <div className="progress-bar-fill" style={{ width: `${(currentRound / 10) * 100}%` }}></div>
         <span className="progress-bar-text">Round {currentRound} of 10</span>
       </div>
+      {/* AI typing indicator */}
+      {aiTyping && (
+        <div className="ai-typing-indicator">
+          <span className="typing-dot"></span>
+          <span className="typing-dot"></span>
+          <span className="typing-dot"></span>
+          <span className="typing-label">ORACLE_7X is thinking...</span>
+        </div>
+      )}
       <div className="game-card">
         <h2 className="question">{currentGameQuestion?.question || "Loading question..."}</h2>
         <div className="options-container">

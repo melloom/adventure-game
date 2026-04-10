@@ -4,6 +4,8 @@ import { useGameStats, useHighScores, useUserProfile, useGameSettings, useGameSt
 import { useVisualEffects } from './hooks/useVisualEffects';
 import { useCampaign } from './hooks/useCampaign';
 import { generateMetaMessage, generateFirstTimeMetaMessage, updatePlayerLearning, getPlayerLearningData, trackPlayerExit, trackPlayerEntry } from './utils/aiService';
+import { getRandomQuestion } from './utils/questionBank';
+import { recordGameStart, recordGameEnd, recordRageQuit, recordChoice, rememberPlayerName, generateMemoryAwareIntro, getCreepyTitle, classifyChoice, getGamesPlayed, didJustRestart } from './utils/aiMemory';
 import { initializePlayerProfile, generateMetaEnding } from './utils/metaNarrativeSystem';
 import MetaEnding from './components/MetaEnding';
 import dataMigrationManager from './utils/dataMigration';
@@ -154,6 +156,10 @@ function App() {
   useEffect(() => {
     const handleBeforeUnload = () => {
       trackPlayerExit();
+      // If a game is in progress, count as rage quit
+      if (gameStarted && !gameOver) {
+        recordRageQuit();
+      }
     };
 
     const handleVisibilityChange = () => {
@@ -263,115 +269,8 @@ function App() {
 
   // Fallback questions if AI is not available
   const getFallbackQuestion = () => {
-    const easyQuestions = [
-      {
-        question: "Would you rather watch your childhood home burn to the ground or watch your childhood memories be erased from your mind forever?",
-        optionA: "🔥 Watch Home Burn",
-        optionB: "🧠 Lose All Memories",
-        consequences: {
-          A: "You watch helplessly as everything you grew up with turns to ash. The smell of burning wood and memories haunts you for the rest of your life. You can never go home again, and the emptiness inside you grows with each passing day.",
-          B: "Your mind becomes a blank slate where your childhood should be. You remember nothing of who you were, who you loved, or what made you who you are. You're left with a hollow feeling that nothing can fill."
-        },
-        dangerLevels: { A: 6, B: 7 }
-      },
-      {
-        question: "Would you rather be responsible for the death of your best friend or be responsible for the death of a stranger who could cure cancer?",
-        optionA: "💔 Kill Best Friend",
-        optionB: "🔬 Kill Cancer Researcher",
-        consequences: {
-          A: "Your best friend dies because of your choice. The guilt consumes you completely. You see their face in your dreams, asking why you chose to let them die. Your friendship becomes a memory that tortures you forever.",
-          B: "A brilliant scientist who could have saved millions dies because of your decision. You become responsible for countless deaths that could have been prevented. The weight of this knowledge crushes your soul."
-        },
-        dangerLevels: { A: 8, B: 9 }
-      }
-    ];
-
-    const mediumQuestions = [
-      {
-        question: "Would you rather be tortured for 24 hours or watch your entire family be tortured for 1 hour?",
-        optionA: "⏰ 24 Hours of Torture",
-        optionB: "👨‍👩‍👧‍👦 Family Tortured",
-        consequences: {
-          A: "You endure 24 hours of unimaginable pain and suffering. Every second feels like an eternity. The psychological damage is permanent - you'll never be the same person again. The memories of your torture haunt your every waking moment.",
-          B: "You watch helplessly as the people you love most suffer unimaginable pain. Their screams echo in your mind forever. You're forced to live with the knowledge that you chose to let them suffer instead of taking their place."
-        },
-        dangerLevels: { A: 9, B: 10 }
-      },
-      {
-        question: "Would you rather know the exact date and time of your death or know that you will die in a way that causes maximum suffering to your loved ones?",
-        optionA: "⏰ Know Death Date",
-        optionB: "💀 Painful Death for Loved Ones",
-        consequences: {
-          A: "Every day becomes a countdown to your inevitable end. You can't enjoy life knowing exactly when it will end. The knowledge drives you to madness as you watch the clock tick down to your final moment.",
-          B: "You know that your death will be so horrific and traumatic that it will destroy the lives of everyone who loves you. The guilt of knowing what your death will do to them is worse than any physical pain."
-        },
-        dangerLevels: { A: 8, B: 10 }
-      }
-    ];
-
-    const hardQuestions = [
-      {
-        question: "Would you rather be responsible for the extinction of humanity or be the only human left alive in a world of monsters?",
-        optionA: "🌍 End Humanity",
-        optionB: "👹 Last Human Alive",
-        consequences: {
-          A: "You become the architect of humanity's complete annihilation. Billions of lives end because of your choice. You're responsible for the greatest crime in history - the destruction of an entire species. The guilt is infinite.",
-          B: "You're the last human in a world filled with creatures that want to torture and kill you. Every moment is a fight for survival. The loneliness and constant fear drive you to the brink of insanity. You wish you were dead."
-        },
-        dangerLevels: { A: 10, B: 10 }
-      },
-      {
-        question: "Would you rather be forced to kill your own child to save 1000 strangers or let 1000 strangers die to save your child?",
-        optionA: "🔪 Kill Your Child",
-        optionB: "💔 Let 1000 Die",
-        consequences: {
-          A: "You murder your own child with your bare hands. The act destroys your soul completely. You become a monster who killed their own flesh and blood. The guilt and self-loathing will never leave you. You deserve to die.",
-          B: "You let 1000 innocent people die to save your child. You're responsible for the worst mass murder in history. Your child grows up knowing their life cost 1000 others. The guilt destroys your family and your sanity."
-        },
-        dangerLevels: { A: 10, B: 10 }
-      }
-    ];
-
-    const nightmareQuestions = [
-      {
-        question: "Would you rather be responsible for the creation of a new species that will torture and enslave humanity for eternity, or be responsible for the destruction of all life in the universe?",
-        optionA: "👾 Create Eternal Torturers",
-        optionB: "💥 Destroy All Life",
-        consequences: {
-          A: "You create a race of beings so cruel and powerful that they will torture humanity forever. You're responsible for infinite suffering across all time. Every scream of pain from every human who will ever live is your fault. You've damned your species to eternal torment.",
-          B: "You become responsible for the complete annihilation of all life in the universe. Every planet, every species, every consciousness is destroyed because of your choice. You've committed the greatest crime possible - the destruction of existence itself."
-        },
-        dangerLevels: { A: 10, B: 10 }
-      },
-      {
-        question: "Would you rather be forced to watch your loved ones be tortured for eternity while you live forever, or be tortured for eternity while your loved ones live forever in blissful ignorance of your suffering?",
-        optionA: "👁️ Watch Eternal Torture",
-        optionB: "💀 Eternal Torture Alone",
-        consequences: {
-          A: "You're immortal and forced to watch the people you love suffer unimaginable pain forever. Their screams never stop. You can never help them, never save them, never escape. You're trapped in an eternal nightmare of helplessness and guilt.",
-          B: "You endure infinite torture while your loved ones live perfect lives, never knowing what you sacrificed for them. The pain never ends, never lessens. You suffer alone in darkness while they live in light, completely unaware of your eternal agony."
-        },
-        dangerLevels: { A: 10, B: 10 }
-      }
-    ];
-
-    // Select questions based on difficulty
-    let selectedQuestions;
-    switch (userProfile.difficulty) {
-      case 'easy':
-        selectedQuestions = easyQuestions;
-        break;
-      case 'hard':
-        selectedQuestions = hardQuestions;
-        break;
-      case 'nightmare':
-        selectedQuestions = nightmareQuestions;
-        break;
-      default:
-        selectedQuestions = mediumQuestions;
-    }
-
-    return selectedQuestions[Math.floor(Math.random() * selectedQuestions.length)];
+    const diff = userProfile?.difficulty || 'medium';
+    return getRandomQuestion(diff);
   };
 
   const [currentGameQuestion, setCurrentGameQuestion] = useState(() => {
@@ -402,9 +301,6 @@ function App() {
     setIsLoading(true);
     try {
       console.log('🔄 Fetching AI question...');
-      const storyContext = storyArc.narrative ? storyArc.narrative.join(' ') : '';
-      console.log('📝 Story context:', storyContext);
-      console.log('👤 User profile:', userProfile);
       
       const aiQuestion = await fetchQuestion(
         userProfile.difficulty,
@@ -414,54 +310,18 @@ function App() {
       );
       console.log('✅ AI question received:', aiQuestion);
       
-      // Handle the AI question response - it can be either a string or an object
-      let questionText = '';
-      let optionA = '';
-      let optionB = '';
-      
-      if (typeof aiQuestion === 'string') {
-        // If it's a string, try to parse it
-        questionText = aiQuestion;
-        
-        // Extract options from "Would you rather [A] or [B]?" format
-        if (aiQuestion.toLowerCase().includes('would you rather')) {
-          const match = aiQuestion.match(/Would you rather (.+?) or (.+?)\?/i);
-          if (match) {
-            optionA = match[1].trim();
-            optionB = match[2].trim();
-          } else {
-            // Fallback: split on "or" if regex doesn't work
-            const parts = aiQuestion.split(' or ');
-            if (parts.length >= 2) {
-              optionA = parts[0].replace(/Would you rather /i, '').trim();
-              optionB = parts[1].replace(/\?$/, '').trim();
-            }
-          }
-        }
-      } else if (aiQuestion && typeof aiQuestion === 'object') {
-        // If it's an object with question and options
-        questionText = aiQuestion.question || "Loading question...";
-        if (aiQuestion.options && Array.isArray(aiQuestion.options)) {
-          optionA = aiQuestion.options[0] || "Option A";
-          optionB = aiQuestion.options[1] || "Option B";
-        }
+      // fetchQuestion now always returns a structured object:
+      // { question, optionA, optionB, consequences: { A, B }, dangerLevels: { A, B } }
+      if (aiQuestion && typeof aiQuestion === 'object' && aiQuestion.question && aiQuestion.optionA) {
+        setCurrentGameQuestion(aiQuestion);
+        return aiQuestion;
       }
-      
-      // Create a question object with AI-generated content
-      const questionObj = {
-        question: questionText || "Loading your challenge...",
-        optionA: optionA || "Option A",
-        optionB: optionB || "Option B",
-        consequences: {
-          A: "ENTITY_ORACLE_7X is calculating your fate...",
-          B: "ENTITY_ORACLE_7X is calculating your fate..."
-        },
-        dangerLevels: { A: 5, B: 5 } // Default danger levels for AI questions
-      };
 
-      console.log('📋 Setting question object:', questionObj);
-      setCurrentGameQuestion(questionObj);
-      return questionObj;
+      // Shouldn't reach here, but fallback just in case
+      console.log('Unexpected question format, using fallback');
+      const fallback = getFallbackQuestion();
+      setCurrentGameQuestion(fallback);
+      return fallback;
     } catch (error) {
       console.error('❌ Error generating AI question:', error);
       const fallback = getFallbackQuestion();
@@ -482,17 +342,17 @@ function App() {
       setSelectedChapter(null);
     }
 
+    // Record game start in AI memory + remember player
+    recordGameStart();
+    rememberPlayerName(userProfile.name);
+
     // Check if this is a returning player (has game history)
     const savedGameHistory = localStorage.getItem('gameHistory');
     const hasPlayedBefore = savedGameHistory && JSON.parse(savedGameHistory).length > 0;
+    const aiGamesPlayed = getGamesPlayed();
+    const justRestarted = didJustRestart();
     
-    console.log('Saved game history:', savedGameHistory);
-    console.log('Has played before:', hasPlayedBefore);
-    console.log('User profile name:', userProfile.name);
-    console.log('Game mode:', chapter ? 'campaign' : 'classic');
-    if (chapter) {
-      console.log('Selected chapter:', chapter.name);
-    }
+    console.log('Has played before:', hasPlayedBefore, '| AI memory games:', aiGamesPlayed, '| Just restarted:', justRestarted);
     
     // Show meta message for ALL players (both new and returning)
     console.log('Showing meta message for player');
@@ -501,13 +361,21 @@ function App() {
     
     try {
       let messageSequence;
-      if (hasPlayedBefore) {
-        // Returning player message - use original AI service
+
+      // Use AI-memory-aware intro as the default fallback
+      const memoryIntro = generateMemoryAwareIntro(userProfile.name);
+      
+      if (hasPlayedBefore || aiGamesPlayed > 1) {
+        // Returning player message - try AI service, fall back to memory-aware intro
         messageSequence = await generateMetaMessage(
           userProfile.name, 
           userProfile.difficulty, 
           userProfile.personality
         );
+        // If AI returns empty, use memory-based intro
+        if (!messageSequence || messageSequence.length === 0) {
+          messageSequence = memoryIntro;
+        }
       } else {
         // First-time player message - use original AI service
         messageSequence = await generateFirstTimeMetaMessage(
@@ -529,17 +397,8 @@ function App() {
       ])[0]);
     } catch (error) {
       console.error('Error generating meta message:', error);
-      const fallbackSequence = hasPlayedBefore ? [
-        `Well well well, ${userProfile.name}... Welcome back to my little game.`,
-        `I've been waiting for you. Watching. Learning.`,
-        `Now let's see what horrors I have prepared for you this time. 😈`
-      ] : [
-        `*digital static crackles* Oh... OH! ${userProfile.name}... I've been waiting for YOU specifically.`,
-        `Age ${userProfile.age}, ${userProfile.difficulty} difficulty, ${userProfile.personality} personality...`,
-        `*laughs in binary* You have NO IDEA what you've just walked into, do you?`,
-        `This is your FIRST TIME, ${userProfile.name}. Your virgin journey into my little experiment.`,
-        `*grins maliciously* Let's see what horrors I can craft specifically for someone like you. 🎭`
-      ];
+      // Use memory-aware fallback
+      const fallbackSequence = generateMemoryAwareIntro(userProfile.name);
       setMetaMessageSequence(fallbackSequence);
       setMetaMessageIndex(0);
       setMetaMessage(fallbackSequence[0]);
@@ -820,6 +679,10 @@ function App() {
     const newDangerScore = dangerScore + dangerLevel;
     setDangerScore(newDangerScore);
 
+    // Record choice in AI memory for 4th wall tracking
+    const choiceTag = classifyChoice(choice);
+    recordChoice(currentRound, choice, choiceTag);
+
     // Trigger consequence revealed effect
     handleGameEvent('consequence_revealed', { 
       position: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
@@ -876,15 +739,15 @@ function App() {
   };
 
   const handleNextRound = async () => {
-    // Check if game is over (either reached 10 rounds or danger score exceeded 70)
-    if (currentRound >= 10 || dangerScore > 70) {
+    // Check if game is over (reached 10 rounds or danger score exceeded 100)
+    if (currentRound >= 10 || dangerScore > 100) {
       console.log('🎮 Game over! Final score:', score, 'Danger score:', dangerScore, 'Rounds survived:', currentRound);
       
       // Game over - update ORACLE_7X learning system
       const gameData = {
         roundsPlayed: currentRound,
         finalDangerScore: dangerScore,
-        survived: dangerScore <= 70,
+        survived: dangerScore <= 100,
         difficulty: userProfile.difficulty,
         choices: gameChoices,
         personality: userProfile.personality
@@ -892,18 +755,20 @@ function App() {
       
       // Update the ORACLE_7X learning system
       updatePlayerLearning(gameData);
+      // Record in AI memory
+      recordGameEnd(dangerScore <= 100, dangerScore, currentRound);
       console.log('🎯 ORACLE_7X learning system updated with game data:', gameData);
       
       // Call handleGameEnd with the game result
       handleGameEnd({
-        won: dangerScore <= 70,
+        won: dangerScore <= 100,
         score: score,
         roundsSurvived: currentRound,
         chapter: selectedChapter?.id || 'classic'
       });
       
       // Trigger game over effect
-      if (dangerScore <= 70) {
+      if (dangerScore <= 100) {
         handleGameEvent('victory', { 
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
         });
@@ -1242,8 +1107,8 @@ function App() {
       };
     }
     
-    // Very high danger (56-70): Barely survived
-    else if (dangerScore <= 70) {
+    // Very high danger (56-80): Barely survived
+    else if (dangerScore <= 80) {
       const barelyEndings = [
         {
           title: "😵‍💫 THE ZOMBIE",
@@ -1664,7 +1529,7 @@ function App() {
         </button>
         <GameRecap
           gameHistory={gameHistory}
-          survived={dangerScore <= 70 && currentRound >= 10}
+          survived={dangerScore <= 100 && currentRound >= 10}
           dangerScore={dangerScore}
           onBackToMenu={() => {
             setShowRecap(false);
