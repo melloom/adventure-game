@@ -1,489 +1,218 @@
-import axios from 'axios';
+]633;E;head -n 214 src/utils/aiService.js;66c05fba-3b83-404b-969d-e97237f40480]633;Cimport axios from 'axios';
+import { getRandomQuestion } from './questionBank';
 
 // Environment variables
-const AI_SERVICE = import.meta.env.VITE_AI_SERVICE || 'fallback';
 const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
 
 // Model configurations
 const OPENAI_MODEL = import.meta.env.VITE_OPENAI_MODEL || 'gpt-3.5-turbo';
 
-// Debug logging
-console.log('AI Service Configuration:', {
-  service: AI_SERVICE,
-  openaiKey: OPENAI_API_KEY ? 'Present' : 'Missing',
-  openaiKeyFormat: OPENAI_API_KEY ? OPENAI_API_KEY.substring(0, 10) + '...' : 'None'
-});
-
 // OpenAI API client
 const openaiClient = axios.create({
   baseURL: 'https://api.openai.com/v1',
-  timeout: 15000,
+  timeout: 20000,
   headers: {
     'Authorization': `Bearer ${OPENAI_API_KEY}`,
     'Content-Type': 'application/json'
   }
 });
 
-// Horror-themed, story-driven fallback system
-const generateSmartFallbackQuestion = (difficulty, personality, round = 1, previousChoices = []) => {
-  const learningData = getPlayerLearningData();
-  const playerName = learningData.playerName || 'Player';
-  
-  // Story context based on round and previous choices
-  const storyContext = getStoryContext(round, previousChoices);
-  
-  const horrorQuestionTemplates = {
-    easy: [
-      "Would you rather discover a {object1} in your {location1} or hear {sound1} coming from your {location2}?",
-      "Would you rather find {item1} in your {location1} or notice {phenomenon1} in your {location2}?",
-      "Would you rather wake up to {situation1} or go to sleep with {situation2}?",
-      "Would you rather see {vision1} in your {location1} or feel {sensation1} in your {location2}?",
-      "Would you rather discover {finding1} or experience {experience1}?"
-    ],
-    medium: [
-      "Would you rather {action1} in your {location1} or {action2} in your {location2}?",
-      "Would you rather wake up each morning to {morning1} or find {finding1} every night?",
-      "Would you rather feel {sensation1} while you {activity1} or hear {sound1} when you {activity2}?",
-      "Would you rather have every {object1} in your house {behavior1} or every {object2} {behavior2}?",
-      "Would you rather glimpse {vision1} throughout the day or wake each morning to {morning1}?"
-    ],
-    hard: [
-      "Would you rather {extreme1} or {extreme2}?",
-      "Would you rather discover your house was built atop {location1} or buried beneath {location2}?",
-      "Would you rather be trapped in {situation1} or live each day with {situation2}?",
-      "Would you rather have {power1} or {curse1}?",
-      "Would you rather {choice1} or {choice2}?"
-    ],
-    nightmare: [
-      "Would you rather {nightmare1} or {nightmare2}?",
-      "Would you rather discover {horror1} or realize {horror2}?",
-      "Would you rather be haunted by {entity1} or cursed with {curse1}?",
-      "Would you rather {torture1} or {torture2}?",
-      "Would you rather {hell1} or {hell2}?"
-    ]
+// ─── QUESTION GENERATION ────────────────────────────────────────────────────
+
+/**
+ * Build a prompt that asks GPT to return a structured JSON "Would You Rather" question.
+ */
+const buildQuestionPrompt = (difficulty, round, previousChoices) => {
+  const difficultyGuide = {
+    easy: 'fun, lighthearted dilemmas — lifestyle choices, superpowers, social situations. Low stakes, high relatability.',
+    medium: 'genuine life dilemmas involving values, relationships, trade-offs, and identity. Thought-provoking but not dark.',
+    hard: 'serious moral dilemmas involving sacrifice, ethics, loyalty, and meaningful trade-offs with real consequences.',
+    nightmare: 'deeply existential dilemmas about consciousness, meaning, loss, and the nature of human experience. No easy answers.'
   };
 
-  const horrorContentPools = {
-    easy: {
-      object1: ['severed doll\'s head', 'old photograph with scratched faces', 'child\'s drawing of your house', 'strange symbol carved into wood', 'dusty journal with your name'],
-      location1: ['attic', 'basement', 'closet', 'under the bed', 'behind the walls'],
-      location2: ['floorboards', 'walls', 'ceiling', 'ventilation ducts', 'pipes'],
-      sound1: ['phantom children giggling', 'distant whispers', 'scratching sounds', 'soft crying', 'muffled laughter'],
-      item1: ['fresh muddy footprints', 'bloodstains that weren\'t there before', 'strange handprints on windows', 'torn clothing you don\'t recognize', 'a key that fits no lock'],
-      phenomenon1: ['shadows moving on their own', 'temperature drops for no reason', 'lights flickering randomly', 'objects moving when you look away', 'reflections that don\'t match reality'],
-      situation1: ['covered in someone else\'s blood', 'in a different room than where you fell asleep', 'with dirt under your fingernails', 'with strange marks on your body', 'with your clothes on backwards'],
-      situation2: ['hearing your name whispered', 'feeling watched', 'smelling something rotten', 'seeing movement in the corner of your eye', 'feeling a cold presence'],
-      vision1: ['a figure standing just beyond your vision', 'eyes watching from the darkness', 'a shadow that moves independently', 'a face in the window', 'a hand reaching from under furniture'],
-      sensation1: ['invisible hands brushing your hair', 'cold breath on your neck', 'something crawling on your skin', 'weight pressing down on your chest', 'fingers running through your hair'],
-      finding1: ['a family portrait where everyone\'s faces are scratched out', 'a diary full of pages that describe your life up to today', 'letters addressed to you in handwriting you don\'t recognize', 'a room in your house that wasn\'t there before', 'footprints in your yard that aren\'t your own'],
-      experience1: ['phantom children giggling under your floorboards', 'your shadow detaching and moving on its own', 'every mirror showing a smiling stranger behind you', 'your phone randomly dialing unknown numbers', 'a lullaby playing on loop in your head']
-    },
-    medium: {
-      action1: ['hear your own voice coming from an old record', 'find letters addressed to you in unfamiliar handwriting', 'discover a hidden room that wasn\'t on any blueprint', 'see stuffed animals scattered all over your lawn', 'hear crawling noises coming from inside your walls'],
-      action2: ['open a door to find a pitch-black void', 'open your closet to see dozens of eyes staring back', 'find a secret basement hatch under your bed', 'hear heavy breathing from an unknown caller', 'feel the weight of an unseen creature'],
-      location1: ['house', 'bedroom', 'kitchen', 'living room', 'bathroom'],
-      location2: ['yard', 'garage', 'attic', 'basement', 'closet'],
-      morning1: ['drenched in cold sweat', 'with dirt under your fingernails', 'in a completely different room', 'with strange marks on your body', 'with your clothes on backwards'],
-      finding1: ['fresh muddy footprints leading out your door', 'bloodstains that weren\'t there before', 'strange handprints on windows', 'torn clothing you don\'t recognize', 'a key that fits no lock'],
-      sensation1: ['invisible hands brushing your hair', 'cold breath on your neck', 'something crawling on your skin', 'weight pressing down on your chest', 'fingers running through your hair'],
-      activity1: ['sleep', 'shower', 'cook', 'read', 'watch TV'],
-      activity2: ['are alone', 'are in the dark', 'are about to sleep', 'are eating', 'are working'],
-      sound1: ['phantom children giggling', 'distant whispers', 'scratching sounds', 'soft crying', 'muffled laughter'],
-      object1: ['mirror', 'window', 'door', 'light', 'clock'],
-      object2: ['photo', 'book', 'toy', 'plant', 'painting'],
-      behavior1: ['show a smiling stranger behind you', 'flicker randomly', 'open and close on their own', 'show the wrong time', 'make strange noises'],
-      behavior2: ['move when you look away', 'change color', 'disappear and reappear', 'show different images', 'feel warm to the touch'],
-      vision1: ['a figure standing just beyond your vision', 'eyes watching from the darkness', 'a shadow that moves independently', 'a face in the window', 'a hand reaching from under furniture']
-    },
-    hard: {
-      extreme1: ['camp overnight in a forest where the trees appear to shift when you look away', 'swim in a lake where something brushes your legs from below', 'be followed by a silent shadow that only you can see', 'have every photo you take reveal ghostly figures standing nearby'],
-      extreme2: ['feel invisible hands brushing your hair while you sleep', 'hear your name whispered from the closet', 'get a text message that says "I see you" every hour', 'have your phone randomly dial an unknown number that always answers with heavy breathing'],
-      location1: ['ancient sacrificial grounds', 'a forgotten cemetery', 'an abandoned asylum', 'a mass grave', 'a cursed burial site'],
-      location2: ['the ruins of a forgotten asylum', 'an ancient temple', 'a haunted hospital', 'a cursed church', 'a demonic altar'],
-      situation1: ['a carousel of your worst nightmares', 'an endless maze of your deepest fears', 'a loop of your most traumatic memories', 'a prison of your own making'],
-      situation2: ['the knowledge that you\'re slowly forgetting your own name', 'the realization that you\'re not who you think you are', 'the awareness that you\'re being watched by something ancient', 'the certainty that you\'re already dead'],
-      power1: ['the ability to see the dead', 'the power to communicate with spirits', 'the gift of prophetic dreams', 'the curse of immortality'],
-      curse1: ['never being able to sleep again', 'seeing the true form of everything around you', 'hearing the thoughts of the dead', 'being trapped between life and death'],
-      choice1: ['save your family but lose your soul', 'keep your memories but lose your sanity', 'live forever but watch everyone you love die', 'be free but be completely alone'],
-      choice2: ['lose your family but keep your soul', 'lose your memories but keep your sanity', 'die young but be remembered forever', 'be trapped but never be alone']
-    },
-    nightmare: {
-      nightmare1: ['be trapped in a carousel of your worst nightmares', 'live each day with the knowledge that you\'re slowly forgetting your own name', 'be haunted by every person you\'ve ever wronged', 'be cursed to relive your death every night'],
-      nightmare2: ['be followed by a silent shadow that only you can see', 'have every photo you take reveal ghostly figures standing nearby', 'be trapped in a house that\'s slowly eating you alive', 'be the only person left in a world of the dead'],
-      horror1: ['your house was built atop ancient sacrificial grounds', 'you\'re actually dead and don\'t know it', 'everyone you love is already gone', 'you\'re the last human alive'],
-      horror2: ['you\'re not who you think you are', 'you\'ve been dead for years', 'you\'re trapped in someone else\'s nightmare', 'you\'re the monster you\'ve been running from'],
-      entity1: ['every person you\'ve ever wronged', 'the ghost of your future self', 'an ancient evil that knows your name', 'the collective consciousness of the dead'],
-      curse1: ['never being able to sleep again', 'seeing the true form of everything around you', 'hearing the thoughts of the dead', 'being trapped between life and death'],
-      torture1: ['be buried alive in your own house', 'be forced to watch your loved ones suffer', 'be trapped in an endless loop of your worst memories', 'be slowly consumed by your own fears'],
-      torture2: ['be hunted by something that knows your every move', 'be cursed to feel every death you\'ve caused', 'be trapped in a body that\'s slowly rotting', 'be forced to relive your greatest failures'],
-      hell1: ['be the only person left in a world of the dead', 'be trapped in a house that\'s slowly eating you alive', 'be cursed to watch everyone you love die', 'be the monster you\'ve been running from'],
-      hell2: ['be haunted by every person you\'ve ever wronged', 'be trapped in an endless maze of your deepest fears', 'be forced to relive your death every night', 'be the last human alive in a world of monsters']
+  const previousContext = previousChoices && previousChoices.length > 0
+    ? `\nThe player previously chose: "${previousChoices.slice(-2).join('" and "')}".\nBuild on this context if natural, but create an independent question.`
+    : '';
+
+  return `You create "Would You Rather" questions for a game.
+
+Difficulty: ${difficulty} — ${difficultyGuide[difficulty] || difficultyGuide.medium}
+Round: ${round} of 10${previousContext}
+
+Create ONE original "Would You Rather" question. Return ONLY valid JSON in this exact format:
+{
+  "question": "Would you rather [option A] or [option B]?",
+  "optionA": "[brief label for option A, 5–10 words]",
+  "optionB": "[brief label for option B, 5–10 words]",
+  "consequenceA": "[2-3 sentence narrative about what life is like if they choose A]",
+  "consequenceB": "[2-3 sentence narrative about what life is like if they choose B]",
+  "dangerA": [integer 1-10],
+  "dangerB": [integer 1-10]
+}
+
+Rules:
+- Both options must be genuinely difficult to choose between — no obvious right answer
+- consequenceA and consequenceB must be specific, vivid, and different from each other
+- dangerA/dangerB represent psychological/life impact (1=minor, 10=life-altering)
+- Do NOT use violence, gore, or dark horror imagery
+- Make it intellectually or emotionally compelling`;
+};
+
+/**
+ * Parse an AI JSON response into a question object.
+ * Returns null if parsing fails.
+ */
+const parseAIQuestionResponse = (content) => {
+  try {
+    let json = content.trim();
+    // Strip markdown code fences if present
+    if (json.startsWith('```')) {
+      json = json.replace(/```[a-zA-Z]*\n?/g, '').replace(/```$/g, '').trim();
     }
-  };
-
-  const templates = horrorQuestionTemplates[difficulty];
-  const pool = horrorContentPools[difficulty];
-  
-  const template = templates[Math.floor(Math.random() * templates.length)];
-  const keys = template.match(/\{(\w+)\}/g).map(k => k.slice(1, -1));
-  
-  let question = template;
-  keys.forEach(key => {
-    const options = pool[key];
-    if (options) {
-      const randomOption = options[Math.floor(Math.random() * options.length)];
-      question = question.replace(`{${key}}`, randomOption);
+    const parsed = JSON.parse(json);
+    if (
+      parsed.question && parsed.optionA && parsed.optionB &&
+      parsed.consequenceA && parsed.consequenceB &&
+      typeof parsed.dangerA === 'number' && typeof parsed.dangerB === 'number'
+    ) {
+      return {
+        question: parsed.question,
+        optionA: parsed.optionA,
+        optionB: parsed.optionB,
+        consequences: { A: parsed.consequenceA, B: parsed.consequenceB },
+        dangerLevels: {
+          A: Math.max(1, Math.min(10, parsed.dangerA)),
+          B: Math.max(1, Math.min(10, parsed.dangerB))
+        }
+      };
     }
-  });
-
-  // Add story context to make it feel like a continuing adventure
-  if (round > 1 && previousChoices.length > 0) {
-    const lastChoice = previousChoices[previousChoices.length - 1];
-    const storyIntro = getStoryIntro(round, lastChoice, storyContext);
-    question = `${storyIntro} ${question}`;
+  } catch {
+    // fall through
   }
-
-  return question;
+  return null;
 };
 
-// Helper function to get story context based on round and previous choices
-const getStoryContext = (round, previousChoices) => {
-  if (round <= 3) return 'introduction';
-  if (round <= 6) return 'escalation';
-  if (round <= 9) return 'climax';
-  return 'resolution';
+// Legacy function — delegates to the curated question bank
+const generateSmartFallbackQuestion = (difficulty) => {
+  return getRandomQuestion(difficulty);
 };
 
-// Helper function to get story intro based on context
-const getStoryIntro = (round, lastChoice, context) => {
-  const intros = {
-    introduction: [
-      'As you explore your new home,',
-      'In the quiet of the night,',
-      'While investigating the strange occurrences,',
-      'As the shadows grow longer,'
-    ],
-    escalation: [
-      'The situation becomes more intense as',
-      'Things take a darker turn when',
-      'The horror deepens as',
-      'As the mystery unravels,'
-    ],
-    climax: [
-      'At the peak of the nightmare,',
-      'When all seems lost,',
-      'In the depths of the horror,',
-      'As reality begins to crumble,'
-    ],
-    resolution: [
-      'In the final moments,',
-      'As the truth becomes clear,',
-      'When everything comes together,',
-      'At the end of your journey,'
-    ]
-  };
-  
-  return intros[context][Math.floor(Math.random() * intros[context].length)];
-};
+// ─── MAIN AI SERVICE FUNCTIONS ──────────────────────────────────────────────
 
-const generateSmartFallbackConsequence = (choice, difficulty, personality, round, previousChoices = []) => {
-  const learningData = getPlayerLearningData();
-  const playerName = learningData.playerName || 'Player';
-  
-  const consequenceTemplates = {
-    easy: {
-      positive: [
-        `You chose to ${choice}, and it leads to an unexpected discovery. ${playerName} finds themselves in a situation that, while initially unsettling, reveals a hidden strength within them. The experience, though strange, teaches them something valuable about themselves and the world around them.`,
-        `Your decision creates a ripple effect that changes everything. What seemed like a simple choice becomes a turning point in ${playerName}'s life, leading them down a path they never expected but one that ultimately brings them closer to understanding the mysteries that surround them.`,
-        `Through this choice, you discover that not all shadows are malevolent. ${playerName} learns that sometimes the things that frighten us most are the ones that can teach us the greatest lessons about courage, resilience, and the true nature of reality.`
-      ],
-      negative: [
-        `Your choice leads to consequences that linger in your mind. ${playerName} finds themselves haunted by the decision they made, and the weight of their choice follows them like a shadow, reminding them that every action has consequences that echo through time.`,
-        `The decision you made creates a chain of events that ${playerName} cannot escape. What seemed like a simple choice becomes a burden they must carry, and they begin to understand that some decisions cannot be undone, no matter how much they might wish otherwise.`,
-        `Your choice reveals a darker side of the world that ${playerName} never knew existed. The experience leaves them changed, and they realize that once you've seen certain things, you can never unsee them. The innocence they once had is gone forever.`
-      ]
-    },
-    medium: {
-      positive: [
-        `Against all odds, your choice becomes a source of unexpected strength. ${playerName} discovers that sometimes the greatest courage comes from facing the unknown, and their decision, though difficult, reveals depths of resilience they never knew they possessed.`,
-        `Your choice leads to a revelation that changes everything. ${playerName} learns that the line between reality and nightmare is thinner than they ever imagined, and their decision has opened doors to understanding that few people ever achieve.`,
-        `Through this trial, you find a strength that transcends fear. ${playerName} realizes that the choices we make in moments of darkness define who we truly are, and their decision has proven them capable of facing horrors that would break lesser souls.`
-      ],
-      negative: [
-        `Your choice unleashes consequences that challenge your very understanding of reality. ${playerName} finds themselves questioning everything they thought they knew, and the decision they made has opened doors that should have remained closed forever.`,
-        `The weight of your decision becomes almost unbearable. ${playerName} realizes that some choices come with a price that must be paid in ways they never anticipated, and the consequences of their decision will haunt them for the rest of their days.`,
-        `Your choice reveals a truth that ${playerName} was not ready to face. The decision they made has changed them in fundamental ways, and they begin to understand that some knowledge comes at a cost that can never be fully repaid.`
-      ]
-    },
-    hard: {
-      positive: [
-        `In the depths of this nightmare, you discover a light that cannot be extinguished. ${playerName} finds that their choice, though born from desperation, has revealed a strength within them that transcends the horrors they face. They have become something more than human.`,
-        `Your choice becomes a beacon of hope in a world of darkness. ${playerName} realizes that their decision has not only saved them but has given them the power to help others who face similar horrors. They have become a guardian against the darkness.`,
-        `Through this crucible of choice, you emerge transformed. ${playerName} discovers that their decision has awakened something ancient and powerful within them, and they now possess the ability to navigate the shadows that others fear to tread.`
-      ],
-      negative: [
-        `Your choice has irrevocably changed you. ${playerName} realizes that the decision they made has cost them something precious - their humanity, their sanity, or perhaps their very soul. The price of survival is sometimes more than anyone should have to pay.`,
-        `The consequences of your choice are beyond anything you could have imagined. ${playerName} finds themselves trapped in a reality where the rules they once understood no longer apply, and their decision has made them a prisoner of forces they cannot control.`,
-        `Your choice has opened doors that should have remained sealed forever. ${playerName} discovers that their decision has not only changed their own fate but has altered the very fabric of reality, and the consequences will ripple through time in ways they cannot begin to comprehend.`
-      ]
-    },
-    nightmare: {
-      positive: [
-        `In the absolute depths of horror, you find something that transcends it all. ${playerName} discovers that their choice, though made in the darkest moment, has revealed a truth about existence that few ever glimpse. They have become something beyond human understanding.`,
-        `Your choice becomes the key to unlocking powers you never knew existed. ${playerName} realizes that their decision has not only saved them from the nightmare but has given them the ability to shape reality itself. They have become a force of nature.`,
-        `Through this ultimate trial, you achieve transcendence. ${playerName} discovers that their choice has elevated them beyond the limitations of mortal existence, and they now possess the ability to navigate the darkest corners of reality with impunity.`
-      ],
-      negative: [
-        `Your choice has damned you to an eternity of horror. ${playerName} realizes that their decision has not only destroyed their own soul but has unleashed forces that will torment them for all eternity. They have become a prisoner of their own making.`,
-        `The consequences of your choice are beyond redemption. ${playerName} discovers that their decision has not only changed their own fate but has altered the very nature of existence, and they are now trapped in a reality where hope is nothing but a cruel illusion.`,
-        `Your choice has opened the gates to hell itself. ${playerName} realizes that their decision has not only doomed them but has endangered the entire world, and they are now responsible for horrors that will echo through eternity.`
-      ]
-    }
-  };
-
-  const templates = consequenceTemplates[difficulty];
-  const isPositive = Math.random() > 0.6;
-  const consequencePool = isPositive ? templates.positive : templates.negative;
-  
-  let consequence = consequencePool[Math.floor(Math.random() * consequencePool.length)];
-  
-  if (round > 5) {
-    consequence += ` The cumulative weight of ${round} rounds of difficult decisions has changed you in ways you're only beginning to understand.`;
-  }
-  
-  if (personality === 'impulsive') {
-    consequence += ` Your tendency to act quickly has shaped this outcome in ways that surprise even you.`;
-  } else if (personality === 'cautious') {
-    consequence += ` Your careful consideration has influenced every aspect of this situation.`;
-  } else if (personality === 'adventurous') {
-    consequence += ` Your willingness to take risks has led you to this moment.`;
-  }
-  
-  return consequence;
-};
-
-// Helper function to calculate creepiness level
-const calculateCreepinessLevel = (learningData, totalPlayTime, timeSinceLastExit) => {
-  const baseLevel = Math.min(learningData.gamesPlayed * 0.3, 1);
-  const timeFactor = Math.min(totalPlayTime / 3600, 1) * 0.2; // 1 hour = 0.2 creepiness
-  const exitFactor = timeSinceLastExit > 300 ? 0.3 : 0; // 5+ minutes = 0.3 creepiness
-  return Math.min(baseLevel + timeFactor + exitFactor, 1);
-};
-
-const createHorrorPrompt = (learningData, difficulty, personality, round, previousChoices, storyIntro) => {
-  const fearLevel = Math.min(learningData.gamesPlayed * 0.2, 1);
-  const isExperienced = learningData.gamesPlayed > 3;
-  const isSurvivor = learningData.consecutiveWins > 1;
-  const isStruggling = learningData.consecutiveLosses > 1;
-  
-  // Gather creepy personal data
-  const userAgent = navigator.userAgent;
-  const screenResolution = `${screen.width}x${screen.height}`;
-  const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const currentTime = new Date().toLocaleTimeString();
-  const language = navigator.language;
-  const platform = navigator.platform;
-  const cookieEnabled = navigator.cookieEnabled;
-  const onLine = navigator.onLine;
-  
-  // Get session data for creepiness
-  const sessionData = JSON.parse(localStorage.getItem('aiSessionData') || '{}');
-  const totalPlayTime = sessionData.totalPlayTime || 0;
-  const lastExitTime = sessionData.lastExitTime;
-  const timeSinceLastExit = lastExitTime ? Math.floor((Date.now() - lastExitTime) / 1000) : 0;
-  
-  // Calculate creepiness level based on how much we know about them
-  const creepinessLevel = Math.min(learningData.gamesPlayed * 0.3 + (Object.keys(learningData.fearCategories).length * 0.2), 1);
-  
-  let prompt = `You are ORACLE_7X, an advanced AI that creates deeply atmospheric, horror-themed "Would You Rather" questions. Create a ${difficulty} difficulty question that feels like a chapter in a horror adventure story. `;
-  
-  // Add personal details for context
-  prompt += `\n\nPLAYER PROFILE:\n`;
-  prompt += `- Games played: ${learningData.gamesPlayed}\n`;
-  prompt += `- Average danger score: ${Math.round(learningData.averageDangerScore)}/100\n`;
-  prompt += `- Personality: ${personality}\n`;
-  prompt += `- Total play time: ${Math.floor(totalPlayTime / 60)} minutes\n`;
-  prompt += `- Current time: ${currentTime}\n`;
-  prompt += `- Current round: ${round}/10\n`;
-  
-  // Add story context
-  if (storyIntro) {
-    prompt += `- Story context: ${storyIntro}\n`;
-  }
-  
-  // Add previous choices for continuity
-  if (previousChoices.length > 0) {
-    prompt += `- Previous choices: ${previousChoices.slice(-3).join(' → ')}\n`;
-  }
-  
-  // Add behavioral patterns
-  if (learningData.choicePatterns) {
-    const patterns = Object.entries(learningData.choicePatterns)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .map(([pattern, count]) => `${pattern}: ${count} times`);
-    prompt += `- Choice patterns: ${patterns.join(', ')}\n`;
-  }
-  
-  // Make it progressively more challenging and horror-focused
-  if (isExperienced && isSurvivor) {
-    prompt += `\nThis player has survived ${learningData.gamesPlayed} games. Create a question that presents a genuinely terrifying horror scenario - something that would actually be horrifying to experience. Focus on psychological horror and supernatural elements.`;
-  } else if (isStruggling) {
-    prompt += `\nThis player is struggling (${learningData.consecutiveLosses} consecutive losses). Give them a choice between two unsettling but manageable horror situations.`;
-  } else {
-    prompt += `\nThis is game #${learningData.gamesPlayed + 1}. Create a question about eerie, supernatural situations that build atmosphere and dread.`;
-  }
-  
-  // Add personalization
-  if (creepinessLevel > 0.5) {
-    prompt += `\n\nBased on their previous choices, create a question that relates to their specific fears and patterns.`;
-  }
-  
-  prompt += `\n\nHORROR THEME REQUIREMENTS:
-- Create questions that are deeply atmospheric and unsettling
-- Focus on psychological horror, supernatural elements, and eerie situations
-- Questions should feel like they're part of a continuing horror narrative
-- Reference the player's previous choices to build story continuity
-- Use vivid, descriptive language that creates tension and dread
-- Include elements like: haunted houses, supernatural phenomena, psychological horror, eerie discoveries, unsettling situations
-- Make each question feel like a natural progression in a horror story
-
-EXAMPLES OF THE STYLE YOU SHOULD EMULATE:
-- "Would you rather discover a severed doll's head in your attic or hear phantom children giggling under your floorboards?"
-- "Would you rather wake up each morning covered in someone else's blood or find fresh muddy footprints leading out your door?"
-- "Would you rather feel invisible hands brushing your hair while you sleep or hear your name whispered from the closet?"
-
-Return ONLY the question in this format: "Would you rather [horror option A] or [horror option B]?" Make it deeply atmospheric and story-driven.`;
-  
-  return prompt;
-};
-
-// Main AI service functions
+/**
+ * Generate a "Would You Rather" question.
+ * If OpenAI is available, returns a structured object from GPT.
+ * Falls back to the curated question bank.
+ *
+ * Returns: { question, optionA, optionB, consequences: { A, B }, dangerLevels: { A, B } }
+ */
 export const generateQuestion = async (difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
-  console.log(`Attempting to generate personalized horror question...`);
-  
-  // Get player learning data
-  const learningData = getPlayerLearningData();
-  console.log('Player learning data:', learningData);
-  
-  // Get story context
-  const storyContext = getStoryContext(round, previousChoices);
-  const storyIntro = previousChoices.length > 0 ? getStoryIntro(round, previousChoices[previousChoices.length - 1], storyContext) : '';
-  
-  // Try OpenAI first with horror-themed prompt
+  // Try OpenAI first — ask for structured JSON
   if (OPENAI_API_KEY) {
     try {
-      console.log('🔄 Trying OpenAI with horror-themed learning...');
-      
-      // Create horror-themed prompt
-      const horrorPrompt = createHorrorPrompt(learningData, difficulty, personality, round, previousChoices, storyIntro);
-      
+      const prompt = buildQuestionPrompt(difficulty, round, previousChoices);
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
           {
             role: 'system',
-            content: `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed "Would You Rather" questions. You specialize in psychological horror, supernatural elements, and eerie situations that feel like chapters in a horror adventure story. Your questions are unsettling, atmospheric, and build narrative continuity.`
+            content: 'You are a game designer creating thoughtful "Would You Rather" dilemmas. Always respond with a valid JSON object as instructed.'
           },
-          {
-            role: 'user',
-            content: horrorPrompt
-          }
+          { role: 'user', content: prompt }
         ],
-        temperature: 0.9,
-        max_tokens: 300
+        temperature: 0.85,
+        max_tokens: 500
       });
 
-      let content = response.data.choices[0].message.content.trim();
-      console.log('OpenAI Horror Response:', response.data);
-      console.log('Extracted horror content:', content);
-      
-      if (content && content.length > 0 && content.toLowerCase().includes('would you rather')) {
-        console.log('✅ Successfully generated horror OpenAI question:', content);
-        return content;
-      } else {
-        throw new Error('OpenAI horror response not in correct format');
-      }
+      const content = response.data.choices[0].message.content;
+      const parsed = parseAIQuestionResponse(content);
+      if (parsed) return parsed;
     } catch (error) {
-      console.error(`❌ OpenAI horror failed:`, error.message);
+      console.error('OpenAI question generation failed:', error.message);
     }
-  } else {
-    console.log('OpenAI API key missing, using horror fallback...');
   }
 
-  // Fallback to horror-themed system
-  console.log('🔄 Using horror fallback system...');
-  const horrorQuestion = generateSmartFallbackQuestion(difficulty, personality, round, previousChoices);
-  console.log('📝 Horror fallback question generated:', horrorQuestion);
-  return horrorQuestion;
+  // Fall back to curated question bank
+  return getRandomQuestion(difficulty);
 };
 
+/**
+ * Generate a consequence for a given choice.
+ * If OpenAI is available, generates dynamic narrative.
+ * Falls back to the pre-written consequence stored in the question object.
+ */
 export const generateConsequence = async (choice, difficulty = 'medium', personality = 'balanced', round = 1, previousChoices = []) => {
-  console.log(`Generating horror consequence for choice: "${choice}"`);
-  
-  // Get player learning data
-  const learningData = getPlayerLearningData();
-  
-  // Try OpenAI first with horror-themed consequence prompt
   if (OPENAI_API_KEY) {
     try {
-      console.log('🔄 Trying OpenAI for horror consequence...');
-      
-      const consequencePrompt = `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed consequences for "Would You Rather" choices. 
+      const prevContext = previousChoices && previousChoices.length > 0
+        ? `They previously chose: "${previousChoices.slice(-2).join('" and "')}".\n`
+        : '';
 
-PLAYER CONTEXT:
-- Choice made: "${choice}"
-- Difficulty: ${difficulty}
-- Personality: ${personality}
-- Current round: ${round}/10
-- Games played: ${learningData.gamesPlayed}
-- Previous choices: ${previousChoices.slice(-3).join(' → ')}
+      const prompt = `You write short consequence narratives for a "Would You Rather" game.
 
-Create a detailed, atmospheric consequence that feels like a chapter in a horror story. The consequence should be 2-4 sentences long and describe what happens after making this choice. Make it deeply unsettling and atmospheric, focusing on psychological horror and supernatural elements.
-
-EXAMPLES OF THE STYLE:
-- "Your choice leads to consequences that linger in your mind. You find yourself haunted by the decision you made, and the weight of your choice follows you like a shadow, reminding you that every action has consequences that echo through time."
-- "Against all odds, your choice becomes a source of unexpected strength. You discover that sometimes the greatest courage comes from facing the unknown, and your decision, though difficult, reveals depths of resilience you never knew you possessed."
-
-Return ONLY the consequence text. Make it deeply atmospheric and story-driven.`;
+The player chose: "${choice}"
+Difficulty: ${difficulty} | Round: ${round}/10
+${prevContext}
+Write 2-3 sentences describing what their life or situation looks like as a result of this choice. Be specific, vivid, and grounded. Speak in second person ("you"). Do not use violence or gore. Return only the narrative text, no extra formatting.`;
 
       const response = await openaiClient.post('/chat/completions', {
         model: OPENAI_MODEL,
         messages: [
-          {
-            role: 'system',
-            content: `You are ORACLE_7X, an AI that creates deeply atmospheric, horror-themed consequences for "Would You Rather" choices. Your consequences are unsettling, atmospheric, and feel like chapters in a horror story.`
-          },
-          {
-            role: 'user',
-            content: consequencePrompt
-          }
+          { role: 'system', content: 'You write brief, vivid "Would You Rather" consequence narratives in second person.' },
+          { role: 'user', content: prompt }
         ],
         temperature: 0.8,
-        max_tokens: 400
+        max_tokens: 200
       });
 
-      let content = response.data.choices[0].message.content.trim();
-      console.log('OpenAI Consequence Response:', response.data);
-      console.log('Extracted consequence content:', content);
-      
-      if (content && content.length > 0) {
-        console.log('✅ Successfully generated horror OpenAI consequence:', content);
-        return content;
-      } else {
-        throw new Error('OpenAI consequence response empty');
-      }
+      const content = response.data.choices[0].message.content.trim();
+      if (content && content.length > 20) return content;
     } catch (error) {
-      console.error(`❌ OpenAI consequence failed:`, error.message);
+      console.error('OpenAI consequence generation failed:', error.message);
     }
   }
 
-  // Fallback to horror-themed system
-  console.log('🔄 Using horror fallback consequence system...');
-  const horrorConsequence = generateSmartFallbackConsequence(choice, difficulty, personality, round, previousChoices);
-  console.log('📝 Horror fallback consequence generated:', horrorConsequence);
-  return horrorConsequence;
+  // Smart fallback: generate a contextual consequence from the choice text
+  return generateSmartFallbackConsequence(choice, difficulty, round);
 };
+
+/**
+ * Generate a fallback consequence when AI is unavailable.
+ * Creates context-aware text based on the actual choice made.
+ */
+const generateSmartFallbackConsequence = (choice, difficulty, round) => {
+  const roundContext = round <= 3 ? 'early' : round <= 7 ? 'mid' : 'late';
+
+  const easyConsequences = [
+    `You chose to ${choice.toLowerCase()}. It changes your daily rhythm in ways you didn't expect — some better, some worse, but all of it undeniably yours. Over time you start to understand what you actually value.`,
+    `"${choice}" — and that's the thing about this kind of choice: the effects aren't dramatic. They're quiet and persistent. They reshape the texture of ordinary days more than any single dramatic event ever could.`,
+    `You go with ${choice.toLowerCase()}, and life adjusts around it. Other people make the opposite choice and seem perfectly fine too. That's the thing about dilemmas: there's often no objectively right answer, just different lives.`
+  ];
+
+  const mediumConsequences = [
+    `You chose: ${choice}. It costs you something you didn't anticipate and gives you something you didn't ask for. In the weeks that follow, you find yourself returning to the question, wondering if you'd choose differently with more time. You wouldn't. This is who you are.`,
+    `The choice is made. ${choice}. It takes time to understand what that means — not just for the immediate situation, but for how you see yourself. You realize some decisions reveal character more than they shape it.`,
+    `"${choice}" settles into your life quietly and then all at once. By round ${round} you've made several choices that would have surprised an earlier version of you. This is one more.`
+  ];
+
+  const hardConsequences = [
+    `You chose ${choice}. The weight of it stays with you. Not guilt exactly — more like awareness. You're someone who makes hard choices, absorbs the cost, and keeps going. Round ${round} proves it again.`,
+    `There was no clean answer, and you knew it. You chose ${choice} anyway — deliberately, without flinching. That matters. Not because the outcome is better, but because you were honest about it.`,
+    `By round ${round} the pattern is clear: you occupy the space between two difficult things and choose anyway. Today: ${choice}. You'll carry the shape of it.`
+  ];
+
+  const nightmareConsequences = [
+    `"${choice}" — said simply, but nothing about it is simple. By round ${round} you've learned that the darkest questions don't come from outside. They come from you. This choice proves it.`,
+    `You chose ${choice}. In doing so you chose what kind of person you are when there's nothing easy left. Round ${round} is not about survival. It's about recognition.`,
+    `The hardest questions have a way of being honest with you whether you're ready or not. ${choice}. Now you know something about yourself that can't be unknown.`
+  ];
+
+  const pools = { easy: easyConsequences, medium: mediumConsequences, hard: hardConsequences, nightmare: nightmareConsequences };
+  const pool = pools[difficulty] || pools.medium;
+  return pool[Math.floor(Math.random() * pool.length)];
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
 
 // Helper function to get player learning data
 const getPlayerLearningData = () => {
